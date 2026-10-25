@@ -1,38 +1,23 @@
-# Research & QA workstream — v0.7
+# Research and Quality Assurance — v0.8
 
-The Research & QA workstream is a separate set of responsibilities; it is **not** an autonomous, always-running agent. It tests game behavior, challenges balancing assumptions and records bugs before the Development workstream packages each release.
+## Hypothesis
 
-## Verified by automated engine tests
+The high-value information on a mobile bowling management game's main screen is the **live alley**, navigation, cash and time. Intrusive KPI tiles make the game look more like a dashboard and reduce the visible space dedicated to the interactive scene.
 
-- v0.6 → v0.7 save migration preserves built rooms and lane count while initializing new payroll and delivery fields.
-- Day is 14:00–22:00, Monday–Sunday weekly cycle.
-- Snack/bar ordering removes cash immediately, queues deliveries for the next morning, and does not inflate stock until delivery. Daily supply costs and wages are reflected in net income.
-- Counter sales require full staffing; a two-tile shop needs two. Arcade remains self-service.
-- Workers have per-day salary, morale, optional paid training and improvements to service sales probability.
-- A stock clerk avoids ordering duplicate packs already in transit and uses the configurable low-stock trigger.
-- Customers can come just to purchase food, drinks, games or supplies; appropriate event types are generated.
-- Full six-lane Thursday event blocks all six lanes at 18:00 and 19:00 and earns revenue only if both hours occur.
-- Income and operating-net equations reconcile in a 48-seed × 64-day stress pass: **12,304 assertions**.
+## Verification undertaken
 
-## Verified through browser interactions
+The scripted headless Chromium test covers six viewport widths: 320, 375, 390, 430, 768 and 1280 pixels. It asserts that the header remains at the top after a long scroll, that there is no page-level horizontal overflow, that all seven navigation tabs are present and functional, and that the new onboarding flow and closing reports behave correctly. It also reopens the tutorial using the header help button and checks prior saved-UI migration.
 
-- Fresh and fully developed alley loads, cutscene, navigation and four build submenus.
-- Closing report omits unbuilt business lines, has customer voices, and persists the explicit skip setting.
-- Hiring, payroll price stepper, training, stock threshold, staff drawer messaging, delayed delivery.
-- Moving a bar to a different grid square; animated group walks to the **moved** bar and then assigned lane.
-- Six lane labels change to league status for the two-hour Thursday block.
-- Mobile has no page-width overflow at a 390px viewport; staff and goals accessible.
+The existing, unchanged engine test suite completed 12,304 assertions over 3,072 simulated game days, ensuring that this visual change did not require changing economic mechanics.
 
-## Research vs inference
+## Still to test with humans
 
-- **Verified (code):** Game procedures and calculations above are confirmed by tests.
-- **Inference / design choice:** Stock Clerk, wages, morale, guest probabilities, two-hour league reservations and drink demand are deliberately simplified for enjoyment and teachable progression. They are not intended as accurate real-world bowling-center financial models.
-- **Still unverified:** Human play enjoyment, accessibility with screen readers/keyboard-only controls, long-session frame rate, all mobile browser variants, and actual player preference for funny versus repetitive comments.
+- Legibility and button comfort on actual Android/iOS devices.
+- Whether a seven-item nav row feels intuitive at 320px, where horizontal swiping is required.
+- Whether the first-time tutorial's four panels communicate enough without being too long.
+- Whether the scene's tiny built-in room labels need alternative large-print interactions on phones.
 
-## Future research and regression needs
+## Evidence type
 
-- Validate whether the one-employee-per-tile rule is intuitive, and whether expanded venues should use scheduling and shift coverage instead of raw headcount.
-- Sample player feedback on delivery lag (should there be emergency same-day deliveries for a premium fee?).
-- Keep price/wage economy balanced without penalizing early players. Add a toggle to show payroll and staff morale impact in the front desk.
-- Evaluate multiple league schedule types (full-house vs split-lane league, special events).
-- Build recurring tests for one-hour service interactions during auto-play, week rollover, and manual saved-game export/import.
+- **VERIFIED / Automated:** test assertions and Chromium checks above.
+- **INFERENCE / Design:** streamlining the first viewport should improve usability; real-world human feedback is still necessary.

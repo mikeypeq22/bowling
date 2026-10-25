@@ -1,26 +1,23 @@
-# Living decision log — v0.7
+# Decision log
 
-## Locked for v0.7
+## v0.8 — Approved mobile simplification
 
-1. The bowling scene remains visually recognizable; menus receive a playful arcade-scorecard redesign with flatter buttons, strong borders, simpler navigation and humorous copy.
-2. Day’s Story moves below the scene. Alley Pulse is removed. Goals get their own primary tab, Build gets four subsections, Stats join the header.
-3. A counter that lacks employees is visible but cannot sell. Arcade needs no employees; each staffed two-tile room requires two people.
-4. Employee morale/training are implemented lightly now; deeper career and turnover systems are deliberately postponed. Salary can be adjusted daily.
-5. Snack and bar orders arrive the **following morning**. No same-day manual supply teleporting. Stocker orders at the end of the day when quantities are low, avoiding duplicate incoming packs.
-6. Low-stock threshold is global (1–12), one persistent value for now. Future builds may allow thresholds per item or department.
-7. Thursday league reserves **all six lanes** for **6–8 PM**, while the daily business hours are 2–10 PM.
-8. Non-bowling retail visitors contribute revenue and movement in the game scene.
-9. Closing reports display only relevant facility lines and sample humorous feedback. Customer anger is descriptive and signals corrective actions, not an unrecoverable penalty.
-10. The project continues to offer easy artwork swapping and two named workstreams, Research & QA and Design & Development; neither is a background process.
+**Research & QA role:** Preserve clear tasks, accessible touch targets, a live game scene, and controls users can find at any scroll position. Check small screens and continuity of saved games.
 
-## Deferred / idea parking lot
+**Development role:** Reorganize the shell without touching the economic simulation or the alley's visual core; introduce an opt-in repeatable tutorial and ensure the new UI is GitHub Pages compatible.
 
-- Staff applicants with differing strengths, shift scheduling, turnover and promotions into management.
-- Employee-specific workstations, extra training with specialization.
-- House balls, shoe quality, restrooms/lockers having richer UI overlays.
-- Emergency same-day supplier option versus bulk cheaper scheduled deliveries.
-- Larger building floor grid with drag-and-drop tile placement.
-- Additional leagues and standings, customer loyalty, parties and birthdays.
-- More character dialogue and cutscenes.
+### Locked decisions
 
-*Principle:* The game should feel like a game first, with enough management choices to make progress rewarding; do not turn the entire interface into paperwork.
+1. Header shows the plain title **Your Bowling Alley**, plus its current level/venue subtitle. Date/time and cash live at the upper right.
+2. Navigation is part of the sticky header, above its gold dividing line.
+3. Live daily counters and the visual time-progress track were removed from the alley view. Closing reports remain the source of daily performance metrics.
+4. The Day's Drama appears after the alley scene and hourly control buttons.
+5. A first-time tutorial explicitly explains clickable facilities, lane wear and servicing, hours and closing reports, and all seven tabs.
+6. No gameplay balancing or save wipe in the mobile UI release.
+
+### Parking lot / ideas not discarded
+
+- A dedicated accessibility mode with even larger controls and typography.
+- A more extensive guided tutorial with highlighted hotspots and example actions.
+- Optional nav personalization / rearrangement.
+- Pinned low-stock and lane-maintenance badges in the sticky header (only if they do not crowd it).

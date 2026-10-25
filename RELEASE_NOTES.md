@@ -1,33 +1,32 @@
-# Release notes — v0.7 · The Staff Room & Scorecard Update
+# Release notes — v0.8 (Mobile-first interface)
 
-**Status:** Playable local browser prototype. Features described below implemented and tested.
+## Decisions implemented
 
-## Gameplay changes
+- A two-row sticky header contains the main bowling alley identity/status and all seven navigation buttons. The bottom gold rule marks the sticky header boundary.
+- Header is intentionally minimal: alley name/level, date/time, cash, help. Reputation, trophies, and daily activity totals remain available elsewhere in the game.
+- Removed the redundant alley screen headline and all daily KPI tiles. The live scene now sits immediately below the sticky header.
+- Removed the progress bar and the prior clock/time-controls box; the remaining Next hour, Finish day and Auto buttons are still prominent.
+- Existing Day's Drama panel remains below the playable scene.
+- New guide is four screens with clear language, a back button and skip. It runs after the new-game cutscene and can be reopened from the ? button.
+- Gameplay logic and economic values were **not modified** for this UI-focused version.
 
-1. **Staffed shops:** All sales at the snack counter, bar and pro shop stop until enough staff are hired (1 for one-square shops; 2 for two-square shops). Staff wage is deducted at each close. Optional training (up to level 3) and morale (15–100) influence snack, drink and pro shop customer purchase chances. Lower wages reduce morale gradually; no staff turnover yet. The arcade needs no employee.
-2. **Supply lead time:** New snack and drink orders are deducted from cash when ordered but are kept in a delivery queue until the next morning. Initial inventory still comes with construction completion. A Stock Clerk can auto-order at closing when current and incoming stock are at/below a configurable threshold (default 3).
-3. **Distinct retail visitors:** Some groups drop in for snacks, drinks, arcade, or the pro shop without bowling. Their receipts are recorded and their simulated movement resolves the current positions of the actual room tiles.
-4. **Leagues:** All six lanes are reserved on Thursday 6–8 PM. The two-hour event generates league payout at closing. Regular walk-ins may need to wait.
-5. **Business hours:** Eight one-hour steps now run from **2 PM to 10 PM**.
+## Compatibility
 
-## UI and navigation changes
+- The gameplay save key remains `gutter-to-glory-v07`. UI preferences use `gutter-to-glory-ui-v08` and read `gutter-to-glory-ui-v07` as a fallback.
+- Gameplay migration and the existing artwork mapping are preserved.
+- When the intro cutscene is dismissed, the tutorial is shown for a fresh save. Existing saved games do not get an unexpected tutorial interruption.
+- Both the single-file playable HTML and multi-file GitHub Pages deployment build are generated from the same source.
 
-- Flat, comical arcade-inspired UI: reduced glossy/gradient panels, stronger borders, yellows and punchier copy.
-- Four distinct Build subsections: Construction, Your Lanes, Customize, Floor Plan.
-- Main navigation gains **Staff** and **Goals**.
-- The main alley's statistics appear beside the heading; daily guest story appears below the scene. Alley Pulse and the sidebar Next Goal are removed.
-- Low-stock alerts appear as a button above the alley and a badge on individual snack and bar room tiles.
-- Conditional end-of-day cards hide revenue categories for facilities that weren't operating during the reported day. Short customer jokes and grumpy exit quotes now vary by circumstance/day.
-- New built-in employee icons are replaceable in `assets/asset-map.js` with `employee.snack`, `employee.bar`, `employee.proshop`, `employee.stocker`. Goals and Staff nav icons are also replaceable.
+## Tests
 
-## Automated verification
+- Unchanged engine: 12,304 existing gameplay assertions, 3,072 simulated game days: PASS.
+- Headless Chromium viewport checks: 320, 375, 390, 430, 768 and 1280 pixels: PASS.
+- On each: first-run cutscene → four-step tutorial, all seven tabs, Goals, Build/Lanes, help reopen, end-of-day summary, sticky header on scroll, no page-level horizontal overflow: PASS.
+- v0.7 UI/save migration smoke check: PASS.
+- No JavaScript page errors observed in these browser tests.
 
-- `qa_tests_v07.js`: **12,304 assertions passed** across **3,072 simulated game days** (48 scripted 64-day runs). It checks economic reconciliation, next-day inventory fulfillment, staffing eligibility, wages, morale and training, threshold changes, walk-in-only traffic, six-lane league reservations, and v0.6 save migration.
-- `browser_test_v07.py`: Chromium desktop and mobile smoke tests passed. Checked new and rich game states, tab switching and menu subsection switching, wage and training buttons, automated and manual deliveries, report filtering, moving bar→lane animation, all-lane league reservation and phone-sized page overflow. No JavaScript page errors detected in these checks.
-- A separate 30-seed scripted 90-day purchasing strategy reached six lanes between days 15–18 and regional level between days 24–26, with no negative ending cash observations in these simulations. These are not human playtest measurements or promises of player experience.
+## Known limitations
 
-## Carryovers and boundaries
-
-- Existing bowling art, customization fixtures, room movement, optional skill-shot game, bowler development and tournaments retained.
-- There are no new sprites or image dependencies required to play: fallback CSS/emoji works without image files.
-- Staff do not have individual shifts, job applicants, firing or career branches. The Stock Clerk handles restocking only for unlocked snacks/drinks, not lane spare parts.
+- A very narrow phone may need to horizontally swipe the nav row; it remains vertically sticky.
+- Real-device feel, screen-reader exploration and long-session usability still need human playtesting.
+- Static deployment itself should be checked on the final GitHub Pages URL; in this test environment direct localhost navigation is restricted, so the browser UI test loaded the equivalent standalone HTML.
