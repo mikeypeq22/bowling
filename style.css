@@ -218,3 +218,64 @@ button.primary:hover:not(:disabled){background:#fce090}
 @media(max-width:700px){.nav{display:flex;overflow-x:auto;gap:5px;padding-bottom:4px;scrollbar-color:#f7c766 #1b3645}.nav button{flex:0 0 80px;min-width:80px;min-height:54px;font-size:11px;flex-direction:column;gap:1px;padding:4px}.nav .icon-art{height:20px;width:20px;font-size:17px}.scene{height:380px}#alley .headline{grid-template-columns:1fr auto}#alley .kpiTiles{grid-template-columns:repeat(2,minmax(0,1fr));grid-row:2}#alley .kpiTiles button{min-height:52px}#alley>.eventsPanel .eventList{grid-template-columns:1fr;max-height:270px}.buildNav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.buildNav button{font-size:11px}.staffRoles,.staffList,.questGrid,.goalChecklist{grid-template-columns:1fr}.employeeCard{padding:10px}.employeePortrait{height:50px;width:48px;font-size:24px}.wageControl>button:last-child{width:100%;margin-left:0}.summaryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #alley>.eventsPanel{min-height:130px}
 #alley>.eventsPanel .eventList{min-height:40px}
+
+/* v0.8 — responsive game-first shell. The game scene keeps its v0.7 artwork. */
+.hud{position:sticky;top:0;z-index:25;display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:10px max(16px,calc((100vw - 1360px)/2)) 7px;background:#111f2ff5;box-shadow:0 6px 18px #07111b9c;border-bottom:3px solid #f6c76c;backdrop-filter:blur(10px)}
+.hudMain{display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;min-width:0}
+.brand{min-width:0}.brandText{min-width:0}.brand strong{font-size:22px;line-height:1.15;white-space:nowrap;color:#fff8e3}.brand small{margin-top:3px;font-size:11px;letter-spacing:.6px;color:#f3ca86}
+.hudRight{display:flex;align-items:center;gap:9px;flex:none}.hudstats{display:flex;flex-wrap:nowrap;gap:7px}.hudstats span{display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:6px;background:#233a4e;border:1px solid #48677c;font-size:13px}.hudstats b{font-size:14px}.hudstats .moneyPill b{color:#f8d68d}
+.helpButton{display:grid;place-items:center;border-radius:50%;width:37px;height:37px;min-width:37px;padding:0;background:#465d68;border:2px solid #e6bb69;color:#ffecbd;font-size:20px;font-weight:950}
+.nav{display:flex;align-items:stretch;gap:7px;width:100%;margin:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#c99957 transparent;padding:0 0 3px;scroll-snap-type:x proximity}
+.nav button{display:flex;flex:1 1 0;gap:7px;min-width:82px;min-height:44px;padding:7px 10px;border-radius:6px 6px 3px 3px;font-size:13px;scroll-snap-align:start;background:#223747;border-color:#49657b;transition:background .12s}
+.nav button.active{background:#5a6f6e;outline:0;border-color:#f4ca7b;box-shadow:inset 0 -3px #f6cc80;color:#fff}
+.nav .icon-art{height:23px;width:23px;font-size:20px}
+.shell{padding-top:13px}#alley .alleyLayout{grid-template-columns:1fr}#alley .alleyNotice{display:flex;justify-content:flex-end;margin-bottom:8px}#alley .alleyNotice:has(.hidden){display:none}
+#alley .alleyActions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:1px}#alley .alleyActions button{min-height:48px;border-radius:9px;font-size:14px;padding:11px 6px}
+#alley>.eventsPanel{margin-top:15px}#alley>.eventsPanel .eventList{height:auto;max-height:265px;min-height:40px}#alley>.eventsPanel .event{font-size:13px;padding:11px}
+.tutorialBackdrop{position:fixed;inset:0;z-index:105;background:#08131fe9;display:flex;justify-content:center;align-items:center;padding:12px}
+.tutorialDialog{width:min(455px,100%);background:#193446;border:3px solid #f7c76c;border-radius:13px;padding:19px;box-shadow:0 18px 75px #010a13c9;max-height:calc(100dvh - 24px);overflow:auto}
+.tutorialTop{display:flex;justify-content:space-between;align-items:center;gap:9px}.tutorialTop small{letter-spacing:1.1px;font-size:12px;font-weight:900;color:#ffd483}.tutorialTop button{font-size:17px;min-width:41px;min-height:41px;padding:3px;border-radius:8px}
+.tutorialEmoji{font-size:55px;text-align:center;margin:7px 0 10px}.tutorialDialog h2{font-size:clamp(22px,4vw,28px);color:#ffe2aa;line-height:1.16}.tutorialDialog p{font-size:16px;line-height:1.55;margin-top:11px}.tutorialTip{background:#294b5b;border-left:4px solid #f7c777;padding:12px;margin-top:16px;font-size:14px;line-height:1.5}.tutorialDots{display:flex;justify-content:center;gap:8px;margin:17px 0}.tutorialDots span{width:9px;height:9px;border-radius:8px;background:#607887}.tutorialDots .active{width:24px;background:#f7c777}
+.tutorialActions{display:grid;grid-template-columns:1fr 1.35fr;gap:9px}.tutorialActions button{min-height:48px;font-size:15px}
+@media(max-width:700px){
+ body{font-size:16px;line-height:1.48}
+ .hud{padding:7px 8px 5px;gap:6px}
+ .hudMain{gap:6px}
+ .brand{gap:5px}
+ .brandmark{width:31px;height:31px;font-size:19px;border-radius:7px}
+ .brand strong{font-size:clamp(17px,4.5vw,20px)}
+ .brand small{font-size:10px;letter-spacing:.1px;white-space:normal;line-height:1.15}
+ .hudRight{gap:5px}
+ .hudstats{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+ .hudstats span{font-size:11px;padding:0;border:0;background:transparent;line-height:1.25}
+ .hudstats b{font-size:12px}
+ .hudstats .moneyPill b{font-size:14px}
+ .helpButton{width:32px;height:32px;min-width:32px;font-size:18px;border-width:1px}
+ .nav{gap:4px;padding-bottom:2px;flex-wrap:nowrap;overflow-x:auto}
+ .nav button{flex:0 0 59px;min-width:59px;min-height:53px;font-size:11px;line-height:1.1;gap:2px;padding:5px 3px;flex-direction:column;border-radius:7px}
+ .nav .icon-art{height:23px;width:23px;font-size:21px}
+ .shell{padding:10px 10px 28px}
+ .scene{height:410px;border-width:3px;border-radius:12px}
+ #alley .alleyActions{gap:6px}
+ #alley .alleyActions button{font-size:12px;min-height:48px;padding:9px 3px}
+ #alley>.eventsPanel{margin-top:14px;padding:13px}
+ #alley>.eventsPanel .eventList{max-height:none}
+ #alley>.eventsPanel .event{font-size:14px}
+ .sectionhead h2{font-size:18px}
+ .panel{padding:14px}
+ .menuRow .menuInfo small,.staffRole p,.drawerIntro,.drawerRow small,.drawerCallout{font-size:13px}
+ .drawerBody{padding:14px}
+ .drawerBody button{min-height:38px}
+ .buildNav button{font-size:13px;min-height:47px}
+ .sceneLegend{font-size:10px}
+ .summaryGrid>div small{font-size:12px}
+ .tutorialDialog{padding:16px}
+ .tutorialDialog p{font-size:15px}
+}
+@media(max-width:380px){.brandmark{display:none}.hudstats .datePill b{font-size:11px}.nav button{flex-basis:57px;min-width:57px}.scene{height:395px}}
+@media(prefers-reduced-motion:reduce){.tutorialDots span{transition:none}}
+/* Keep all seven game destinations visible on ordinary phone widths. Narrow phones can swipe. */
+@media(min-width:370px) and (max-width:700px){
+ .nav button{flex:1 1 0;min-width:0;font-size:10px;padding:5px 1px;letter-spacing:-.1px}
+ .nav{gap:3px}
+}

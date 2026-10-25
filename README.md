@@ -1,53 +1,38 @@
-# From Gutter to Glory — v0.7
+# From Gutter to Glory — v0.8
 
-A cozy-but-detailed local-browser bowling-alley building, idle and management game. The v0.7 release focuses on a **flat, playful scorecard-inspired UI** and the staff, stock and guest-life systems.
+A self-contained browser bowling alley management prototype. **v0.8 focuses on mobile usability and first-time onboarding.** Game mechanics and the editable-art asset system carry forward from v0.7.
 
 ## Play
 
-- Double-click the separate `From_Gutter_to_Glory_Playable_v0.7.html` file for the easiest standalone preview.
-- For editable artwork, use this **full project**: keep `index.html`, `engine.js`, `app.js`, `style.css` and `assets/` together, then open `index.html`. Your browser's local-file rules may restrict some saves; serving the folder locally can help.
-- Progress saves locally in the browser using `gutter-to-glory-v07`. v0.6 saves are automatically migrated when the browser shares the same storage origin. Earlier saves may also be converted. Exchanging HTML files does not necessarily share browser storage; keep a copy of your old file and ZIP.
-- Day is eight hourly shifts, **2:00 PM to 10:00 PM**. Week 1 starts on Monday. Auto advances the clock, but the closing report pauses by default; only the explicit skip setting bypasses it.
+- **Standalone:** open `From_Gutter_to_Glory_Playable_v0.8.html` from the companion download. All CSS and JavaScript are bundled; game illustrations fall back to built-in graphics unless you separately add custom assets.
+- **Editable web project:** open `index.html` using a static web server or deploy this folder's contents to GitHub Pages.
 
-## What's new in v0.7
+## Publish to GitHub Pages
 
-### User interface
+1. Create a public GitHub repository (on a GitHub Free account) for the game.
+2. Upload `index.html`, `style.css`, `engine.js`, `app.js`, `assets/` and `.nojekyll` to the **root** of your `main` branch. The GitHub Pages-ready ZIP already has this structure.
+3. Under repository **Settings → Pages**, choose **Deploy from a branch**, branch `main`, folder `/(root)`.
+4. Visit `https://USERNAME.github.io/REPOSITORY/` once the deployment completes.
 
-- Reduced gradients, flatter arcade-style button and card treatments, warmer typography and more humorous guest feedback.
-- Headline statistics beside *Your Bowling Alley*; *The Day’s Drama* moves **below** the main scene. No more Alley Pulse.
-- Separate **Goals** and **Staff** navigation tabs. Build now has **Construction**, **Your Lanes**, **Customize**, **Floor Plan** sections.
-- The room layout controls now live in Build → Floor Plan. Choose *Rearrange rooms* to enter alley layout mode.
-- Low-stock flags appear at the top of the alley and directly on snack/bar tiles.
+No build command is required. All references are relative so the game can run at the root of a Pages *project* site.
 
-### Employees and stock
+## What's changed in v0.8
 
-- Snack, bar and pro shop require **one employee per single-square room, or two if expanded**. An arcade needs no staff.
-- Hiring costs a one-time fee. Staff receive **daily wages at close**. You can adjust each wage from $8 to $32 and pay to train to level 3. Better morale and staff training improve sales probabilities; low wages slowly reduce morale. Staff never permanently quit in this early version.
-- The optional **Stock Clerk** automatically orders unlocked low-stock items when the alley closes. Set a threshold (1–12) in Staff. Incoming orders are counted to avoid overordering.
-- Manual snack and bar orders **pay immediately but arrive the next morning**. A new delivery list shows what's coming. Starting inventory is included with new counters.
+- Header permanently displays **Your Bowling Alley**, alley level/name, game week/day/time and cash.
+- All seven management tabs are in the same **sticky header**, directly above the gold divider, including on mobile.
+- Removed daily arrival, bowling, snack and net KPI boxes from the live alley. These remain in the end-of-day report and front desk.
+- Removed the hourly progress line and bulky clock box. Hour controls are large, separated action buttons.
+- Added a four-step first-run guide after the opening dirt-lane scene. It covers clickable facilities, lane servicing, time controls and tab meanings. Reopen it using **?** in the header.
+- Made the mobile typography and controls bigger, while preserving the v0.7 bowling alley graphics, room layout, operations, staff, leagues and upgrades.
 
-### Guests and leagues
+## Important save information
 
-- When food/bar/arcade/pro shop is available, some visitors drop in just for a drink, food, games, or equipment. Their actions are logged with the right room destinations.
-- On Thursday, a registered six-lane league takes **all six lanes from 6:00–8:00 PM**. Other bowling groups may wait or leave; receipts are awarded at closing if the full two-hour session occurred.
-- Closing reports only show optional food, bar, arcade and league metrics for services operating at closing, rather than showing zeros for never-built facilities. Funny but actionable comments appear when there's no food or wait times are bad.
+Gameplay still uses `gutter-to-glory-v07` in browser localStorage, intentionally, so the existing v0.7 save is reused on the *same website origin*. v0.8 UI settings live separately under `gutter-to-glory-ui-v08`; the previous v0.7 UI settings are imported. Moving from a downloaded `file://` build to a GitHub Pages URL does not automatically move saved progress, because browsers isolate website storage by origin.
 
-## Files and agent workstreams
+## Replace images
 
-- `engine.js` — deterministic state, transactions, economy, hourly events, arrivals, payroll, deliveries and progression.
-- `app.js` — screens, menus, visitor path animation, save management and closing reports.
-- `style.css` — original alley scene graphics plus revised v0.7 flat retro UI.
-- `assets/asset-map.js` — change one image path to replace menus, staff icon portraits, rooms, fixtures and scenery.
-- `qa_tests_v07.js` — repeatable engine tests; run using `node qa_tests_v07.js`.
-- `browser_test_v07.py` — headless Chromium interaction checks; requires Python Playwright, Chromium and an accompanying standalone build.
-- `build_standalone.py` — reconstructs the single HTML playable.
-- `RESEARCH_AND_QA.md` and `DEVELOPMENT.md` — our two separate workstreams (not independent background agents).
-- `DECISION_LOG.md`, `RELEASE_NOTES.md` — design history and release scope.
+Put your graphics in `assets/`, then change their references in `assets/asset-map.js`. Existing icon keys and graceful fallbacks are unchanged. See `assets/README.md`.
 
-## Known limitations
+## Current scope / limitations
 
-- Employees are simplified game roles, not shift schedulers. No hiring interviews, firing or turnover yet.
-- Retail walk-in behavior and customer quotes are simulated, not representative of real sales or staffing economics.
-- The game is local/single-player. Only six bowling lanes, four placeable room types, and one Thursday league are implemented.
-- Graphics are prototypes. The detailed mini bowling scene remains intentionally unchanged; most changes are in the menus and HUD.
-- Human playtesting is still needed to judge whether the pacing feels fun.
+This is a single-player offline-first browser prototype. Saves live in the browser; there is no account login, multiplayer, cloud saving, or external database. Smaller screens (below roughly 370px wide) can swipe the sticky tab row horizontally. Browser restrictions may require using a local server for the multi-file project; the standalone HTML is provided for direct opening.

@@ -3,21 +3,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>From Gutter to Glory — v0.7</title><link href="style.css" rel="stylesheet"/>
+<title>From Gutter to Glory — v0.8</title><link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-<header class="hud"><div class="brand"><span class="brandmark">🎳</span><div><small>FROM GUTTER TO GLORY <b>v0.7</b></small><strong id="venueName">Backyard Bowling</strong></div></div><div class="hudstats" id="hudStats"></div></header>
-<main class="shell">
-<nav aria-label="Game menu" class="nav">
+<header class="hud"><div class="hudMain"><div class="brand"><span class="brandmark" aria-hidden="true">🎳</span><div class="brandText"><strong id="venueName">Your Bowling Alley</strong><small id="levelLabel">LEVEL 1 · BACKYARD BOWLING</small></div></div><div class="hudRight"><div class="hudstats" id="hudStats" aria-label="Current day and money"></div><button class="helpButton" id="openTutorial" type="button" aria-label="How to play" title="How to play">?</button></div></div><nav aria-label="Game menu" class="nav">
 <button class="active" data-tab="alley"><span data-emoji="🏠" data-icon="nav.alley"></span>Alley</button>
 <button data-tab="manage"><span data-emoji="🛠️" data-icon="nav.manage"></span>Build</button>
 <button data-tab="bowlers"><span data-emoji="👟" data-icon="nav.bowlers"></span>Bowlers</button>
 <button data-tab="tournaments"><span data-emoji="🏆" data-icon="nav.tournaments"></span>Compete</button>
 <button data-tab="you"><span data-emoji="⭐" data-icon="nav.you"></span>You</button>
-<button data-tab="employees"><span data-icon="nav.employees" data-emoji="👥"></span>Staff</button><button data-tab="goals"><span data-icon="nav.goals" data-emoji="🎯"></span>Goals</button></nav>
-<section class="tab active" id="alley">
-<div class="headline"><div><span class="eyebrow" id="levelLabel">OPEN FOR STRIKES &amp; BUSINESS</span><h1>Your Bowling Alley</h1><p class="muted">Watch the crowd, then take the credit (or the complaints).</p></div><div class="kpiTiles"><button data-open="desk"><span>📍 Today’s guests</span><strong id="todayArrivals">0</strong></button><button data-open="desk"><span>🎳 Groups bowled</span><strong id="todayServed">0</strong></button><button data-open="desk"><span>💵 Today’s net</span><strong id="todayNet">$0</strong></button><button data-open="snacks" id="snackKpi"><span>🍿 Snack orders</span><strong id="todaySnackOrders">0</strong></button></div><span class="badge warm" id="hourLabel">2:00 PM</span><button class="stockWarn hidden" data-open="snacks" id="stockWarning">⚠️ Low stock</button></div>
-<div class="alleyLayout">
+<button data-tab="employees"><span data-icon="nav.employees" data-emoji="👥"></span>Staff</button><button data-tab="goals"><span data-icon="nav.goals" data-emoji="🎯"></span>Goals</button></nav></header><main class="shell">
+<section class="tab active" id="alley"><div class="alleyNotice"><button class="stockWarn hidden" data-open="snacks" id="stockWarning">⚠️ Low stock</button></div><div class="alleyLayout">
 <div class="column">
 <div aria-label="Interactive bowling alley scene" class="scene backyard" id="scene">
 <img alt="" class="sceneImage" hidden="" id="sceneImage"/>
@@ -36,7 +32,7 @@
 <div class="sceneLegend"><span>🟢 Bowling <b id="occupancyCount">0/1</b></span><span>🟠 Waiting <b id="waitingCount">0</b></span></div>
 <button class="layoutExit hidden" id="exitLayout">✓ Done moving rooms</button></div>
 
-<div class="timeControls"><div class="clockText"><strong id="gameClock">WEEK 1 · MONDAY · 2:00 PM</strong><span id="clockSub">Open 2–10 PM · 1 game hour per group</span></div><div class="timeButtons"><button class="primary" id="nextHour">▶ Next hour</button><button id="endDay">⏩ Finish day</button><button id="toggleAuto">⏸ Auto</button></div></div><div class="hourTrack"><div id="timeProgress"></div></div>
+<div class="alleyActions" aria-label="Time controls"><button class="primary" id="nextHour">▶ Next hour</button><button id="endDay">⏩ Finish day</button><button id="toggleAuto">⏸ Auto on</button></div>
 
 </div>
 
@@ -56,6 +52,8 @@
 <div class="youGrid"><div class="panel ownerStage"><div class="ownerAvatar"><div class="avatarGlow"></div><div class="avatarShape"><div class="avatarHair"></div><div class="avatarHead"><span>•ᴗ•</span></div><div class="avatarNeck"></div><div class="avatarBody">🎳</div><div class="avatarLeg left"></div><div class="avatarLeg right"></div></div><div class="ownerArt" id="ownerArt"></div></div><h2 id="ownerTitle">Rookie Owner</h2><div class="badge warm" id="ownerLevel">LEVEL 1</div><p class="muted">From a backyard lane to a legendary bowling empire.</p><div class="meter"><div id="ownerBar"></div></div><small class="muted" id="ownerXPLabel">0 / 60 XP</small></div><div class="panel"><h2>⭐ Your Strengths</h2><p class="muted small">Gain XP from operating your alley, training bowlers and competitions.</p><div class="ownerSkills" id="ownerSkills"></div></div></div>
 <details class="panel settings"><summary>⚙️ Save, Reset &amp; Game Settings</summary><label class="settingRow"><input id="skipSummarySetting" type="checkbox"/> Skip end-of-day closing reports</label><p class="muted small">Progress is saved automatically in this browser. v0.6 saves can be upgraded automatically when browser storage is shared.</p><div class="buttons"><button id="save">💾 Save now</button><button id="reset">↻ New game</button></div><p class="muted tiny">Custom art can be changed by editing filenames in <code>assets/asset-map.js</code>.</p></details></section>
 </main>
+
+<div class="tutorialBackdrop hidden" id="tutorialBackdrop"><section class="tutorialDialog" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle" aria-describedby="tutorialText"><div class="tutorialTop"><small>QUICK START · <span id="tutorialStepLabel">1 OF 4</span></small><button id="tutorialSkip" aria-label="Close tutorial">✕</button></div><div class="tutorialEmoji" id="tutorialEmoji" aria-hidden="true">🎳</div><h2 id="tutorialTitle">Welcome to your alley!</h2><p id="tutorialText"></p><div class="tutorialTip" id="tutorialTip"></div><div class="tutorialDots" id="tutorialDots" aria-hidden="true"></div><div class="tutorialActions"><button id="tutorialBack">← Back</button><button class="primary" id="tutorialNext">Next →</button></div></section></div>
 <div class="cutsceneBackdrop hidden" id="cutsceneBackdrop"><section aria-labelledby="cutsceneTitle" aria-modal="true" class="cutscene" role="dialog"><small class="eyebrow">A NEW CHAPTER</small><h2 id="cutsceneTitle">It starts with dirt...</h2><div class="cutsceneArt" id="cutsceneArt"><div class="cutsceneSky">☀️ ☁️</div><div class="cutsceneBuilding" id="cutsceneBuilding">🎳<span>GUTTER TO GLORY</span></div><div class="cutsceneGround">⚪ ⚪ ⚪</div><div class="cutsceneSpark">✨ ✨ ✨</div></div><p id="cutsceneCaption">Every great bowling alley begins somewhere.</p><button class="primary" id="cutsceneContinue">Let's roll →</button><button id="cutsceneSkip">Skip animation</button></section></div>
 <div class="summaryBackdrop hidden" id="daySummaryBackdrop"><section aria-labelledby="daySummaryTitle" aria-modal="true" class="daySummary" id="daySummary" role="dialog"><div class="summaryHeader"><div><small class="eyebrow">ALLEY CLOSING REPORT</small><h2 id="daySummaryTitle">Day complete!</h2></div><button aria-label="Close day report" id="closeSummary">✕</button></div><div id="daySummaryBody"></div><label class="summarySkip"><input id="skipFutureSummaries" type="checkbox"/> Skip the closing report on future days (change anytime in Settings)</label><div class="summaryActions"><button id="summaryDesk">🛎️ Front desk details</button><button class="primary" id="summaryContinue">▶ Start next day</button></div></section></div>
 <div class="drawerBackdrop hidden" data-close="true" id="drawerBackdrop"></div><aside aria-label="Facility details" aria-modal="true" class="drawer hidden" id="drawer" role="dialog"><div class="drawerHead"><div><small class="eyebrow" id="drawerSub">FACILITY</small><h2 id="drawerTitle">Front Desk</h2></div><button aria-label="Close panel" class="closeBtn" id="closeDrawer">✕</button></div><div class="drawerBody" id="drawerBody"></div></aside>

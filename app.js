@@ -1,7 +1,7 @@
-/* From Gutter to Glory v0.7 — visual game controller. Gameplay lives in engine.js. */
+/* From Gutter to Glory v0.8 — visual game controller. Gameplay lives in engine.js. */
 (()=>{'use strict';
 const G=window.BowlingCore;
-const KEY='gutter-to-glory-v07',PREVIOUS='gutter-to-glory-v06',LEGACY='gutter-to-glory-v05',UIKEY='gutter-to-glory-ui-v07',OLDUI='gutter-to-glory-ui-v06';
+const KEY='gutter-to-glory-v07',PREVIOUS='gutter-to-glory-v06',LEGACY='gutter-to-glory-v05',UIKEY='gutter-to-glory-ui-v08',OLDUI='gutter-to-glory-ui-v07';
 const MS_HOUR=5200,MAX_OFFLINE_HOURS=24;
 const $=id=>document.getElementById(id);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,13 +22,14 @@ G.FIXTURES.forEach(item=>{defaultAssets['fixture.'+item.id]='assets/fixture-'+it
 const assets={...defaultAssets,...window.BOWLING_ASSETS};
 const icon=(key,emoji,extra='')=>`<span class="icon-art ${extra}" aria-hidden="true"><span>${emoji}</span>${assets[key]?`<img src="${esc(assets[key])}" alt="" onerror="this.remove()">`:''}</span>`;
 document.querySelectorAll('[data-icon]').forEach(el=>{el.outerHTML=icon(el.dataset.icon,el.dataset.emoji)});
-let s=G.newGame(),auto=true,tab='alley',buildSection='construction',drawer=null,selectedBowler='maya',lastTick=Date.now(),timerToast=null,summaryOpen=false,skipSummaries=false,introSeen=false,layoutMode=false,movingRoom=null,cutsceneOpen=false,pendingCutscene=null;
-try{let saved=JSON.parse(localStorage.getItem(KEY));if(saved?.state&&G.checkState(saved.state)){s=saved.state;lastTick=Number(saved.lastTick)||Date.now();introSeen=true;}else{
- for(const key of [PREVIOUS,LEGACY,'gutter-to-glory-v04','gutter-to-glory-v03']){const old=JSON.parse(localStorage.getItem(key));if(old?.state){const migrated=G.migrate(old.state);if(migrated){s=migrated;lastTick=Number(old.lastTick)||Date.now();introSeen=true;break;}}}}
- const ui=JSON.parse(localStorage.getItem(UIKEY)||localStorage.getItem(OLDUI)||localStorage.getItem('gutter-to-glory-ui-v04'));if(ui){auto=ui.auto!==false;skipSummaries=ui.skipSummaries===true;introSeen=ui.introSeen===true||introSeen;tab=['alley','manage','bowlers','tournaments','you','employees','goals'].includes(ui.tab)?ui.tab:'alley';buildSection=['construction','lanes','style','layout'].includes(ui.buildSection)?ui.buildSection:'construction';}
+let s=G.newGame(),auto=true,tab='alley',buildSection='construction',drawer=null,selectedBowler='maya',lastTick=Date.now(),timerToast=null,summaryOpen=false,skipSummaries=false,introSeen=false,layoutMode=false,movingRoom=null,cutsceneOpen=false,pendingCutscene=null,tutorialSeen=false,tutorialOpen=false,tutorialStep=0,introCutscene=false,hadSavedGame=false,hadNewUI=false;
+try{let saved=JSON.parse(localStorage.getItem(KEY));if(saved?.state&&G.checkState(saved.state)){s=saved.state;lastTick=Number(saved.lastTick)||Date.now();introSeen=true;hadSavedGame=true;}else{
+ for(const key of [PREVIOUS,LEGACY,'gutter-to-glory-v04','gutter-to-glory-v03']){const old=JSON.parse(localStorage.getItem(key));if(old?.state){const migrated=G.migrate(old.state);if(migrated){s=migrated;lastTick=Number(old.lastTick)||Date.now();introSeen=true;hadSavedGame=true;break;}}}}
+ const newUI=localStorage.getItem(UIKEY);hadNewUI=!!newUI;const ui=JSON.parse(newUI||localStorage.getItem(OLDUI)||localStorage.getItem('gutter-to-glory-ui-v04'));if(ui){auto=ui.auto!==false;if(typeof ui.tutorialSeen==='boolean')tutorialSeen=ui.tutorialSeen;skipSummaries=ui.skipSummaries===true;introSeen=ui.introSeen===true||introSeen;tab=['alley','manage','bowlers','tournaments','you','employees','goals'].includes(ui.tab)?ui.tab:'alley';buildSection=['construction','lanes','style','layout'].includes(ui.buildSection)?ui.buildSection:'construction';}
 }catch(e){console.warn('Save cannot be loaded',e);}
+if(hadSavedGame&&!hadNewUI)tutorialSeen=true;
 let lastAnnouncedLevel=G.venueLevel(s);
-function save(){try{localStorage.setItem(KEY,JSON.stringify({state:s,lastTick}));localStorage.setItem(UIKEY,JSON.stringify({auto,tab,buildSection,skipSummaries,introSeen}));}catch(e){console.warn('Save unavailable',e);}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({state:s,lastTick}));localStorage.setItem(UIKEY,JSON.stringify({auto,tab,buildSection,skipSummaries,introSeen,tutorialSeen}));}catch(e){console.warn('Save unavailable',e);}}
 function toast(message,error=false){const el=$('toast');el.textContent=message;el.className='toast show'+(error?' error':'');clearTimeout(timerToast);timerToast=setTimeout(()=>el.className='toast',3500);}
 function perform(action,message){if(!action.ok){toast(action.reason||'Not available',true);return false;}save();render();syncVisitors();if(drawer)renderDrawer();if(message)toast(message);return true;}
 function gotoTab(id){tab=id;document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('[data-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.tab===id);if(el.dataset.tab===id)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});closeDrawer();save();}
@@ -166,13 +167,11 @@ function showScene(){const lv=G.venueLevel(s);const phase=lv===1&&!s.built.roof?
  $('constructionRibbon').innerHTML=s.construction.length?`🚧 ${s.construction.length} project${s.construction.length===1?'':'s'} underway · ${esc(s.construction.map(j=>j.title+' ('+j.remaining+'d)').join(' · '))}`:'';
  $('occupancyCount').textContent=(s.sceneGroups.filter(x=>x.kind==='bowling').length+(s.league.active&&G.calendar(s.day).dayIndex===3&&s.hour>=18&&s.hour<20?6:0))+'/'+G.lanes(s);$('waitingCount').textContent=s.queue.length;
 }
-function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent=G.venueName(s);$('levelLabel').textContent=`ALLEY LEVEL ${level} · ${G.venueName(s).toUpperCase()}`;
- $('hourLabel').textContent=s.hour===G.CLOSE?'CLOSED · 10:00 PM':G.formatHour(s.hour);$('gameClock').textContent=`WEEK ${G.calendar(s.day).week} · ${G.calendar(s.day).weekday} · ${G.formatHour(s.hour)}`;$('clockSub').textContent=s.hour>=G.CLOSE?"Closed! Check the day's drama.":'Open 2–10 PM · one hour per group';
+function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent='Your Bowling Alley';$('levelLabel').textContent=`LEVEL ${level} · ${G.venueName(s).toUpperCase()}`;
  $('nextHour').textContent=s.hour>=G.CLOSE?'▶ Start next day':'▶ Next hour';$('toggleAuto').textContent=auto?'⏸ Auto on':'▶ Auto off';
- $('todayArrivals').textContent=s.today.arrivals;$('todayServed').textContent=s.today.served;$('todayNet').textContent=cash(s.today.net);$('todaySnackOrders').textContent=s.today.snackOrders;
  $('miniEvents').innerHTML=eventsHTML(s.today.events.slice(-8));
  const completed=G.TOURNAMENTS.filter(t=>s.tournamentWins[t.id]).length;
- $('hudStats').innerHTML=`<span>📆 <b>W${G.calendar(s.day).week} ${G.calendar(s.day).weekday.slice(0,3)}</b></span><span>💰 <b>${cash(s.cash)}</b></span><span>⭐ <b>${Math.floor(s.rep)}</b></span><span>🏆 <b>${completed}/4</b></span>`;
+ $('hudStats').innerHTML=`<span class="datePill">📅 <b>W${G.calendar(s.day).week} ${G.calendar(s.day).weekday.slice(0,3)} · ${s.hour===G.CLOSE?'10 PM':G.formatHour(s.hour)}</b></span><span class="moneyPill">💵 <b>${cash(s.cash)}</b></span>`;
  const goals=G.nextLevelGoals(s);
  $('nextGoal').innerHTML=`<h2>${G.venueLevel(s)>=5?'LEGENDARY ALLEY!':'Level '+(G.venueLevel(s)+1)+' — '+G.LEVELS[G.venueLevel(s)+1]?.name}</h2><div class="goalChecklist">${goals.map(g=>typeof g==='string'?esc(g):`<div class="${g.done?'complete':''}">${g.done?'✅':'◻️'} ${esc(g.label)}</div>`).join('')}</div>`;
  $('goalLevelBadge').textContent='Alley Level '+G.venueLevel(s);
@@ -182,7 +181,6 @@ function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent=G.
  $('stockWarning').classList.toggle('hidden',!lowSnack&&!lowBar);
  $('stockWarning').textContent=lowSnack?'⚠ Snacks running low':'⚠ Bar stock running low';
  $('stockWarning').dataset.open=lowSnack?'snacks':'bar';
- $('snackKpi').classList.toggle('hidden',!s.built.snack);
  showScene();
 }
 function renderManage(){$('upgradeCount').textContent=`${G.UPGRADES.filter(x=>s.built[x.id]).length}/${G.UPGRADES.length} opened`;
@@ -240,7 +238,17 @@ function openSummary(report){if(!report)return;summaryOpen=true;
  <p class="muted tiny">Daily operating net includes wages and supply purchases; construction costs are shown separately.</p>`;
  $('skipFutureSummaries').checked=skipSummaries;
  $('daySummaryBackdrop').classList.remove('hidden');$('summaryContinue').focus();}
-function showCutscene(level){cutsceneOpen=true;introSeen=true;const intro=level===1;
+const TUTORIAL_STEPS=[
+ {icon:'👆',title:'Everything is tappable!',body:'This is your bowling alley. Tap the front desk to change prices, tap the waiting area for benches, and tap a snack counter or bar to manage its menu.',tip:'Tip: Try tapping a building or lane in the alley picture.'},
+ {icon:'🎳',title:'Keep your lanes rolling',body:'Guests use a lane for one game hour. Lanes wear out over time. Tap a lane to check its condition and service it using spare parts. Build extra lanes when the queue gets long.',tip:'Tip: Build → Your Lanes shows every lane in one place.'},
+ {icon:'⏰',title:'Run the clock',body:'Your alley opens at 2 PM and closes at 10 PM. Use Next hour or Finish day, or turn on Auto. Your closing report shows how the business did, then you can start the next day.',tip:'Tip: The current week, day, time and cash stay at the top.'},
+ {icon:'🗂️',title:'Where to find things',body:'Alley is your live scene. Build has construction, lanes and decorations. Bowlers lets you train your team; Compete has tournaments and leagues. Staff hires workers, You upgrades your skills, and Goals tracks progress.',tip:'Tip: Swipe the top row of tabs if your screen is narrow. Tap ? any time to reopen this guide.'}
+];
+function renderTutorial(){const t=TUTORIAL_STEPS[tutorialStep];$('tutorialStepLabel').textContent=(tutorialStep+1)+' OF '+TUTORIAL_STEPS.length;$('tutorialEmoji').textContent=t.icon;$('tutorialTitle').textContent=t.title;$('tutorialText').textContent=t.body;$('tutorialTip').textContent=t.tip;$('tutorialBack').disabled=tutorialStep===0;$('tutorialNext').textContent=tutorialStep===TUTORIAL_STEPS.length-1?"Let's roll! 🎳":'Next →';$('tutorialDots').innerHTML=TUTORIAL_STEPS.map((_,i)=>`<span class="${i===tutorialStep?'active':''}"></span>`).join('');}
+function showTutorial(start=0){tutorialOpen=true;tutorialStep=start;renderTutorial();$('tutorialBackdrop').classList.remove('hidden');$('tutorialNext').focus();lastTick=Date.now();}
+function closeTutorial(){tutorialOpen=false;tutorialSeen=true;$('tutorialBackdrop').classList.add('hidden');lastTick=Date.now();save();}
+$('openTutorial').onclick=()=>showTutorial();$('tutorialSkip').onclick=closeTutorial;$('tutorialBack').onclick=()=>{if(tutorialStep>0){tutorialStep--;renderTutorial();}};$('tutorialNext').onclick=()=>{if(tutorialStep>=TUTORIAL_STEPS.length-1)closeTutorial();else{tutorialStep++;renderTutorial();}};
+function showCutscene(level){cutsceneOpen=true;introSeen=true;introCutscene=level===1;const intro=level===1;
  const headings={1:'A dirt lane and a dream!',2:'We have walls!',3:'A real neighborhood favorite!',4:'The town is talking!',5:'Bowling empire unlocked!'};
  const captions={1:'A little dirt, a few pins, and plenty of ambition. Every great alley begins somewhere.',2:'From muddy beginnings to a covered center. Listen to that roof go up!',3:'More people, more lanes, more possibilities.',4:'A bigger, busier bowling destination. The competitors are noticing.',5:'Lights, lanes, and legends. You built something special.'};
  $('cutsceneTitle').textContent=headings[level]||'A new era of bowling!';$('cutsceneCaption').textContent=captions[level]||'Your bowling center has leveled up!';
@@ -250,7 +258,7 @@ function showCutscene(level){cutsceneOpen=true;introSeen=true;const intro=level=
  $('cutsceneBuilding').lastElementChild.textContent=level===1?'DIRT ROAD BOWLING':G.venueName(s).toUpperCase();
  $('cutsceneContinue').textContent=intro?'Open your alley →':'Continue the adventure →';
  $('cutsceneBackdrop').classList.remove('hidden');save();}
-function endCutscene(){$('cutsceneBackdrop').classList.add('hidden');cutsceneOpen=false;lastTick=Date.now();save();}
+function endCutscene(){$('cutsceneBackdrop').classList.add('hidden');cutsceneOpen=false;lastTick=Date.now();save();if(introCutscene&&!tutorialSeen)showTutorial();introCutscene=false;}
 function checkClosing(result,oldLevel){if(result.dayEnded){const newLevel=G.venueLevel(s);if(newLevel>lastAnnouncedLevel){pendingCutscene=newLevel;lastAnnouncedLevel=newLevel;}
  if(!skipSummaries)openSummary(s.lastDay);else{if(pendingCutscene){const lvl=pendingCutscene;pendingCutscene=null;showCutscene(lvl);}else if(!auto)toast(`Day ${s.day} closed. Next hour starts tomorrow.`);}}
 }
@@ -261,14 +269,14 @@ $('summaryDesk').onclick=()=>{closeSummary(true);openDrawer('desk');};
 $('skipFutureSummaries').onchange=e=>{skipSummaries=e.target.checked;$('skipSummarySetting').checked=skipSummaries;save();};
 $('skipSummarySetting').onchange=e=>{skipSummaries=e.target.checked;save();};
 $('daySummaryBackdrop').onclick=e=>{if(e.target===$('daySummaryBackdrop'))closeSummary(true);};
-function stepHour(manual=false){if(summaryOpen||cutsceneOpen)return;const oldLevel=G.venueLevel(s),result=G.tickHour(s);lastTick=Date.now();render();syncVisitors(result.events);save();checkClosing(result,oldLevel);
+function stepHour(manual=false){if(summaryOpen||cutsceneOpen||tutorialOpen)return;const oldLevel=G.venueLevel(s),result=G.tickHour(s);lastTick=Date.now();render();syncVisitors(result.events);save();checkClosing(result,oldLevel);
  if(manual&&!result.dayEnded)toast(`${G.formatHour(result.hour)}–${G.formatHour(result.hour+1)} · ${result.events.filter(x=>x.type==='arrival').length} group arrivals.`);
  if(drawer)renderDrawer();return result;}
-function finishDay(){if(summaryOpen||cutsceneOpen)return;const oldLevel=G.venueLevel(s);let count=0,result;do{result=G.tickHour(s);count++;}while(!result.dayEnded&&count<9);
+function finishDay(){if(summaryOpen||cutsceneOpen||tutorialOpen)return;const oldLevel=G.venueLevel(s);let count=0,result;do{result=G.tickHour(s);count++;}while(!result.dayEnded&&count<9);
  lastTick=Date.now();render();syncVisitors(result.events);save();if(drawer)renderDrawer();checkClosing(result,oldLevel);}
 $('nextHour').onclick=()=>stepHour(true);$('endDay').onclick=finishDay;$('toggleAuto').onclick=()=>{auto=!auto;lastTick=Date.now();render();save();toast(auto?'Auto time resumed.':'Auto time paused.');};$('recruit').onclick=()=>perform(G.recruit(s),'Welcome to the team!');$('save').onclick=()=>{save();toast('Game saved to this browser.');};
-$('reset').onclick=()=>{if(confirm('Start over? Your current save will be replaced.')){s=G.newGame();lastTick=Date.now();auto=true;summaryOpen=false;skipSummaries=false;introSeen=true;pendingCutscene=null;layoutMode=false;movingRoom=null;lastAnnouncedLevel=1;$('daySummaryBackdrop').classList.add('hidden');$('visitorLayer').replaceChildren();save();render();gotoTab('alley');showCutscene(1);}};
-$('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(cutsceneOpen)endCutscene();else if(summaryOpen)closeSummary(true);else if(drawer)closeDrawer();}});
+$('reset').onclick=()=>{if(confirm('Start over? Your current save will be replaced.')){s=G.newGame();lastTick=Date.now();auto=true;summaryOpen=false;skipSummaries=false;introSeen=true;tutorialSeen=false;pendingCutscene=null;layoutMode=false;movingRoom=null;lastAnnouncedLevel=1;$('daySummaryBackdrop').classList.add('hidden');$('visitorLayer').replaceChildren();save();render();gotoTab('alley');showCutscene(1);}};
+$('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(tutorialOpen)closeTutorial();else if(cutsceneOpen)endCutscene();else if(summaryOpen)closeSummary(true);else if(drawer)closeDrawer();}});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.id==='toggleLayout'){layoutMode=!layoutMode;movingRoom=null;if(layoutMode){gotoTab('alley');$('exitLayout').classList.remove('hidden');}else $('exitLayout').classList.add('hidden');renderRoomGrid();return;}
  if(b.dataset.roomMove){if(!s.built[b.dataset.roomMove]&&!G.isBuilding(s,b.dataset.roomMove))return;closeDrawer();layoutMode=true;movingRoom=b.dataset.roomMove;gotoTab('alley');$('exitLayout').classList.remove('hidden');renderRoomGrid();toast('Tap an empty floor square to move your '+b.dataset.roomMove+'.');return;}
@@ -310,13 +318,12 @@ $('roll').onclick=()=>{const r=G.bowlShot(s,$('angle').value,$('spin').value,$('
 // Each simulated hour updates real groups. The summary pauses Auto unless explicitly skipped.
 // Offline progress stops at the first unsummarized closing to avoid silently losing reports.
 const savedNow=Date.now();if(introSeen&&s.hour===G.CLOSE&&!skipSummaries&&s.lastDay.day===s.day)openSummary(s.lastDay);
-if(auto&&introSeen&&!summaryOpen){const hours=Math.min(MAX_OFFLINE_HOURS,Math.floor(Math.max(0,savedNow-lastTick)/MS_HOUR));
+if(auto&&introSeen&&!summaryOpen&&!tutorialOpen){const hours=Math.min(MAX_OFFLINE_HOURS,Math.floor(Math.max(0,savedNow-lastTick)/MS_HOUR));
  if(hours){for(let i=0;i<hours;i++){const lv=G.venueLevel(s),r=G.tickHour(s);if(r.dayEnded){if(G.venueLevel(s)>lastAnnouncedLevel){pendingCutscene=G.venueLevel(s);lastAnnouncedLevel=G.venueLevel(s);}if(!skipSummaries){openSummary(s.lastDay);break;}if(pendingCutscene)break;}}lastTick=Date.now();save();}}
-setInterval(()=>{const now=Date.now();if(auto&&!summaryOpen&&!cutsceneOpen&&now-lastTick>=MS_HOUR){const lv=G.venueLevel(s);const result=G.tickHour(s);lastTick=now;render();syncVisitors(result.events);if(drawer)renderDrawer();save();checkClosing(result,lv);}
- $('timeProgress').style.width=(auto&&!summaryOpen&&!cutsceneOpen?Math.min(100,(now-lastTick)/MS_HOUR*100):0)+'%';
+setInterval(()=>{const now=Date.now();if(auto&&!summaryOpen&&!cutsceneOpen&&!tutorialOpen&&now-lastTick>=MS_HOUR){const lv=G.venueLevel(s);const result=G.tickHour(s);lastTick=now;render();syncVisitors(result.events);if(drawer)renderDrawer();save();checkClosing(result,lv);}
 },160);
 render();gotoTab(tab);syncVisitors([],true);
-if(!introSeen){showCutscene(1);}else if(pendingCutscene&&!summaryOpen){const lv=pendingCutscene;pendingCutscene=null;showCutscene(lv);}
+if(!introSeen){showCutscene(1);}else if(!tutorialSeen&&!summaryOpen){showTutorial();}else if(pendingCutscene&&!summaryOpen){const lv=pendingCutscene;pendingCutscene=null;showCutscene(lv);}
 if(s.hour===G.CLOSE&&!summaryOpen&&!skipSummaries)openSummary(s.lastDay);
 save();
 })();
