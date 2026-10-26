@@ -1,32 +1,21 @@
-# Release notes — v0.8 (Mobile-first interface)
+# v0.91 Release Notes
 
-## Decisions implemented
+## Changes
 
-- A two-row sticky header contains the main bowling alley identity/status and all seven navigation buttons. The bottom gold rule marks the sticky header boundary.
-- Header is intentionally minimal: alley name/level, date/time, cash, help. Reputation, trophies, and daily activity totals remain available elsewhere in the game.
-- Removed the redundant alley screen headline and all daily KPI tiles. The live scene now sits immediately below the sticky header.
-- Removed the progress bar and the prior clock/time-controls box; the remaining Next hour, Finish day and Auto buttons are still prominent.
-- Existing Day's Drama panel remains below the playable scene.
-- New guide is four screens with clear language, a back button and skip. It runs after the new-game cutscene and can be reopened from the ? button.
-- Gameplay logic and economic values were **not modified** for this UI-focused version.
-
-## Compatibility
-
-- The gameplay save key remains `gutter-to-glory-v07`. UI preferences use `gutter-to-glory-ui-v08` and read `gutter-to-glory-ui-v07` as a fallback.
-- Gameplay migration and the existing artwork mapping are preserved.
-- When the intro cutscene is dismissed, the tutorial is shown for a fresh save. Existing saved games do not get an unexpected tutorial interruption.
-- Both the single-file playable HTML and multi-file GitHub Pages deployment build are generated from the same source.
-
-## Tests
-
-- Unchanged engine: 12,304 existing gameplay assertions, 3,072 simulated game days: PASS.
-- Headless Chromium viewport checks: 320, 375, 390, 430, 768 and 1280 pixels: PASS.
-- On each: first-run cutscene → four-step tutorial, all seven tabs, Goals, Build/Lanes, help reopen, end-of-day summary, sticky header on scroll, no page-level horizontal overflow: PASS.
-- v0.7 UI/save migration smoke check: PASS.
-- No JavaScript page errors observed in these browser tests.
+- New sign-in splash, player nickname/profile in Settings, sign out, and cloud status.
+- When configured, Google Authentication is required to enter a cloud game.
+- Stores only one document per player under `players/{uid}`.
+- Saves at end of game day and explicitly on profile changes, reset, import or manual Save Now.
+- Validates migrated saves; offers safe local-vs-cloud selection to prevent overwriting old saves automatically.
+- Guarded Firestore transactions detect changes from another device and pause syncing until player reconciles.
+- Config missing: local-demo mode remains fully functional (no account and no cloud saving).
+- Includes Firestore Rules, a detailed Spark deployment guide, and backup instructions.
 
 ## Known limitations
 
-- A very narrow phone may need to horizontally swipe the nav row; it remains vertically sticky.
-- Real-device feel, screen-reader exploration and long-session usability still need human playtesting.
-- Static deployment itself should be checked on the final GitHub Pages URL; in this test environment direct localhost navigation is restricted, so the browser UI test loaded the equivalent standalone HTML.
+- Actual authentication with a real Firebase project cannot be validated without project credentials and published Firestore Rules. End-to-end deployment verification is required by the owner.
+- No email/password sign-in; Google popup sign-in only in this version.
+- Without connectivity a configured cloud account cannot start a *new* sign-in. Existing gameplay may be locally saved, but cloud sync depends on network service.
+- One game per player account for now. No multiple save slots, leaderboards, or social features.
+- Players must explicitly decide between conflicting local/browser versions and remote versions. Account switching does not erase old v0.9 browser files; the current account's live save is scoped by Firebase UID.
+- GitHub Pages remains public for game code; Firebase security rules enforce private data.

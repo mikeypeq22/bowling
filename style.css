@@ -279,3 +279,42 @@ button.primary:hover:not(:disabled){background:#fce090}
  .nav button{flex:1 1 0;min-width:0;font-size:10px;padding:5px 1px;letter-spacing:-.1px}
  .nav{gap:3px}
 }
+
+/* v0.9 — no permanent alley time toolbar; Settings and startup overlays */
+.settingsActions{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-top:15px}
+.settingsActions button{min-height:49px;font-size:15px}
+.settingPanel{margin-bottom:15px;max-width:950px}
+.settingPanel h2{font-size:21px;color:#ffda8f}
+.settingPanel .muted{font-size:14px;line-height:1.6}
+.settingClock,.saveStatus{margin-top:12px;padding:12px 14px;background:#112c3a;border:1px solid #53728a;border-radius:8px;font-size:14px;font-weight:750}
+.dangerSettings{border-color:#8d5d5d}
+.dangerButton{background:#8d3d45;border-color:#ffb4b2;color:#fff}
+.welcomeBackdrop,.importBackdrop{position:fixed;inset:0;z-index:125;background:#081424ef;display:grid;place-items:center;padding:14px}
+.welcomeDialog{width:min(500px,100%);max-height:calc(100dvh - 28px);overflow-y:auto;background:#1b3444;border:3px solid #f4c779;border-radius:14px;box-shadow:0 22px 70px #050e19;padding:clamp(16px,4vw,29px);text-align:center}
+.welcomeDialog h2{font-size:clamp(23px,6vw,31px);color:#ffe0a4;margin:10px 0 12px;line-height:1.12}
+.welcomeDialog p{font-size:15px;line-height:1.52}
+.welcomeLogo{font-size:50px}
+.welcomeDetails{margin:17px 0;padding:12px;background:#284656;border:1px solid #637f8d;border-radius:8px;font-weight:800}
+.welcomeChoices{display:grid;gap:9px;margin:18px 0 12px}
+.welcomeChoices button{min-height:53px;font-size:16px}
+.welcomeConfirm{padding:8px 4px}
+.welcomeConfirm p{color:#ffe7bf}
+.helpButton#openSettings{font-size:21px}
+@media(max-width:700px){.settingsActions{grid-template-columns:1fr 1fr}.settingPanel{padding:15px}.settingsActions button{font-size:14px;padding:9px 7px}.hudRight{gap:3px}.helpButton#openSettings{width:31px;min-width:31px;font-size:19px}.welcomeDialog{padding:16px}.welcomeChoices button{min-height:52px}}
+@media(max-width:375px){.settingsActions{grid-template-columns:1fr}.helpButton#openSettings{width:28px;min-width:28px}.helpButton#openTutorial{width:28px;min-width:28px}.brand strong{font-size:16px}}
+
+/* v0.91 account and cloud-saving controls */
+.cloudGateBackdrop{position:fixed;inset:0;z-index:10000;background:rgba(10,16,32,.94);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.cloudGateBackdrop.hidden{display:none!important}
+.cloudGateCard{background:#fff8e4;color:#1e2941;width:min(480px,100%);padding:26px 22px;border:4px solid #121b35;border-radius:15px;box-shadow:9px 10px 0 rgba(0,0,0,.4);text-align:center}
+.cloudGateCard .eyebrow{color:#435674}.cloudHero{font-size:50px}.cloudGateCard h2{margin:8px 0 10px;font-size:clamp(24px,5vw,33px)}
+.cloudGateCard p{line-height:1.5}.cloudActions{display:grid;gap:10px;margin:20px 0}.cloudActions button{min-height:52px;font-size:16px;font-weight:800}
+.cloudGateBrief{padding:12px 8px;border:2px dashed #b3a276;border-radius:9px;background:#fff;font-size:13px;font-weight:700}
+.cloudGateCard .muted{color:#4b5670}.cloudGateCard button.primary{background:#e9b43b;color:#1f2940}
+.profilePanel .profileTop{display:flex;gap:12px;align-items:center;margin:14px 0}
+.profileAvatar{display:flex;align-items:center;justify-content:center;border-radius:50%;background:#ffcd6c;color:#162543;border:3px solid #172641;width:58px;height:58px;font-size:25px;font-weight:900}
+.profileTop>div{display:grid;gap:3px;min-width:0}.profileTop strong{font-size:20px}.profileTop small{overflow-wrap:anywhere;font-size:12px}
+.profileLabel{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+#profileNickname{max-width:420px;width:100%;padding:12px;border:2px solid #8593a7;border-radius:9px;font-size:16px}
+#cloudStatus{line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:460px){.cloudGateCard{padding:22px 14px}.cloudActions button{width:100%}.profilePanel .settingsActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.profilePanel .settingsActions button{min-height:50px}}

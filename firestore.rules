@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The player's Firebase Authentication UID is the ONLY permitted save owner.
+    match /players/{uid} {
+      function owner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      function validSave() {
+        return request.resource.data.keys().hasOnly(['schemaVersion', 'revision', 'game', 'profile', 'serverSavedAt'])
+          && request.resource.data.keys().hasAll(['schemaVersion', 'revision', 'game', 'profile', 'serverSavedAt'])
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.revision is int
+          && request.resource.data.game is map
+          && request.resource.data.game.keys().hasAll(['state', 'lastTick'])
+          && request.resource.data.game.state is map
+          && request.resource.data.game.lastTick is number
+          && request.resource.data.profile is map
+          && request.resource.data.profile.keys().hasOnly(['nickname'])
+          && request.resource.data.profile.nickname is string
+          && request.resource.data.profile.nickname.size() <= 28
+          && request.resource.data.serverSavedAt == request.time;
+      }
+      allow get: if owner();
+      allow list: if false;
+      allow create: if owner() && validSave() && request.resource.data.revision == 1;
+      allow update: if owner() && validSave() && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+    }
+  }
+}

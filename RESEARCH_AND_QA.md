@@ -1,23 +1,17 @@
-# Research and Quality Assurance — v0.8
+# Research & QA — v0.91
 
-## Hypothesis
+**Verified official sources**
+- Firebase pricing/Spark: https://firebase.google.com/docs/projects/billing/firebase-pricing-plans
+- Firestore free limits: https://firebase.google.com/docs/firestore/pricing
+- Firebase Google authentication: https://firebase.google.com/docs/auth/web/google-signin
+- Firestore user-scoped rules: https://firebase.google.com/docs/firestore/security/rules-conditions
+- Supabase free alternative: https://supabase.com/pricing
+- GitHub Pages static hosting: https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages
 
-The high-value information on a mobile bowling management game's main screen is the **live alley**, navigation, cash and time. Intrusive KPI tiles make the game look more like a dashboard and reduce the visible space dedicated to the interactive scene.
+**QA targets:** legacy save migration, local-demo mode, account sign-in gate, initial cloud load, choose-browser-vs-cloud, conflict detection, closing trigger, local backups, profile edits, logout, denied cross-user access, quota errors, mobile layout. Live Firebase rules testing must be completed in the owner's project; it cannot be honestly marked complete using an unauthenticated local build.
 
-## Verification undertaken
-
-The scripted headless Chromium test covers six viewport widths: 320, 375, 390, 430, 768 and 1280 pixels. It asserts that the header remains at the top after a long scroll, that there is no page-level horizontal overflow, that all seven navigation tabs are present and functional, and that the new onboarding flow and closing reports behave correctly. It also reopens the tutorial using the header help button and checks prior saved-UI migration.
-
-The existing, unchanged engine test suite completed 12,304 assertions over 3,072 simulated game days, ensuring that this visual change did not require changing economic mechanics.
-
-## Still to test with humans
-
-- Legibility and button comfort on actual Android/iOS devices.
-- Whether a seven-item nav row feels intuitive at 320px, where horizontal swiping is required.
-- Whether the first-time tutorial's four panels communicate enough without being too long.
-- Whether the scene's tiny built-in room labels need alternative large-print interactions on phones.
-
-## Evidence type
-
-- **VERIFIED / Automated:** test assertions and Chromium checks above.
-- **INFERENCE / Design:** streamlining the first viewport should improve usability; real-world human feedback is still necessary.
+**Results from this build**
+- Existing engine regression (`qa_tests_v07.js`): 12,304 assertions passed over 3,072 simulated days.
+- Standalone local-demo browser test (`test_browser_v091.py`): passed at 320, 390, 768, 1280 px for startup gate, cutscene, tutorial, Settings, manual hour, local save, and browser re-entry.
+- Mocked Firebase browser integration (`test_cloud_mock_v091.py`): passed Google account callback, new cloud game creation, end-of-day write, profile update, returning account loading a previous online save, and version-conflict blocking.
+- **Not verified:** real Firebase Auth, actual Firestore Rules authorization, payment-plan quota behavior or GitHub Pages deployment. These require the owner's real Firebase project and browser and remain explicit release prerequisites.
