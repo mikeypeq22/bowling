@@ -1,17 +1,18 @@
-# Research & QA — v0.91
+# Research and QA agent — v0.93
 
-**Verified official sources**
-- Firebase pricing/Spark: https://firebase.google.com/docs/projects/billing/firebase-pricing-plans
-- Firestore free limits: https://firebase.google.com/docs/firestore/pricing
-- Firebase Google authentication: https://firebase.google.com/docs/auth/web/google-signin
-- Firestore user-scoped rules: https://firebase.google.com/docs/firestore/security/rules-conditions
-- Supabase free alternative: https://supabase.com/pricing
-- GitHub Pages static hosting: https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages
+## Grounding
+This update builds on the existing Bowling Research Master (v1), which covers actual bowling center formats, staffing, food service, arcades, pro shop operations, league capacity, tournaments, and evolving business concepts. Fictional startup loans and construction prices are **design figures**, not verified business costs.
 
-**QA targets:** legacy save migration, local-demo mode, account sign-in gate, initial cloud load, choose-browser-vs-cloud, conflict detection, closing trigger, local backups, profile edits, logout, denied cross-user access, quota errors, mobile layout. Live Firebase rules testing must be completed in the owner's project; it cannot be honestly marked complete using an unauthenticated local build.
+## Completed tests
+- Engine parse: `node --check engine.js`
+- UI parse: `node --check app.js`
+- `node qa_v093.cjs`: **3,189 passing assertions**; eight combinations of startup financing and décor, 21 simulated game days each, happiness and loan invariants, land acquisition, specialty requirements, construction rush, and previous-save migration.
+- Chromium: viewport 390 × 844 and 1280 × 850, startup wizard, no-roof bar construction, day-end summary, optional rush, scene controls and screenshots. **No runtime exceptions** in those checks.
+- Additional Chromium: startup modal screenshot, enabled specialty choosing at Level 3, confirmed display and construction button for adjacent land.
 
-**Results from this build**
-- Existing engine regression (`qa_tests_v07.js`): 12,304 assertions passed over 3,072 simulated days.
-- Standalone local-demo browser test (`test_browser_v091.py`): passed at 320, 390, 768, 1280 px for startup gate, cutscene, tutorial, Settings, manual hour, local save, and browser re-entry.
-- Mocked Firebase browser integration (`test_cloud_mock_v091.py`): passed Google account callback, new cloud game creation, end-of-day write, profile update, returning account loading a previous online save, and version-conflict blocking.
-- **Not verified:** real Firebase Auth, actual Firestore Rules authorization, payment-plan quota behavior or GitHub Pages deployment. These require the owner's real Firebase project and browser and remain explicit release prerequisites.
+## Open QA items
+- Live Google OAuth and email/password authentication on iOS and desktop with `mikeypeq22.github.io`, plus actual Firebase document read/write, conflict protection and cloud migration.
+- Human playtesting for 25–50 day cycles and weekly loan pressure.
+- Happiness tuning: a single played group currently counts satisfied unless they leave before starting; in a future version account for individual wait duration and service quality directly.
+- Better visual rendering for ten lanes within a constrained mobile scene; it fits now but may require a camera/zoom system in a later release.
+- Multi-location save structure, per-property accounting, choosing second specialties, and switching centers.

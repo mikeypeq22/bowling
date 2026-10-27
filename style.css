@@ -318,3 +318,34 @@ button.primary:hover:not(:disabled){background:#fce090}
 #profileNickname{max-width:420px;width:100%;padding:12px;border:2px solid #8593a7;border-radius:9px;font-size:16px}
 #cloudStatus{line-height:1.5;overflow-wrap:anywhere}
 @media(max-width:460px){.cloudGateCard{padding:22px 14px}.cloudActions button{width:100%}.profilePanel .settingsActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.profilePanel .settingsActions button{min-height:50px}}
+
+/* v0.92 sign-in reliability — large tap targets, accessible forms and clean diagnostics */
+.cloudAuthExtras{width:100%;margin-top:10px}
+.cloudAuthExtras .emailToggle{width:100%;min-height:47px;background:#26455a;border:2px solid #81a9b5;color:#fff2d8;font-size:14px}
+.cloudAuthExtras .cloudEmailPanel{margin-top:11px;padding:14px;border:2px solid #567a85;background:#122b3d;border-radius:9px;text-align:left}
+.cloudEmailPanel form{display:flex;flex-direction:column;gap:8px}
+.cloudEmailPanel label,.profileLinkBox label{font-size:13px;font-weight:800;color:#ffe6a8}
+.cloudEmailPanel input,.profileLinkBox input{width:100%;min-height:45px;min-width:0;padding:10px 12px;border-radius:7px;border:2px solid #698b9d;background:#f7f1df;color:#142b3a;font-size:16px}
+.cloudEmailActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.cloudEmailActions button{min-height:46px;font-size:13px;padding:8px}
+.cloudEmailPanel .forgotPassword{padding:7px 0;min-height:40px;width:100%;background:transparent;border:0;box-shadow:none;text-decoration:underline;text-align:center}
+#cloudEmailHint{margin-top:8px;min-height:20px}
+#cloudLoginHint{margin-top:8px;color:#ffe4a0}
+.cloudDiagnostics{margin-top:9px;padding:9px;background:#0c1e2c;border:1px solid #638b98;border-radius:7px}
+.cloudDiagnostics small{display:block;color:#ccdfdc;margin-bottom:5px}
+.cloudDiagnostics code{font-size:11px;display:block;overflow-wrap:anywhere;margin-bottom:7px;color:#ffdeaa}
+.cloudDiagnostics button{min-height:35px;padding:6px 10px;font-size:12px}
+.profileLinkBox{margin:14px 0;padding:13px;background:#142d3e;border:2px dashed #7ba19e;border-radius:9px;display:flex;flex-direction:column;align-items:stretch;gap:9px}
+.profileLinkBox>strong{color:#ffda84}
+.profileLinkBox button{min-height:43px}
+@media(max-width:420px){.cloudAuthExtras .cloudEmailPanel{padding:10px}.cloudEmailActions{gap:6px}.cloudEmailActions button{font-size:12px}.profileLinkBox{padding:10px}}
+.cloudEmailPanel .muted{color:#f1e7ce}
+.cloudGateCard{max-height:calc(100dvh - 28px);overflow-y:auto;overscroll-behavior:contain}
+
+/* v0.93: starter setup, real estate, specialty identity and overnight construction */
+.startupBackdrop{position:fixed;inset:0;z-index:180;background:#071724ed;display:flex;justify-content:center;align-items:center;padding:12px;overflow:auto}
+.startupBackdrop.hidden{display:none}.startupDialog{background:#f6edcf;color:#2a2630;border:4px solid #382b37;border-radius:22px;box-shadow:0 18px 0 #070f1c88,0 35px 60px #020b15a8;max-width:750px;width:100%;max-height:95dvh;overflow:auto;padding:24px}
+.startupDialog .eyebrow{color:#725835}.startupDialog h2{font-size:clamp(22px,4vw,32px);line-height:1.07;color:#322338;margin-bottom:8px}.startupDialog h3{color:#403245;margin:18px 0 10px;font-size:17px}.startupDialog p{color:#65515b;font-size:14px;line-height:1.5}.startupHeader{display:flex;gap:18px;align-items:center}.startupMascot{font-size:56px;background:#fed57d;border:3px solid #604537;border-radius:18px;padding:14px;line-height:1}
+.startupChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.startupOption{background:#fff9e8;color:#46313e;border:2px solid #b7a388;text-align:left;min-height:95px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;border-radius:12px;padding:12px}.startupOption>span{font-size:25px}.startupOption small{font-size:12px;color:#6e5e60;line-height:1.32}.startupOption.chosen{border-color:#d87829;background:#fff0b8;box-shadow:inset 0 0 0 2px #e8a33f}.startupOption:focus-visible{outline:3px solid #f3932a;outline-offset:2px}.startupReceipt{background:#fffdf5;border:2px dashed #ccac68;padding:14px;border-radius:12px;margin:20px 0 13px;font-size:13px}.startupReceipt>div{display:flex;justify-content:space-between;gap:8px;margin-top:6px}.startupReceipt .total{border-top:1px solid #c9b892;margin-top:10px;padding-top:9px;font-size:17px;color:#1d623a}.startupReceipt small{display:block;margin-top:9px;color:#6f5e60}.startupGo{width:100%;min-height:52px!important;font-size:17px!important}.startupDialog>.muted{display:block;margin-top:11px;font-size:11px!important;color:#654d58!important}
+.propertyPanel{margin-bottom:15px;border:2px dashed #b4a075;background:#233649}.propertyTop{display:flex;align-items:center;gap:13px}.propertyEmoji{font-size:32px}.propertyTop h2{margin:0 0 4px}.propertyTop p{margin:0;color:#c9d4df;font-size:13px}.propertyActions{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:10px 0;flex-wrap:wrap}.propertyActions button{min-height:45px}.propertyPanel .tiny{line-height:1.5}.specialtyPanel{margin-bottom:15px;border:2px solid #907b52;background:#283747}.specialtyPanel h2{font-size:19px}.specialtyPanel p{line-height:1.6}.specialtyChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}.specialtyChoice{background:#183043;display:flex;flex-direction:column;gap:6px;text-align:left;align-items:stretch;min-height:117px}.specialtyChoice b{color:#ffe4a9;font-size:15px}.specialtyChoice small{font-size:12px;color:#c9d8e2}.specialtyHeader{display:flex;align-items:center;gap:14px}.specialtyHeader>span{font-size:39px}.happyPill{border:1px solid #8ab598;background:#19443d;border-radius:9px;color:#deffe6!important}.overnightRush{border:2px dashed #b1a270;background:#202f3d;padding:15px;border-radius:13px;margin-top:18px}.overnightRush h3{margin:0 0 5px}.overnightRush p{line-height:1.5}.rushList{display:flex;flex-direction:column;gap:8px;margin-top:10px}.rushRow{display:flex;align-items:center;justify-content:space-between;gap:9px;background:#2e4355;padding:9px;border-radius:9px}.rushRow span{display:flex;flex-direction:column;gap:3px}.rushRow small{font-size:11px;color:#bed1da}.rushRow button{white-space:nowrap;min-height:42px}.sceneLaneBank.expandedLot{grid-template-rows:repeat(2,minmax(0,1fr));gap:4px;top:42%;bottom:8%}
+@media(max-width:690px){.startupDialog{padding:14px;border-width:3px;max-height:97dvh}.startupHeader{gap:9px}.startupMascot{font-size:31px;padding:8px}.startupChoices{gap:6px}.startupOption{padding:9px;min-height:100px}.startupOption small{font-size:11px}.startupDialog h3{font-size:15px;margin-top:15px}.specialtyChoices{grid-template-columns:1fr}.sceneLaneBank.expandedLot{top:51%;bottom:11%;gap:2px}.rushRow button{font-size:11px;padding:8px}.hudstats .happyPill{padding:5px}}

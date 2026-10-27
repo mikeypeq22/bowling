@@ -9,3 +9,6 @@ Example: `'nav.employees': 'assets/my-staff-icon.webp'` replaces the Staff navig
 Other keys include scene backgrounds, lane art, customer sprites, room icons, drinks, snacks, arcade machines, decorative fixtures and cutscene backgrounds. See `asset-map.js` for the full list.
 
 Formats: PNG, WebP, SVG, JPG, GIF. Suggested sizes: 256px square icons, 512px square portraits, 1280×720 backgrounds. Transparency is recommended for character art. **Use the full ZIP** for this workflow. The standalone HTML contains fallback graphics and does not reference an adjacent assets folder reliably.
+
+## v0.93 extras
+Snack asset keys added automatically: `snack.fries`, `snack.burger`, and `snack.cheeseburger`. Map these to `assets/snack-fries.png`, `assets/snack-burger.png`, and `assets/snack-cheeseburger.png` in `asset-map.js` to replace their emoji placeholders. Starter décor uses the existing wall-paint and fixture renderers.

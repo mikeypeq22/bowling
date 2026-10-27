@@ -1,21 +1,29 @@
-# v0.91 Release Notes
+# Release v0.93 — Startup to Specialty
 
-## Changes
+**Goal:** make the first alley yours to design and grow, while keeping the idle simulation approachable.
 
-- New sign-in splash, player nickname/profile in Settings, sign out, and cloud status.
-- When configured, Google Authentication is required to enter a cloud game.
-- Stores only one document per player under `players/{uid}`.
-- Saves at end of game day and explicitly on profile changes, reset, import or manual Save Now.
-- Validates migrated saves; offers safe local-vs-cloud selection to prevent overwriting old saves automatically.
-- Guarded Firestore transactions detect changes from another device and pause syncing until player reconciles.
-- Config missing: local-demo mode remains fully functional (no account and no cloud saving).
-- Includes Firestore Rules, a detailed Spark deployment guide, and backup instructions.
+## Added
+- Starter capital: $600 fictional savings + either a $1,000 or $1,800 interest-free fictional town loan, repaid weekly from in-game profits (deferred when unaffordable).
+- Four starter décor packages, selected before opening. They directly change wall paint and some physical fixtures.
+- Flexible build order. Snacks, bar, arcade, and pro shop are not locked behind roof construction. They still need employees and take days to construct.
+- Level titles Startup Lanes -> Neighborhood Alley -> Established Alley -> Regional Destination -> Bowling Landmark, with a visible objective checklist that accepts *any* revenue-generating facilities at Levels 3 and 4.
+- Four permanent specialties available at Established Alley; each influences different traffic, income, reputation, comfort, or lane-wear behaviors.
+- Neighboring lot for $3,600 and four closing cycles when initial six lanes have been filled; expands total possible lanes to ten.
+- Three new snack products (fries, hamburger, cheeseburger), with pack costs, sale prices, restocks, unlock milestones and next-day delivery.
+- Customer happiness (0–100), computed from served groups (+3), walkouts (−2), shortages (−1 capped), with smoothing across days. Visible in the HUD, Front Desk and Closing Report.
+- Optional one-time paid overnight construction completion at the closing report. Confirmation required.
 
-## Known limitations
+## Preserved
+- v0.92 Firebase accounts and player IDs, Google/email sign-in and cloud-save conflict checks.
+- Local export/import, browser autosave, league reservations, lane maintenance, business layouts, staff, tournament and event systems.
+- Earlier state migration. Existing centers **do not** retroactively receive a loan, decoration wizard, or forced specialty.
 
-- Actual authentication with a real Firebase project cannot be validated without project credentials and published Firestore Rules. End-to-end deployment verification is required by the owner.
-- No email/password sign-in; Google popup sign-in only in this version.
-- Without connectivity a configured cloud account cannot start a *new* sign-in. Existing gameplay may be locally saved, but cloud sync depends on network service.
-- One game per player account for now. No multiple save slots, leaderboards, or social features.
-- Players must explicitly decide between conflicting local/browser versions and remote versions. Account switching does not erase old v0.9 browser files; the current account's live save is scoped by Firebase UID.
-- GitHub Pages remains public for game code; Firebase security rules enforce private data.
+## QA
+- 3,189 assertion Node suite across starter options, day progression, happiness, costs, construction, specialty, land, and migration.
+- Real Chromium rendering checks at 390px phone and 1280px desktop with no JavaScript errors. New starter wizard, bar-first build order, closing report, construction rush, specialty choice, and land purchase interacted with directly.
+- Online Firebase service and iPhone login have **not** been retested in this environment.
+
+## Planned, not built
+- Second/already-existing bowling center management; switching between locations.
+- Detailed specialty-specific tech trees, pro shop repair services, premium house balls and rental shoes.
+- More physical floor customization, drag/drop large lots, richer animations, loan refinancing and advanced customer segment simulations.

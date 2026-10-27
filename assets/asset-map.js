@@ -6,6 +6,9 @@
  * Missing images safely fall back to the built-in graphics / emoji.
  */
 window.BOWLING_ASSETS = {
+  'snack.fries': 'assets/snack-fries.png',
+  'snack.burger': 'assets/snack-burger.png',
+  'snack.cheeseburger': 'assets/snack-cheeseburger.png',
   // Scenes: a background behind the animated customers and lane overlays.
   'scene.backyard':      'assets/venue-backyard.png',
   'scene.neighborhood':  'assets/venue-neighborhood.png',

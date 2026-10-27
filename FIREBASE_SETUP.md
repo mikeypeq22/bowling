@@ -97,3 +97,12 @@ Game-state validation is performed on load. Writes use an optimistic revision ch
 ## Future work before a larger public launch
 
 Test Firebase Security Rules in the official Emulator Suite, use App Check/abuse mitigation as appropriate, add a privacy notice and account deletion workflow, introduce monitored quota alarms, and revisit save architecture if history grows close to Firestore's 1 MiB document limit. Google sign-in makes online play possible, but it does not by itself prevent manipulated client-side game stats or cheating.
+
+## v0.92 additional step: Email/Password login
+
+1. Firebase Console → Authentication → Sign-in method.
+2. Select **Email/Password**, toggle on **Email/Password** and Save. (Email-link sign-in is not required.)
+3. Re-deploy the v0.92 GitHub Pages ZIP contents. The game then shows **Use email & password instead** on the login screen.
+4. Existing Google players should use Settings → Player Profile → **Link password to this player** while already signed in with Google. This keeps the same Firebase UID and Firestore save.
+5. New players may click Create account. Players with existing separate email accounts must not assume saves merge automatically.
+6. Test reset-email delivery and per-user cloud saves. Google popup retry is manual and requires another deliberate tap.
