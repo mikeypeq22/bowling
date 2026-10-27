@@ -1,38 +1,24 @@
-# From Gutter to Glory — v0.94
+# From Gutter to Glory — v0.96
 
-**The Empty Building / Grand Opening update**  
-A bowling center building game with an optional idle clock, real operating choices, and replaceable visual assets.
+An idle/building game blended with an authentic bowling-center simulation. **v0.96 improves the alley scene, customer traffic, session lengths and lane maintenance.**
 
-## Start a new game
-1. Choose local play in the standalone demo, or sign in in the configured GitHub Pages version.
-2. The opening cutscene introduces an **empty building** (roof and walls included, no lanes). You have $600 fictional personal savings and pick an interest-free fictional startup loan ($1,000 / $85 per Sunday or $1,800 / $150 per Sunday).
-3. Pick a starter wall/furnishing style. Once you have the keys, build lane 1 for **$160** (2 game days). You can also start with a snack bar, a bar, arcade, or pro shop in **any order**, subject to cash and floor space.
-4. Bowling demand waits for your first completed lane, preventing absurd angry lineups at an unopened center. Staffed snack/bar counters or a working arcade can attract non-bowling visitors before the first lane opens.
-5. Every major facility completion (snack, bar, arcade, pro shop) produces a **grand-opening teaching popup** after the daily closing report; room expansions receive a separate explanation. Messages remain queued across save/reopen and appear one at a time.
-6. Open Snacks, Bar, Arcade, or Pro Shop by tapping its room square. Above each menu, a new **illustrated room view** visibly differs between 1-square and 2-square tiers. Optional artwork replacements override the illustration.
+## How to play / deploy
+- `From_Gutter_to_Glory_Playable_v0.96.html`: offline single-file demo. Local saves only; no Google sign-in/cloud saving.
+- `From_Gutter_to_Glory_GitHub_Pages_v0.96.zip`: extract into the ROOT of the existing `mikeypeq22/bowling` repository. It contains `index.html`, JavaScript, CSS, asset mapping and Firebase configuration. Google account access requires the previously configured Firebase project and published Firestore rules.
+- `From_Gutter_to_Glory_Project_v0.96.zip`: editable source, reference notes, tests, and image asset switchboard.
 
-## Reminders and mechanics
-- Snack and bar orders arrive the **following game morning**. Ordering does **not** refill current stock.
-- Low-stock warnings are **separate for snacks and bar** in the alley, and room tiles display their own warnings. Set your threshold under Staff.
-- Snack and bar each require one worker, two when expanded; pro shop likewise. Arcade machines require no employees. A Stock Clerk can automate ordering once hired (purchases arrive the following morning).
-- Room-specific upgrades such as snack-only TVs, condiment stations, seating and better ovens are **planned**, not yet purchasable. Global TV fixtures currently appear in room previews when installed.
-- First property houses up to six lanes, after which adjacent land can increase capacity to ten. Specialty choice and other v0.93 systems remain.
+**Back up your v0.95 game in Settings before deploying or starting a new game.** Older saves use the same account document and are migrated to state version 11; the migration retains lane purchases, staff, inventory, construction, money, and progress.
 
-## Launch on GitHub Pages
-1. Unzip `From_Gutter_to_Glory_GitHub_Pages_v0.94.zip`.
-2. Upload the **contents**, including `index.html`, `style.css`, `engine.js`, `app.js`, `cloud.js`, `firebase-config.js`, `.nojekyll` and `assets/`, to the **repository root** of `mikeypeq22/bowling`.
-3. GitHub Pages settings: build from `main`, `/(root)`. The live URL remains `https://mikeypeq22.github.io/bowling/`.
-4. Firebase configuration was inherited from your v0.93 setup. Authentication and cloud saving require the Firebase services and security rules to be correctly configured. Do not commit service account credentials. **The online login/cloud save has not been verified live against Firebase in this testing environment.**
+## Main changes
+1. **Alley visual:** Front Desk, Waiting Area, and Advertising aligned vertically above the entrance; remove the redundant corner venue marquee; the lane bank and shops are wider; Customize sits directly above the shop grid.
+2. **Believable demand:** Early bowling traffic is lower; it grows with reputation, bowling regulars, extra lanes, facility investment, Alley Stars, owner promotion skill, and advertising. Higher lane prices reduce demand. Unlike the old algorithm, no arrival is guaranteed every hour.
+3. **All lanes used:** Round-robin lane allocation distributes parties across the available, functioning lanes instead of always selecting Lane 1. Active lanes stay reserved until sessions finish; Thursday League still uses the first six lanes as before.
+4. **1–3 hour sessions:** Randomized 1-, 2- or 3-hour bookings, capped by closing at 10 PM. Charge group lane rental for **each** hour; shoes once per visit. Waiting groups must wait for a session to finish. Closing reports include lane-hours sold.
+5. **More dialogue:** Over 40 varied lane-side lines and 15 separate annoyed wait-line quips, with rotation and small seeded variation to reduce repetition.
+6. **Automatic technician:** The existing `Hire Lane Technician` build upgrade now has a real nightly shift, with an additional $16 daily contract. It automatically maintains lanes at or below 70% condition (+34) for $20 and purchases 5 spare parts for $45 when supplies run low and funds are available. Purchase/repair details appear in the activity log, staff screen, and closing report.
 
-## Art changes
-`assets/asset-map.js` now includes `scene.empty`, `cutscene.empty` and eight `facility.<room>.tier<1|2>` mappings. For example, put `assets/facility-snack-tier2.png` in the assets folder and it will replace the built-in expanded snack preview. Missing artwork falls back to CSS illustration. Read `assets/README.md` for the full list.
-
-## Save compatibility
-Existing v0.93 (state version 8) and older cloud/browser saves migrate to state version **9** and **KEEP their original lanes**, cash, staff, and buildings. The empty-building start applies to **new games only**. Export your v0.93 save before changing production files. Online accounts retain the same UID-based document format.
-
-## QA
-- `node qa_v094.cjs`: **4,769 game assertions passed** across new/legacy starts, construction, shortages and save transitions.
-- Browser smoke tests: **390px phone and 1280px desktop**, opening wizard, manual time, first lane, snack completion notice, drawer illustration. No JS page errors observed.
-- Four different facility completions and notification queue verified through the deterministic game engine.
-
-See `RELEASE_NOTES.md`, `RESEARCH_AND_QA.md`, `DECISION_LOG.md`, and `V095_PARKING_LOT.md` for details and planned follow-up features.
+## Notes
+- The technician does not produce free repairs when cash or parts are insufficient. Players can still service lanes manually.
+- Early/mature traffic figures in the QA notes are scripted simulations, NOT promises about actual player strategies.
+- Artwork still uses `assets/asset-map.js`; moving the graphical hotspots does not change image filenames.
+- All older real-time cloud and Google/Firebase logic is preserved; live account permissions and iPhone authentication still require real-world verification.

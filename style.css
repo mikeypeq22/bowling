@@ -386,3 +386,59 @@ button.primary:hover:not(:disabled){background:#fce090}
 .facilityShowcase.proshop .facilityShelf{background:linear-gradient(0deg,#343f4a 0 9px,transparent 10px)}
 .facilityOverride{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5}
 @media(max-width:540px){.facilityShowcase{min-height:190px}.facilityDialog{padding:13px;border-width:3px}.facilityTips>div{font-size:13px}.facilityWall{padding:10px}.facilityShelf{gap:2px}.facilityDecorTop{font-size:10px}.facilityDecorTop em{font-size:9px}}
+
+/* v0.95: ensure the whole closing report and controls remain accessible on short phones */
+.summaryBackdrop{box-sizing:border-box;align-items:center;overflow-y:auto;overscroll-behavior:contain;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));}
+.daySummary{box-sizing:border-box;flex:0 1 560px;min-height:0;width:100%;max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;border-radius:11px;padding:14px;}
+.summaryHeader{position:sticky;top:-14px;z-index:3;background:#1c3342;padding:9px 0 11px;}
+.summaryActions{position:sticky;bottom:-14px;z-index:3;padding:12px 0 5px;background:#1c3342;border-top:1px solid #69838c;}
+@media(max-width:540px){.summaryBackdrop{padding:5px;}.daySummary{max-height:calc(100dvh - 10px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:10px;border-width:3px;}.summaryHeader{top:-10px}.summaryActions{bottom:-10px}.summaryActions button{min-height:43px}.summaryGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.summaryGrid>div{padding:7px}.summarySubtitle{margin:9px 0 4px}.summaryHeadline{padding:10px 0}}
+/* v0.95: anchored guidance (the highlighted square and arrow follow the real UI) */
+.tutorialBackdrop{z-index:240;display:block;background:transparent;pointer-events:auto;padding:0;}
+.guideSpot{position:fixed;border:3px solid #fff0a5;border-radius:10px;box-shadow:0 0 0 9999px #071421c9,0 0 0 5px #ffb84d77;z-index:241;pointer-events:none;transition:top .12s,left .12s,width .12s,height .12s;}
+.guideArrow{position:fixed;z-index:242;color:#ffe48e;font-size:30px;font-weight:1000;text-shadow:0 2px 8px #000;pointer-events:none;transform:rotate(0deg);line-height:1;}
+.guidedBubble{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(485px,calc(100vw - 18px));max-height:min(53dvh,390px);overflow-y:auto;background:#f9edcb;color:#292d33;border:4px solid #f6c56a;border-radius:12px;padding:14px 17px;z-index:244;box-shadow:0 9px 0 #020b18,0 18px 50px #0009;}
+.guidedBubble h2{color:#3b3330;font-size:clamp(19px,4vw,25px)}.guidedBubble p{color:#403d3a;font-size:15px;line-height:1.43;margin-top:7px}.guidedBubble .tutorialTop small{color:#755221}.guidedBubble .tutorialEmoji{font-size:28px;margin:0}.guideIdentity{display:flex;gap:9px;align-items:center}.guidedBubble .tutorialTip{background:#fffae7;color:#5b4a37;border-color:#e3a648;font-size:12px;line-height:1.4;padding:8px;margin-top:9px}.guidedBubble .tutorialDots{margin:8px 0}.guidedBubble .tutorialDots span{background:#ae9a76}.guidedBubble .tutorialDots .active{background:#ab6d23}.guidedBubble .tutorialActions{margin-top:6px}.guidedBubble .tutorialActions button{min-height:43px}.guidedBubble .tutorialActions button[hidden]{display:none}.guidedBubble button{color:#f5efe7;background:#375069}
+@media(max-width:540px){.guidedBubble{padding:10px 12px;bottom:max(7px,env(safe-area-inset-bottom));max-height:min(58dvh,380px)}.guidedBubble .tutorialTop button{min-height:32px;min-width:32px}.guidedBubble .tutorialTip{padding:6px}.guidedBubble .tutorialDots{margin:6px 0}}
+.laneUpgradeRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed #5c778d}.laneUpgradeRow>div{flex:1;min-width:0}.laneUpgradeRow small{display:block;color:#bfced9;font-size:12px;line-height:1.4;margin-top:3px}.laneUpgradeRow .starReward{color:#ffd884}.laneUpgradeRow button{min-width:94px;min-height:44px}.laneThemeList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.laneThemeList button{min-height:45px}.laneThemeList button.active{border:2px solid #f5ce81;background:#495e69}.starShowcase{background:#193a4e;border:2px solid #e5b861;border-radius:8px;padding:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.starShowcase strong{font-size:27px;letter-spacing:3px}.starShowcase span{flex:1;min-width:180px;font-size:13px;line-height:1.45}
+
+.guidedBubble .tutorialTop{position:sticky;top:-13px;z-index:2;background:#f9edcb;padding-top:4px}.guidedBubble .tutorialActions{position:sticky;bottom:-13px;background:#f9edcb;padding:6px 0 1px;margin-bottom:-5px;z-index:2}
+
+/* v0.95: built lane equipment is visible on the little lane tiles */
+.laneScene.laneHardwood{border-color:#f5d47f!important;box-shadow:inset 0 0 0 2px #f7d999,0 0 10px #fbd06b55}.laneScene.laneDigital .laneNumber{background:#285e71;color:#c5f8f5;border:1px solid #a9e4da}
+
+/* v0.96: broader lanes and rooms with guest services above the entrance */
+.sceneMarquee{display:none!important}
+.scene:after{inset:21% 1.5% 10% 25%;border-width:5px}
+.scene .entrance{left:1.5%;width:20%;bottom:9%;height:24%}
+.scene .entranceDoor{height:78%;font-size:29px}
+.scene .hotspot.desk{left:1.5%;top:5%;width:20%;min-width:0;min-height:73px;right:auto;bottom:auto}
+.scene .hotspot.benches{left:1.5%;top:25%;width:20%;min-width:0;min-height:72px;bottom:auto;right:auto}
+.scene .hotspot.ads{left:1.5%;top:46%;width:20%;min-width:0;min-height:61px;right:auto;bottom:auto}
+.scene .sceneRoomGrid{left:26%;width:72%;top:24%;height:26%}
+.scene .sceneLaneBank{left:26%;right:2%;top:55%;bottom:10%}
+.scene .sceneLaneBank.expandedLot{left:26%;right:2%;top:52%;bottom:10%}
+.scene .sceneStyle{right:2.5%;top:14.5%;padding:5px 11px;min-height:0;z-index:7}
+.scene .sceneRoomGrid:before{top:-14px;left:4px}
+.scene .sceneWallDecor{left:27%;top:8%}
+.scene .sceneFloorAmenities{left:23%;top:53%}
+.scene .constructionRibbon{left:26%;right:2%}
+@media(max-width:690px){
+ .scene .entrance{left:1%;bottom:11%;width:21%;height:23%;font-size:7px}
+ .scene .entranceDoor{border-width:3px;font-size:23px;width:88%}
+ .scene .hotspot.desk{left:1%;top:4%;width:21%;min-height:62px;padding:3px 0;font-size:8px}
+ .scene .hotspot.benches{left:1%;top:24%;width:21%;min-height:65px;padding:3px 0;font-size:8px}
+ .scene .hotspot.ads{left:1%;top:44%;width:21%;min-height:57px;padding:3px 0;font-size:8px}
+ .scene .hotspot .icon-art{width:23px;height:21px;font-size:19px}
+ .scene .hotspot small{font-size:7px;line-height:1.05}
+ .scene .sceneRoomGrid{left:25%;width:73%;top:25%;height:22%;padding:2px;gap:2px}
+ .scene .sceneLaneBank{left:25%;right:2%;top:54%;bottom:13%;gap:2px}
+ .scene .sceneLaneBank.expandedLot{left:25%;right:2%;top:51%;bottom:11%}
+ .scene .sceneStyle{right:2%;top:15%;font-size:9px;padding:5px 8px}
+ .scene .sceneRoomGrid:before{font-size:7px;top:-11px}
+ .scene .constructionRibbon{left:25%;right:2%}
+ .scene .sceneWallDecor{left:26%;top:7%}
+ .scene .sceneFloorAmenities{left:23%;top:51%}
+ .scene .laneScene .laneStatus{font-size:8px}
+}
+@media(max-width:360px){.scene .hotspot b{font-size:7px}.scene .hotspot small{font-size:6px}.scene .sceneStyle{top:15%;font-size:8px}}

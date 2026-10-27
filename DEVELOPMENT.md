@@ -1,9 +1,15 @@
-# Development Agent — v0.94
+# Development Workstream — v0.96
 
-- Simulation engine: save schema v9, initializes `lanes:[]`, `built.roof:true`, `facilityNotices:[]`. v8 saves migrate without losing original lane/building state.
-- `finishSingleConstruction` enqueues a serializable notice for each room build or expansion. UI shows notices after closing summary, or directly when summary skip is enabled. Acknowledgment dequeues and triggers the next notice, then any pending alley-level cutscene. Timer stops while dialog is open.
-- UI: `facilityIllustration(room,tier)` builds a mobile-friendly fallback room illustration using DOM/CSS; path `facility.<room>.tier<1|2>` in asset map overrides with user artwork. Background follows wall paint; a purchased global TV appears visually.
-- Anti-frustration: no bowling arrivals or queue/angry departures at zero lanes; the simulation still runs pre-opening days and supports non-bowling customers once facilities operate.
-- Warning badges: snack & bar have distinct top-level buttons, and per-room low-stock counts remain.
-- Login and cloud code are unchanged. Do not replace Firebase UID/rules or expose service-account keys. Test production authentication manually after uploading.
-- Next: room-specific upgrades, more customer-facing personalization, expanded construction/amenities.
+## Source
+- `engine.js` — state schema 11, traffic model, sessions and technician operations
+- `app.js` — lane occupancy labels, paid-hour report, staff display, front-desk text
+- `style.css` — widened lane/room grid and repositioned controls; mobile-specific overrides
+- `index.html` — removed obsolete printed marquee text
+- `cloud.js`, `firebase-config.js`, `firestore.rules` — copied without changing account/save infrastructure
+- `assets/asset-map.js` — unchanged replacement artwork mapping
+
+## Test methodology
+Run `node engine_regression_v095.js` and `node tests_v096.js` in the project directory. Browser checks were executed via the development harness against in-memory assembled HTML because this environment blocked file URL navigation; `test_ui096.py` and the screenshot previews remain in the full project archive.
+
+## Later enhancements
+Optional traffic heat map by hour, leagues with variable opening times, technician pay/morale settings, visitor preferences, customizable session pricing, queue reservation/wait estimate, room-specific art choices, cloud integration tests on real iPhones.

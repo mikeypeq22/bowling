@@ -14,7 +14,7 @@ Formats: PNG, WebP, SVG, JPG, GIF. Suggested sizes: 256px square icons, 512px sq
 Snack asset keys added automatically: `snack.fries`, `snack.burger`, and `snack.cheeseburger`. Map these to `assets/snack-fries.png`, `assets/snack-burger.png`, and `assets/snack-cheeseburger.png` in `asset-map.js` to replace their emoji placeholders. Starter décor uses the existing wall-paint and fixture renderers.
 
 
-## v0.94 facility illustrations
+## v0.95 facility illustrations
 
 The snack, bar, arcade and pro-shop menus have colorful built-in illustrated fallbacks. Override any one of them by putting a PNG, WebP or JPG under the corresponding filename below; no code edits needed.
 
@@ -28,3 +28,6 @@ The snack, bar, arcade and pro-shop menus have colorful built-in illustrated fal
 | `facility.proshop.tier1` / `.tier2` | `assets/facility-proshop-tier1.png`, `assets/facility-proshop-tier2.png` |
 
 Suggested aspect ratio: 3:2 or 16:9; the image fills the preview and crops if necessary. If a file is missing, the default drawn scene remains visible. Future room-specific decorations can be drawn into these fallback scenes or supplied as additional layers.
+
+
+**v0.95 note:** The three lane upgrade kits and scoring themes currently use native CSS/emoji indicators; the core lane image (`world.lane`) remains replaceable.

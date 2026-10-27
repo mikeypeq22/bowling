@@ -1,14 +1,10 @@
-# Decisions — v0.94
+# Decision Log — v0.96
 
-| Choice | Status | Rationale |
-|---|---|---|
-| Replace dirt lanes with empty roofed building | Implemented | More believable business startup, player decides first lane/room |
-| First lane bought separately ($160, 2 days) | Implemented | Tangible first decision; no predetermined build order |
-| No bowling queues before a lane opens | Implemented | Avoids penalties that feel unfair in pre-opening period |
-| Facility completion lessons after closing report | Implemented | Explains systems in context, without overwhelming first-time tutorial |
-| Persist unread opening messages | Implemented | Prevents losing instructions across account save/reopen |
-| Add two visual room tiers | Implemented | Clear, playful feedback from room expansions |
-| Keep image overrides via asset map | Implemented | Future custom art shouldn't require gameplay changes |
-| Separate snack and bar warnings | Implemented | Both shortages can be visible at once |
-| Snack-specific ovens/TVs/stools/condiment upgrades | Future | Needs balancing and room-specific upgrade inventory |
-| Pro shop stock shortages | Future | Not meaningful until itemized retail stock exists |
+- **CONTINUE**: Maintain mobile-first browser game, clickable rooms, grid placement and distinct lane equipment.
+- **APPROVED**: Hide the redundant scene's corner marquee; keep level / stars in the sticky header.
+- **APPROVED**: Rebalance arrivals by stage of growth and rotate assignment among working lanes. Do not claim a realistic arrival distribution without human testing.
+- **APPROVED**: 1–3-hour bowling groups, capped by closing; first hour lane + shoe rental charged on check-in; extra hour lane charges on continued sessions only.
+- **APPROVED**: Existing Lane Technician construction upgrade acts as hiring/onboarding, then nightly staff+maintenance automation. Simple contract fee plus material/labor costs, no separate character-management minigame yet.
+- **APPROVED**: Varied quotation library, events tied to actual guests and randomized without duplicating purchases.
+- **UNCHANGED**: Thursday league reserves original six lanes, construction, food/bar stock deliveries, alley stars and specialty path, Firebase cloud document format.
+- **MONITOR**: Whether 2+ hour occupancy produces too-long waits at small centers; whether revenue exceeds needs; whether late-game traffic fills six-lane operation consistently without requiring constant advertising.
