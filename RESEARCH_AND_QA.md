@@ -1,18 +1,16 @@
-# Research and QA agent — v0.93
+# Research & QA Agent — v0.94
 
-## Grounding
-This update builds on the existing Bowling Research Master (v1), which covers actual bowling center formats, staffing, food service, arcades, pro shop operations, league capacity, tournaments, and evolving business concepts. Fictional startup loans and construction prices are **design figures**, not verified business costs.
+## Verification
+- **Game engine:** `node qa_v094.cjs` returned **4,769 passing assertions** across 48 combinations of startup financing / seed, 9 simulated days each, plus targeted inventory delivery and migration tests.
+- **Pre-opening:** fresh state has zero lanes, a roofed building, and can be configured by the player. No bowling visitors appear before first lane, so the first two building days do not create fictitious angry departures.
+- **Construction:** lane 1 completed at end of day 2. Snack can complete at end of day 2, bar end of day 3. All four facility completions enqueue notices. Expanding a room enqueues a distinct notice.
+- **Inventory:** staff needed to serve; manual restock orders have no immediate inventory effect and appear after `startNextDay()`.
+- **Migration:** version 8 games keep their one or more lanes, existing staff/rooms/cash and migrate to version 9. Also verified an original v0.92 version 7 state migrates to v9.
+- **UI smoke testing:** Playwright Chromium on 390 × 844 and 1280 × 900: Google-disabled local-demo gate, opening wizard, loan/decor, 0-lane scene, building snacks/first lane, closing reports, completion popup, snack preview, engine state validation, no page JavaScript errors.
+- **Production Firebase:** *not tested*; requires live credentials/auth domain and Firestore rule checks on GitHub Pages and real mobile Safari.
 
-## Completed tests
-- Engine parse: `node --check engine.js`
-- UI parse: `node --check app.js`
-- `node qa_v093.cjs`: **3,189 passing assertions**; eight combinations of startup financing and décor, 21 simulated game days each, happiness and loan invariants, land acquisition, specialty requirements, construction rush, and previous-save migration.
-- Chromium: viewport 390 × 844 and 1280 × 850, startup wizard, no-roof bar construction, day-end summary, optional rush, scene controls and screenshots. **No runtime exceptions** in those checks.
-- Additional Chromium: startup modal screenshot, enabled specialty choosing at Level 3, confirmed display and construction button for adjacent land.
-
-## Open QA items
-- Live Google OAuth and email/password authentication on iOS and desktop with `mikeypeq22.github.io`, plus actual Firebase document read/write, conflict protection and cloud migration.
-- Human playtesting for 25–50 day cycles and weekly loan pressure.
-- Happiness tuning: a single played group currently counts satisfied unless they leave before starting; in a future version account for individual wait duration and service quality directly.
-- Better visual rendering for ten lanes within a constrained mobile scene; it fits now but may require a camera/zoom system in a later release.
-- Multi-location save structure, per-property accounting, choosing second specialties, and switching centers.
+## Known UX questions
+- Test player enthusiasm for empty-building startup; does the $160 first lane feel rewarding, or should installation be quicker than two days?
+- Is the after-summary teaching sequence intuitive when three facilities finish simultaneously?
+- Should room-level previews eventually become isometric room plans and drag-and-drop add-ons?
+- Customer demand and happiness weights remain test hypotheses, not actual market data.

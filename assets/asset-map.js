@@ -6,6 +6,17 @@
  * Missing images safely fall back to the built-in graphics / emoji.
  */
 window.BOWLING_ASSETS = {
+  // v0.94: These are optional override images. Missing files use drawn fallback artwork.
+  'scene.empty': 'assets/venue-empty.png',
+  'cutscene.empty': 'assets/cutscene-empty.png',
+  'facility.snack.tier1': 'assets/facility-snack-tier1.png',
+  'facility.snack.tier2': 'assets/facility-snack-tier2.png',
+  'facility.bar.tier1': 'assets/facility-bar-tier1.png',
+  'facility.bar.tier2': 'assets/facility-bar-tier2.png',
+  'facility.arcade.tier1': 'assets/facility-arcade-tier1.png',
+  'facility.arcade.tier2': 'assets/facility-arcade-tier2.png',
+  'facility.proshop.tier1': 'assets/facility-proshop-tier1.png',
+  'facility.proshop.tier2': 'assets/facility-proshop-tier2.png',
   'snack.fries': 'assets/snack-fries.png',
   'snack.burger': 'assets/snack-burger.png',
   'snack.cheeseburger': 'assets/snack-cheeseburger.png',

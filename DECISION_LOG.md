@@ -1,15 +1,14 @@
-# v0.93 Decision Log
+# Decisions — v0.94
 
-| Decision | Status | Rationale |
+| Choice | Status | Rationale |
 |---|---|---|
-| Keep game as idle + authentic simulation hybrid | APPROVED | Preserve readability and avoid chores |
-| Offer two fictional 0%-interest startup loans, plus $600 personal savings | PROTOTYPE | Meaningful starting money decision without real financial risk |
-| Allow bar, snacks, pro shop, arcade independently of roof | APPROVED | Player choice, not a forced linear upgrade order |
-| Require roof for Level 2 but not to open counter | APPROVED | Shelter needed for better venue stage, while open construction order remains |
-| Six-lane starter lot, option to buy adjoining lot for four more lanes | PROTOTYPE | Preserve cozy first property, allow land gameplay |
-| Unlock specialty at established venue level (3) | PROTOTYPE | Different business identities, later multi-location replayability |
-| Choose a specialty only once per property | PROTOTYPE | Meaningful choice; future locations may choose differently |
-| Happiness groups: satisfied +3, angry departures -2, missed item -1 capped | PROTOTYPE | User-inspired metric softened by day smoothing; tune after testing |
-| Nightly construction rush uses in-game cash only | APPROVED | Optional convenience, no monetization |
-| Keep v0.92 Firebase player document and rules intact | VERIFIED DESIGN | Avoid disrupting current signed-in users; must still test live |
-| Second locations | DEFERRED | Requires multi-property data model and per-alley simulation |
+| Replace dirt lanes with empty roofed building | Implemented | More believable business startup, player decides first lane/room |
+| First lane bought separately ($160, 2 days) | Implemented | Tangible first decision; no predetermined build order |
+| No bowling queues before a lane opens | Implemented | Avoids penalties that feel unfair in pre-opening period |
+| Facility completion lessons after closing report | Implemented | Explains systems in context, without overwhelming first-time tutorial |
+| Persist unread opening messages | Implemented | Prevents losing instructions across account save/reopen |
+| Add two visual room tiers | Implemented | Clear, playful feedback from room expansions |
+| Keep image overrides via asset map | Implemented | Future custom art shouldn't require gameplay changes |
+| Separate snack and bar warnings | Implemented | Both shortages can be visible at once |
+| Snack-specific ovens/TVs/stools/condiment upgrades | Future | Needs balancing and room-specific upgrade inventory |
+| Pro shop stock shortages | Future | Not meaningful until itemized retail stock exists |
