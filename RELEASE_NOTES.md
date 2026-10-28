@@ -1,23 +1,41 @@
-# v0.96 Release Notes — Lanes, Guests and the Night Shift
+# From Gutter to Glory — v0.98 Release Notes
 
-## Player-facing fixes
-- Front Desk and Waiting Area moved above the Entrance; Advertising grouped along the left service strip.
-- Lanes and room squares made wider. Removed the old "OPEN FOR FUN" corner label and repositioned Customize above Shops & Activities.
-- Rebalanced bowling demand: less opening-night chaos, more mature demand from reputation, additional lanes, owner skills, advertising, and better facilities.
-- Round-robin allocation uses Lane 4/5/6 instead of leaving them idle behind Lane 1/2/3.
-- Parties stay 1–3 game hours (or fewer if the center is about to close). Extra hours earn another lane-rental charge; shoes remain a one-time charge.
-- Expanded overheard dialogue and unhappy-waiting comments.
-- Lane Technician now *actually* buys spare parts and services lanes automatically at nightly close. It costs $16 daily plus actual repair/supply expenses. Staff displays its operational status.
-- Front Desk explains the new session pricing; closing report shows paid lane-hours and technician activity if applicable.
+## The Town Comes Alive Update
 
-## Compatibility
-- State schema version 11, migrating existing version-10 v0.95 saves and earlier supported formats.
-- Player login and Firestore document path unchanged. Firebase settings and security rules preserved.
-- The separate standalone HTML intentionally disables cloud services.
+### Opening story
 
-## QA
-- Existing v0.95 regression suite: 1,540 checks passed.
-- v0.96 focused simulation suite: 20,572 assertions passed across 80 opening and 80 mature-center runs, including no double-booked lanes, all six lanes used, 1/2/3-hour sessions, technician costs, and migration.
-- Scripted first-nine-day mean: 2.20 group arrivals per day (includes construction days). Scripted developed-center sample: 318 arrivals over 14 days and all six lanes occupied at various times. These are simulation examples with artificially established reputation and skill, not playtest targets.
-- Chromium in-memory browser checks: 320px, 390px, and 1280px scenes; visual positioning, opening wizard, six lanes, and zero captured page JS errors in those sequences.
-- Local file URL browser navigation was blocked by this test environment. In-memory rendering passed; actual GitHub Pages deployment, Firebase login/cloud saves, and iOS Safari remain unverified for v0.96.
+**The Last Frame**, Grandpa Gus's inheritance story, appears **before** the startup loan and décor choices for a new game. Removed the extra “The keys are finally yours” opening popup. Existing saves retain unlocked story chapters.
+
+### Random events and repairs
+
+- A daily event check begins on day 7, with roughly a 20% chance **only after the five-day global cooldown has elapsed**. All surprise events, including big-party requests, share the cooldown.
+- Positive scenarios include local publicity, recommendations, cash gifts, spare-parts help and visitor surges.
+- Negative scenarios include individual lane breakdowns, leaking snacks/bar rooms, restroom issues, and problems in other built departments. The affected location **closes until repaired**. The event offers immediate repair or postponement; the Build view also exposes outstanding repairs.
+- Repair costs vary by affected facility; the repair is a player choice. Normal lane servicing is separate from incident repairs.
+- One queued surprise or regular-visitor conversation can be addressed at a time, with its state preserved for reopening.
+
+### Business expansion
+
+- `6 → 10 → 14 → 18 → 22 → 24` total *available slots*. Property wing construction opens four lane slots and one shop row per wing, except the last wing adds the final two lane slots. Individual lanes must still be constructed and paid for.
+- The shops/activities grid grows from two to seven rows (five squares across), preserving existing room placements when migrating v0.97 saves.
+- New **operational** attractions: Billiards and Party Room (first wing), Karaoke (second), Indoor Mini Golf (third), Laser Tag (fourth), Banquet Hall (fifth). Larger attractions occupy two or three grid squares and receive revenue from visitors.
+- Other researched amenities (bocce, event stage, fine dining) remain future ideas.
+
+### Community, bookings and guest flow
+
+- Six familiar patrons—Lou, Bea, Dex, Rosa, Nell and Milo—can appear with character prompts, a portrait placeholder and two dialogue options affecting loyalty (positive +12, negative −8).
+- Random private-party invitations can be accepted or declined. Accepted parties hold **all finished lanes from 6–8 PM** on a future day and pay **2× the usual lane income** for that two-hour booking. Regular guests may wait or become unhappy.
+- Arrival rates vary by opening hour and weekday. Friday, Saturday and Sunday are more popular; weekday afternoons are quieter. Existing reputation, price, advertising, stars and capacity effects remain relevant.
+- Advertising offers an optional **local-school partnership** after four lanes, for a one-time $240 in-game fee and a boost to school-day traffic.
+
+### Compatibility
+
+- Save schema v13; automated tests cover migrating v0.97 schema 12, retaining story/loan/customers/lanes, and new event state.
+- Google and email account code and existing Firebase client configuration are preserved. Live Firebase sign-in, security rules and cloud save roundtrip have **not** been independently verified for this release.
+- The standalone demo saves **locally only**. GitHub Pages build relies on separately configured Firebase for cloud accounts.
+
+### Known limits & next steps
+
+- A large 24-lane property is shown in a longer scrollable layout on mobile; a navigable zoom/pan floor plan is a useful future improvement.
+- A full booking-calendar UI, multiple concurrent parties, named parties meeting regulars, staff incident dispatch, and intelligent technician emergency repairs are future work.
+- Long-term challenge: maintain an economy where unexpected closures are inconvenient but don't trap a low-cash new player. Monitor reports from human playtests.

@@ -442,3 +442,56 @@ button.primary:hover:not(:disabled){background:#fce090}
  .scene .laneScene .laneStatus{font-size:8px}
 }
 @media(max-width:360px){.scene .hotspot b{font-size:7px}.scene .hotspot small{font-size:6px}.scene .sceneStyle{top:15%;font-size:8px}}
+/* v0.97 — The Gus Chronicles, department report cards and familiar faces */
+.storyPanel,.regularsPanel,.departmentsPanel{margin-bottom:14px}
+.storyPanel .sectionhead,.regularsPanel .sectionhead,.departmentsPanel .sectionhead{gap:10px;align-items:flex-start;flex-wrap:wrap}
+.storyCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:13px}
+.storyCard{display:flex;gap:11px;padding:13px;border:2px solid #384257;border-radius:12px;background:#1d2739;color:#f7f5e9}
+.storyCard.locked{opacity:.57;filter:saturate(.6)}.storyCard>span{font-size:28px;line-height:1.2}.storyCard>div{min-width:0}.storyCard b{display:block;font-size:14px}
+.storyCard small{display:block;color:#bfc9d5;font-size:11px;margin:3px 0}.storyCard p{font-size:12px;line-height:1.5;margin:7px 0;color:#f0ebe1}
+.ratingGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:9px;margin:12px 0}
+.ratingTile{padding:12px;border:2px solid #394155;border-radius:12px;background:#1c2838;min-width:0}
+.ratingTile>div{display:flex;align-items:center;gap:8px}.ratingTile>div span{font-size:24px}.ratingTile>div b{font-size:13px}.ratingTile>strong{display:block;color:#ffcf65;letter-spacing:2px;font-size:21px;margin:5px 0}.ratingTile small{display:block;color:#adc0cd;font-size:11px}.ratingTile p{font-size:12px;line-height:1.4;color:#e2e6ee;margin:8px 0 0}
+.regularGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:10px;margin-top:12px}
+.regularCard{padding:12px;background:#1d2937;border:2px solid #374256;border-radius:13px}.regularTop{display:flex;gap:8px;align-items:center}.regularTop>div{flex:1;min-width:0}.regularTop strong{display:block;font-size:14px}.regularTop small{display:block;font-size:11px;color:#c9d0de}.regularAvatar{border:2px solid #4e6183;background:#344961;border-radius:50%;font-size:24px;padding:5px}.regularTop .badge{font-size:9px;white-space:nowrap}.regularCard .meter{height:7px;margin-top:9px}.regularCard p{margin:8px 0}.regularActions{display:flex;gap:5px;flex-wrap:wrap}.regularActions button{flex:1;min-height:36px;padding:7px 8px;font-size:11px}
+.futureWingGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:13px}.futureWing{display:flex;gap:11px;border:2px dashed #596475;border-radius:12px;padding:12px;background:#1a2736}.futureWing>span{font-size:27px}.futureWing strong{display:block;font-size:14px}.futureWing small{display:block;font-size:11px;color:#d9bb7a;margin:4px 0}.futureWing p{font-size:12px;color:#c6ccd9;margin:4px 0}
+.storyBackdrop{position:fixed;inset:0;z-index:1500;background:rgba(9,11,22,.82);display:flex;align-items:center;justify-content:center;padding:16px}.storyBackdrop.hidden{display:none}.storyDialog{width:min(460px,100%);max-height:min(90dvh,780px);overflow:auto;padding:22px;background:#f6e4bf;border:4px solid #65442d;box-shadow:0 10px 0 #221d25,0 18px 65px #080811;border-radius:20px;color:#272333;text-align:center}.storyDialog .eyebrow{color:#744427}.storyDialog h2{color:#472d2a;font-size:clamp(22px,4.9vw,32px);line-height:1.14;margin:3px 0 8px}.storyStamp{font-size:47px;margin:6px 0}.storySpeaker{font-weight:800;font-size:12px;color:#794929}.storyText{font-size:15px;line-height:1.64;color:#342f32;padding:12px 4px;margin:0}.storyHint{border:2px solid #c6a471;background:#fff4d8;border-radius:12px;padding:12px;font-size:13px;margin:11px 0 16px}.storyDialog button{min-height:47px}
+@media (max-width:440px){.storyPanel,.regularsPanel,.departmentsPanel{padding:13px}.storyCards,.regularGrid,.ratingGrid,.futureWingGrid{grid-template-columns:minmax(0,1fr)}.storyDialog{padding:15px}.storyText{font-size:14px}.regularActions button{font-size:12px;min-height:42px}}
+
+.goalNav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}.goalNav button{background:#263a4b;color:#e8e8ef;border:2px solid #516479;border-radius:12px;min-height:44px;font-weight:800;padding:7px 4px;font-size:clamp(11px,2.7vw,14px)}.goalNav button.active{background:#f6bc5e;color:#29202a;border-color:#ffe3a8}.goalSection[hidden]{display:none!important}
+@media(max-width:350px){.goalNav{gap:3px}.goalNav button{font-size:10px;min-height:45px;letter-spacing:-.2px}}
+
+.bulkKits{margin:12px 0;padding:12px;border:2px solid #3f536b;border-radius:12px;background:#1b2c3f}.bulkKits h3{font-size:16px;margin:0 0 6px}.bulkKits p{margin:0 0 10px}.bulkKitList{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px}.bulkKitList button{text-align:left;display:flex;flex-direction:column;gap:4px;min-height:84px;padding:10px}.bulkKitList button small{font-size:12px;color:#d9c38c}
+
+/* v0.98: taller property wings, incident stories and recurring-guest conversations */
+.scene{height:calc(445px + var(--wing-stage,0) * 95px)}
+.scene .sceneRoomGrid{grid-template-rows:repeat(var(--room-rows,2),minmax(0,1fr));top:22%;height:34%;}
+.scene .sceneLaneBank{top:61%;bottom:9%;}
+.scene .sceneLaneBank.expandedLot{top:59%;bottom:9%;grid-template-rows:repeat(var(--lane-rows,2),minmax(0,1fr));}
+.scene .roomTile strong{white-space:normal;line-height:1.05;}
+.scene .laneScene .laneNumber{top:12px;}
+.incidentBackdrop,.patronBackdrop{position:fixed;inset:0;background:#061522e8;z-index:305;display:grid;place-items:center;padding:14px;overflow-y:auto}
+.incidentBackdrop.hidden,.patronBackdrop.hidden{display:none}
+.incidentDialog,.patronDialog{background:#20394b;border:4px solid #e8b968;box-shadow:0 14px 55px #000a;border-radius:17px;width:min(480px,100%);max-height:calc(100dvh - 30px);overflow-y:auto;padding:18px;text-align:center;color:#fff4dc}
+.incidentDialog h2,.patronDialog h2{font-size:25px;line-height:1.2;margin:10px 0}
+.incidentPortrait,.patronPortrait{font-size:60px;width:106px;height:106px;border-radius:15px;display:grid;place-items:center;background:#344f63;margin:10px auto;border:2px solid #e5bb7d}
+.incidentText,.patronSpeech{font-size:16px;line-height:1.5;margin:14px 0}
+.incidentEffect{padding:12px;border-radius:9px;background:#3b5366;color:#ffe7b8;font-size:13px}
+.incidentActions,.patronActions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.incidentActions button,.patronActions button{flex:1;min-width:135px;min-height:49px;white-space:normal}
+.repairBanner{padding:10px;border:2px solid #e8a07c;border-radius:10px;background:#633e3d;margin:10px 0;font-weight:700}
+.repairBanner button{width:100%;margin-top:10px}
+.propertyProgress{font-size:12px;background:#304d55;border-radius:9px;padding:11px;margin-top:9px}
+@media(max-width:690px){.scene{height:calc(440px + var(--wing-stage,0) * 120px)}.scene .sceneRoomGrid{top:23%;height:34%;}.scene .sceneLaneBank,.scene .sceneLaneBank.expandedLot{top:63%;bottom:10%;}.scene .roomTile .icon-art{font-size:15px;height:17px}.scene .roomTile strong{font-size:8px}.scene .laneStatus{font-size:8px}.incidentDialog,.patronDialog{padding:13px}.incidentPortrait,.patronPortrait{width:79px;height:79px;font-size:45px}}
+/* Wing expansion uses fixed-size visual rows instead of stretching old slots. */
+.scene{height:calc(440px + var(--wing-stage,0) * 90px)}
+.scene .sceneRoomGrid{top:100px;height:calc(var(--room-rows,2) * 44px);}
+.scene .sceneLaneBank,.scene .sceneLaneBank.expandedLot{top:calc(118px + var(--room-rows,2) * 45px);bottom:9%;}
+@media(max-width:690px){
+ .scene{height:calc(440px + var(--wing-stage,0) * 92px)}
+ .scene .sceneRoomGrid{top:103px;height:calc(var(--room-rows,2) * 47px)}
+ .scene .sceneLaneBank,.scene .sceneLaneBank.expandedLot{top:calc(125px + var(--room-rows,2) * 48px);bottom:9%;}
+}
+/* Keep the customization control above the growing Shops & Activities footprint. */
+.scene .sceneStyle{top:57px;right:3%;bottom:auto;z-index:5;}
+@media(max-width:690px){.scene .sceneStyle{top:55px;right:3%;}}

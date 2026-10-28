@@ -1,24 +1,38 @@
-# From Gutter to Glory — v0.96
+# From Gutter to Glory — v0.98
 
-An idle/building game blended with an authentic bowling-center simulation. **v0.96 improves the alley scene, customer traffic, session lengths and lane maintenance.**
+**The Town Comes Alive Update** · browser-based, mobile-first bowling-center management game.
 
-## How to play / deploy
-- `From_Gutter_to_Glory_Playable_v0.96.html`: offline single-file demo. Local saves only; no Google sign-in/cloud saving.
-- `From_Gutter_to_Glory_GitHub_Pages_v0.96.zip`: extract into the ROOT of the existing `mikeypeq22/bowling` repository. It contains `index.html`, JavaScript, CSS, asset mapping and Firebase configuration. Google account access requires the previously configured Firebase project and published Firestore rules.
-- `From_Gutter_to_Glory_Project_v0.96.zip`: editable source, reference notes, tests, and image asset switchboard.
+## What's new
 
-**Back up your v0.95 game in Settings before deploying or starting a new game.** Older saves use the same account document and are migrated to state version 11; the migration retains lane purchases, staff, inventory, construction, money, and progress.
+- Grandpa Gus's **The Last Frame** story is shown before selecting a startup loan. The old “The keys are finally yours” popup is gone.
+- **Random town events** start after day 6, with a shared minimum of **five full game days** between events. Some bring customers, reputation, supplies or cash; others close individual lanes or facilities pending a paid repair.
+- **Private party requests** arrive as an event: accept or decline a booking. Accepted parties reserve the entire bowling center for two hours at **double lane rental income**, at the possible cost of disappointed walk-ins.
+- **Property wings:** the original six-lane property expands in stages to 10, 14, 18, 22 and finally **24 lane slots**. Each wing adds another row of shops. Players purchase **each lane individually** after the property expansion is complete.
+- Six new purchasable attractions across the wings: **Billiards, Party Room, Karaoke, Indoor Mini Golf, Laser Tag and Banquet Hall.** Several occupy two or three floor-grid squares. More advanced attractions are still future ideas.
+- **Regular visitors** can start an on-screen conversation; choices increase or decrease their loyalty. Conversations are stored in game progress.
+- **Daypart and weekly seasonality:** late evenings and Friday–Sunday tend to be busier than early afternoons and the first weekdays. **School partnerships** become available under advertising for suitable centers.
 
-## Main changes
-1. **Alley visual:** Front Desk, Waiting Area, and Advertising aligned vertically above the entrance; remove the redundant corner venue marquee; the lane bank and shops are wider; Customize sits directly above the shop grid.
-2. **Believable demand:** Early bowling traffic is lower; it grows with reputation, bowling regulars, extra lanes, facility investment, Alley Stars, owner promotion skill, and advertising. Higher lane prices reduce demand. Unlike the old algorithm, no arrival is guaranteed every hour.
-3. **All lanes used:** Round-robin lane allocation distributes parties across the available, functioning lanes instead of always selecting Lane 1. Active lanes stay reserved until sessions finish; Thursday League still uses the first six lanes as before.
-4. **1–3 hour sessions:** Randomized 1-, 2- or 3-hour bookings, capped by closing at 10 PM. Charge group lane rental for **each** hour; shoes once per visit. Waiting groups must wait for a session to finish. Closing reports include lane-hours sold.
-5. **More dialogue:** Over 40 varied lane-side lines and 15 separate annoyed wait-line quips, with rotation and small seeded variation to reduce repetition.
-6. **Automatic technician:** The existing `Hire Lane Technician` build upgrade now has a real nightly shift, with an additional $16 daily contract. It automatically maintains lanes at or below 70% condition (+34) for $20 and purchases 5 spare parts for $45 when supplies run low and funds are available. Purchase/repair details appear in the activity log, staff screen, and closing report.
+## Playing and deploying
 
-## Notes
-- The technician does not produce free repairs when cash or parts are insufficient. Players can still service lanes manually.
-- Early/mature traffic figures in the QA notes are scripted simulations, NOT promises about actual player strategies.
-- Artwork still uses `assets/asset-map.js`; moving the graphical hotspots does not change image filenames.
-- All older real-time cloud and Google/Firebase logic is preserved; live account permissions and iPhone authentication still require real-world verification.
+- Open `From_Gutter_to_Glory_Playable_v0.98.html` for the standalone version; it saves in your browser and **does not** use cloud sign-in.
+- Extract `From_Gutter_to_Glory_GitHub_Pages_v0.98.zip` and upload **its contents**, including `index.html`, `engine.js`, `app.js`, `cloud.js`, `style.css`, `firebase-config.js`, and the `assets` directory, into the root of your GitHub Pages repository. Do not upload the ZIP unchanged.
+- The full source and release/testing notes are in `From_Gutter_to_Glory_Project_v0.98.zip`.
+- **Back up your current game** from Settings → Export before replacing live files.
+
+## Saving, security and compatibility
+
+- Save schema is now **v13** and includes migration from v0.97/v12. Existing loans, lanes, staff, story and regulars are retained. Do not clear local browser storage before exporting a backup.
+- The previous Firebase project client configuration is retained. These files **do not** create or configure a Firebase project automatically. Cloud login and saving must be tested on the deployed site; they have not been verified live for this release.
+- `firebase-config.js` contains Firebase *public browser-app configuration*, not a service account key. Never place administrator credentials in GitHub. Apply the provided `firestore.rules` in Firebase Console and keep each user's documents private.
+
+## Art customizations
+
+Art paths are centralized in `assets/asset-map.js`. Players can supply custom PNG, WebP or other browser-supported graphics in `assets/`, and then change the filename in the map. Missing images fall back to built-in visuals. New patron and attraction artwork slots are available.
+
+## Current limitations
+
+- The random-event cooldown is **at least five days**, not an exact repeating event schedule; some periods will be quiet.
+- Event repairs are intentional player decisions. The Lane Technician's ordinary servicing does not automatically repair exceptional incident closures.
+- The user interface shows all 24 lanes on a tall, scrollable mobile screen; larger properties will need a more compact camera/zoom system in a later version.
+- Parties reserve lanes, but there is not yet a reservation calendar with multiple simultaneous advance bookings.
+- The fictional National Heritage Cup/Heritage Charter and Vera Vale story remain narrative/game systems, not real accreditations.

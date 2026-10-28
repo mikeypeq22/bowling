@@ -47,6 +47,14 @@ window.BOWLING_ASSETS = {
   'nav.employees':       'assets/nav-employees.png',
   'nav.goals':           'assets/nav-goals.png',
 
+  // Local regulars — optional portraits for conversational encounters.
+  'patron.lou': 'assets/patron-lou.png',
+  'patron.bea': 'assets/patron-bea.png',
+  'patron.dex': 'assets/patron-dex.png',
+  'patron.rosa': 'assets/patron-rosa.png',
+  'patron.nell': 'assets/patron-nell.png',
+  'patron.milo': 'assets/patron-milo.png',
+
   // Staff portraits/icons — one per role.
   'employee.snack':     'assets/employee-snack.png',
   'employee.bar':       'assets/employee-bar.png',
@@ -58,6 +66,20 @@ window.BOWLING_ASSETS = {
   'bowler.leo':          'assets/bowler-leo.png',
   'bowler.recruit2':     'assets/bowler-jules.png',
   'bowler.recruit3':     'assets/bowler-sam.png',
+
+  // New expansion attractions.
+  'world.billiards': 'assets/room-billiards.png',
+  'upgrade.billiards': 'assets/upgrade-billiards.png',
+  'world.partyroom': 'assets/room-partyroom.png',
+  'upgrade.partyroom': 'assets/upgrade-partyroom.png',
+  'world.karaoke': 'assets/room-karaoke.png',
+  'upgrade.karaoke': 'assets/upgrade-karaoke.png',
+  'world.minigolf': 'assets/room-minigolf.png',
+  'upgrade.minigolf': 'assets/upgrade-minigolf.png',
+  'world.lasertag': 'assets/room-lasertag.png',
+  'upgrade.lasertag': 'assets/upgrade-lasertag.png',
+  'world.banquet': 'assets/room-banquet.png',
+  'upgrade.banquet': 'assets/upgrade-banquet.png',
 
   // Supplies and facilities.
   'supply.parts':        'assets/parts.png',

@@ -1,16 +1,22 @@
-# Research & QA Workstream — v0.96
+# v0.98 — Research and QA Workstream
 
-## Test evidence
-**ENGINE VERIFIED:** 1,540 legacy checks + 20,572 v0.96 assertions. The tests cover save validity, old-save migration, event and income integrity, duration distribution, six-lane usage, nightly technicians, parts depletion and cash guards.
+## Evidence classification
 
-**SIMULATED BALANCE:** The first nine days of a one-lane startup averaged **2.20 groups/day** across 80 seeds (construction days included). For an artificial established six-lane center (rep 65, 175 historical groups served, promoter 3), one seed yielded **318 arrivals in 14 days**, booking lengths of 1, 2 and 3 hours, and all six lanes used; this sample is deliberately not a natural progression forecast.
+- **ACCOUNT TEST / High:** engine and automated browser tests run in this build.
+- **INFERENCE / Medium:** chosen traffic weights, event probabilities, fictional booking prices and repair fees. Gameplay balance, not industry statistics.
+- **DESIGN / Medium:** unlock sequence and specialty expansion chosen to keep early menus readable.
+- **UNVERIFIED:** production Google Authentication / Firestore cloud save roundtrip; real-world player enjoyment and economy balance.
 
-**BROWSER LAYOUT TESTED:** In-memory Chromium rendering at viewport widths **320, 390, 1280**. Measured positions show the desk/benches above the entrance and larger room/lane bank. Six-lane mobile preview rendered. No JavaScript page errors recorded in the selected flows.
+## Executed tests
 
-**NOT YET VERIFIED:** iOS Safari, human-player engagement / pacing, live Firebase authentication and cloud saves on GitHub Pages, real-world economics.
+- `node /mnt/data/test_v098_engine.js`: **PASS 185 targeted assertions** in the local code environment. Exercises schema migration from v0.97, six property stages, all six attractions, repair closures, parties, loyalty dialogue, time-based traffic, and 360 simulated game days.
+- Across the 360-day simulation, **38 random events**, minimum interval **5 days**, verifying shared cooldown.
+- Automated browser page assembly through Playwright's in-memory HTML loading (direct `file://` and temporary local URL navigation blocked by the testing environment): 320px, 390px and 1280px startup/story and Build screens, no observed JavaScript errors.
+- Additional browser interaction tests using synthetic saves: 24 lanes and multi-row shop layout; repair modal and action; named-regular dialogue and action; Future Wings tab. Screenshots included in the full editable project.
 
-## Gameplay risks
-1. Extra hour bookings increase revenue but also produce longer waits; benches and late-game lane count need continued balancing.
-2. Round-robin is fair across usable lanes but does not model real lane location preferences.
-3. Technician costs are fixed for now; automated purchases are skipped if funds are insufficient. Check bankrupt or negative-balance playthroughs before launch.
-4. More quotes reduce repetition but all text is still English-only.
+## Open QA concerns
+
+- There has been **no human playtest** of a full multi-wing business; economy and event cadence remain provisional.
+- Live Google sign-in and cloud save behavior still need confirmation on the deployed GitHub Pages site. No live production data has been modified in testing.
+- Very large centers are navigable by scrolling, but a zoomable or sectional map would improve phone usability.
+- Recovery from extraordinary low-cash repair scenarios should be monitored in longer economic simulations and on-device play.

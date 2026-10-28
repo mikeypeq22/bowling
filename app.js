@@ -1,4 +1,4 @@
-/* From Gutter to Glory v0.95 — visual game controller. Gameplay lives in engine.js. */
+/* From Gutter to Glory v0.98 — visual game controller. Gameplay lives in engine.js. */
 (()=>{'use strict';
 const G=window.BowlingCore;
 let KEY='gutter-to-glory-v091-demo',BACKUP='gutter-to-glory-backup-v091-demo';const PREVIOUS='gutter-to-glory-v09',LEGACY='gutter-to-glory-v07',UIKEY='gutter-to-glory-ui-v09',OLDUI='gutter-to-glory-ui-v08';
@@ -10,6 +10,7 @@ const defaultAssets={
  'scene.backyard':'assets/venue-backyard.png','scene.empty':'assets/venue-empty.png','scene.neighborhood':'assets/venue-neighborhood.png','scene.league':'assets/venue-league.png','scene.regional':'assets/venue-regional.png',
  'facility.snack.tier1':'assets/facility-snack-tier1.png','facility.snack.tier2':'assets/facility-snack-tier2.png','facility.bar.tier1':'assets/facility-bar-tier1.png','facility.bar.tier2':'assets/facility-bar-tier2.png','facility.arcade.tier1':'assets/facility-arcade-tier1.png','facility.arcade.tier2':'assets/facility-arcade-tier2.png','facility.proshop.tier1':'assets/facility-proshop-tier1.png','facility.proshop.tier2':'assets/facility-proshop-tier2.png','world.lane':'assets/lane.png','world.desk':'assets/front-desk.png','world.snack':'assets/snack-counter.png','world.arcade':'assets/arcade.png','world.proshop':'assets/pro-shop.png','world.visitor':'assets/customer.png','world.bar':'assets/bar.png','world.benches':'assets/benches.png','world.ads':'assets/advertising.png','world.empty':'assets/floor-tile.png','cutscene.dirt':'assets/cutscene-dirt.png','cutscene.level2':'assets/cutscene-level2.png','cutscene.level3':'assets/cutscene-level3.png','cutscene.level4':'assets/cutscene-level4.png','cutscene.level5':'assets/cutscene-level5.png',
  'nav.alley':'assets/nav-alley.png','nav.manage':'assets/nav-manage.png','nav.bowlers':'assets/nav-bowlers.png','nav.tournaments':'assets/nav-tournaments.png','nav.you':'assets/nav-you.png','nav.employees':'assets/nav-employees.png','nav.goals':'assets/nav-goals.png',
+ 'patron.lou':'assets/patron-lou.png','patron.bea':'assets/patron-bea.png','patron.dex':'assets/patron-dex.png','patron.rosa':'assets/patron-rosa.png','patron.nell':'assets/patron-nell.png','patron.milo':'assets/patron-milo.png',
  'employee.snack':'assets/employee-snack.png','employee.bar':'assets/employee-bar.png','employee.proshop':'assets/employee-proshop.png','employee.stocker':'assets/employee-stocker.png',
  'bowler.maya':'assets/bowler-maya.png','bowler.leo':'assets/bowler-leo.png','bowler.recruit2':'assets/bowler-jules.png','bowler.recruit3':'assets/bowler-sam.png',
  'supply.parts':'assets/parts.png','misc.trophy':'assets/trophy.png','misc.owner':'assets/owner.png'
@@ -25,6 +26,7 @@ document.querySelectorAll('[data-icon]').forEach(el=>{el.outerHTML=icon(el.datas
 let s=G.newGame(),auto=true,tab='alley',buildSection='construction',drawer=null,selectedBowler='maya',lastTick=Date.now(),timerToast=null,summaryOpen=false,skipSummaries=false,introSeen=false,layoutMode=false,movingRoom=null,cutsceneOpen=false,pendingCutscene=null,tutorialSeen=false,tutorialOpen=false,tutorialStep=0,introCutscene=false,hadSavedGame=false,hadNewUI=false,welcomeOpen=false,hadBrokenSave=false,saveSource=null,importPending=null,saveAvailable=true,resetFromSettings=false;
 let cloudGateOpen=true,cloudSaveSignal=null,cloudMode=false;
 let guideMode='intro',tabTipId=null,seenTabTips={};
+let storyOpen=false,incidentOpen=false,patronOpen=false,goalSection='story';
 let selectedFinance='standard',selectedStyle='original',startupOpen=false,facilityNoticeOpen=false;
 function safeRead(key){try{return localStorage.getItem(key);}catch(e){saveAvailable=false;return null;}}
 function safeJSON(raw){try{return JSON.parse(raw);}catch(e){return null;}}
@@ -35,7 +37,7 @@ for(const k of [KEY,PREVIOUS,LEGACY,'gutter-to-glory-v05','gutter-to-glory-v04',
  hadBrokenSave=true;
 }
 try{const raw=safeRead(UIKEY);hadNewUI=!!raw;const ui=safeJSON(raw||safeRead(OLDUI)||safeRead('gutter-to-glory-ui-v07')||safeRead('gutter-to-glory-ui-v04'));
- if(ui){auto=ui.auto!==false;skipSummaries=ui.skipSummaries===true;introSeen=ui.introSeen===true||introSeen;tab=['alley','manage','bowlers','tournaments','you','employees','goals','settings'].includes(ui.tab)?ui.tab:'alley';buildSection=['construction','lanes','style','layout'].includes(ui.buildSection)?ui.buildSection:'construction';if(typeof ui.tutorialSeen==='boolean')tutorialSeen=ui.tutorialSeen;if(ui.seenTabTips&&typeof ui.seenTabTips==='object')seenTabTips=ui.seenTabTips;}
+ if(ui){auto=ui.auto!==false;skipSummaries=ui.skipSummaries===true;introSeen=ui.introSeen===true||introSeen;tab=['alley','manage','bowlers','tournaments','you','employees','goals','settings'].includes(ui.tab)?ui.tab:'alley';buildSection=['construction','lanes','style','layout','future'].includes(ui.buildSection)?ui.buildSection:'construction';if(typeof ui.tutorialSeen==='boolean')tutorialSeen=ui.tutorialSeen;if(ui.seenTabTips&&typeof ui.seenTabTips==='object')seenTabTips=ui.seenTabTips;}
 }catch(e){console.warn('UI preferences could not be loaded',e);}
 if(hadSavedGame&&!hadNewUI)tutorialSeen=true;
 welcomeOpen=hadSavedGame||hadBrokenSave;
@@ -56,8 +58,8 @@ function showStartup(){if(!s.startupPending||cloudGateOpen)return;startupOpen=tr
  startupPreview();$('startupBackdrop').classList.remove('hidden');lastTick=Date.now();
 }
 function hideStartup(){startupOpen=false;$('startupBackdrop').classList.add('hidden');lastTick=Date.now();}
-$('startupLaunch').onclick=()=>{if(perform(G.chooseStartup(s,selectedFinance,selectedStyle),'The keys are yours! Build your first lane or room.')){
- hideStartup();if(!tutorialSeen)showTutorial();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('startup');}};
+$('startupLaunch').onclick=()=>{if(perform(G.chooseStartup(s,selectedFinance,selectedStyle))){
+ hideStartup();if(!showNextOpeningNotice()&&!tutorialSeen)showTutorial();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('startup');}};
 function perform(action,message){if(!action.ok){toast(action.reason||'Not available',true);return false;}save();render();syncVisitors();if(drawer)renderDrawer();if(message)toast(message);return true;}
 function gotoTab(id,userClick=false){tab=id;document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('[data-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.tab===id);if(el.dataset.tab===id)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});closeDrawer();save();if(userClick&&!tutorialOpen&&!startupOpen&&!welcomeOpen&&!cloudGateOpen&&!seenTabTips[id]&&!s.startupPending)showTabTip(id);}
 function openDrawer(id){drawer=id;renderDrawer();$('drawerBackdrop').classList.remove('hidden');$('drawer').classList.remove('hidden');$('closeDrawer').focus();}
@@ -71,6 +73,7 @@ function reportCards(report){const r=report||{},items=[
  if((r.facilities?r.facilities.bar:s.built.bar))items.push(['Bar drinks',r.barOrders||0]);
  if((r.facilities?r.facilities.arcade:s.built.arcade))items.push(['Arcade plays',r.arcadePlays||0]);
  if(s.league.active||r.leagueHeld)items.push(['League money',cash(r.leagueIncome||0)]);
+ if(r.partyHeld)items.push(['Full-alley party income',cash(r.partyIncome||0)]);
  if(s.employees.length||r.staffPay)items.push(['Staff wages',cash(r.staffPay||0)]);
  if(r.techServices||r.techPartsBought)items.push(['Technician: repairs / parts',`${r.techServices||0} serviced · ${r.techPartsBought||0} parts bought`]);
  if(r.happiness!==undefined)items.push(['Guest happiness',r.happiness+'%']);
@@ -103,7 +106,7 @@ function snackDrawer(){if(!s.built.snack)return `<p class="drawerIntro">No snack
  const level=G.venueLevel(s);
  return `${facilityIllustration('snack')}<div class="drawerCallout">${G.staffed(s,'snack')?'✅ Counter staffed and serving.':'🚨 Counter CLOSED: hire '+(G.neededStaff(s,'snack')-G.countStaff(s,'snack'))+' worker(s) in the Staff Room.'} <button data-tab="employees">👥 Staff Room →</button></div><p class="drawerIntro">New foods unlock as your alley grows and your snack counter serves more customers. Each food has its <b>own stock</b>, price, and restock cost. Visitors really buy them during the day. <b>Orders arrive the following morning</b> — buy ahead!</p><section class="drawerCard"><div class="sectionhead"><h3>🍽️ Your Menu</h3><span class="badge warm">Alley level ${level}</span></div>${G.SNACKS.map(item=>{const unlocked=G.snackUnlocked(s,item.id),qty=s.snackStock[item.id],price=s.snackPrices[item.id];return `<div class="menuRow ${unlocked?'':'lockedMenu'}"><span class="menuEmoji">${icon('snack.'+item.id,item.emoji)}</span><div class="menuInfo"><b>${esc(item.name)}</b><small>${unlocked?`In stock: ${qty} ${qty<=s.lowStockThreshold?'⚠️ LOW':''}`:`🔒 Level ${item.level}${item.visits?` · ${item.visits} snack sales`:``}`}</small><small>${unlocked?`Sale price $${price} · ${G.incoming(s,'snack',item.id)?G.incoming(s,'snack',item.id)+' arriving tomorrow':'no delivery scheduled'}`:'Grow your center and serve more snack customers to unlock'}</small></div>${unlocked?`<div class="menuActions"><div class="priceControl"><button class="mini" data-menu-price="${item.id}:-1" ${price<=item.price-2?'disabled':''}>−</button><strong>$${price}</strong><button class="mini" data-menu-price="${item.id}:1" ${price>=item.price+4?'disabled':''}>+</button></div><button data-restock="${item.id}" ${s.cash<item.cost?'disabled':''}>📦 Order +${item.pack} · ${cash(item.cost)}</button></div>`:'<span>🔒</span>'}</div>`}).join('')}</section><div class="drawerCallout">📦 Orders arrive NEXT MORNING. A Stock Clerk can automatically order when stock falls to your chosen low-stock threshold.</div>`;}
 function laneDrawer(id){const l=s.lanes.find(x=>x.id===id);if(!l)return '<p>Lane unavailable.</p>';const active=s.sceneGroups.find(x=>x.location==='lane'+id);
- return `<p class="drawerIntro">Customize <b>Lane ${id}</b> with equipment that lasts, makes bowlers smile, and earns Alley Stars. Condition still needs occasional service.</p><section class="drawerCard"><div class="sectionhead"><h3>🎳 Lane ${id}</h3><span class="badge ${l.condition<45?'warn':'good'}">${Math.round(l.condition)}% condition</span></div><div class="meter"><div style="width:${l.condition}%"></div></div><div class="drawerRow"><span>Current group</span><b>${active?esc(active.name)+` (${active.size})`:'Vacant'}</b></div><div class="drawerRow"><span>Spare parts</span><b>${s.parts}</b></div><button class="primary full" data-service="${id}" ${l.condition>=98||s.cash<20||s.parts<1?'disabled':''}>🔧 Service Lane ${id} · $20 + 1 part</button></section><section class="drawerCard"><h3>⭐ Improve this lane</h3><p class="muted small">These are permanent purchases for this specific lane, not every lane.</p>${G.LANE_KITS.map(k=>`<div class="laneUpgradeRow"><div><b>${k.icon} ${esc(k.name)}</b><small>${esc(k.desc)}</small><small class="starReward">+${k.score} Alley Appeal points</small></div><button data-lane-kit="${id}:${k.id}" ${l.kits?.[k.id]||s.cash<k.cost?'disabled':''}>${l.kits?.[k.id]?'✓ Installed':cash(k.cost)}</button></div>`).join('')}</section>${l.kits?.scoring?`<section class="drawerCard"><h3>🎬 Scoring-screen animations</h3><p class="muted small">Try new styles without buying another computer. An animated screen adds one Alley Appeal point.</p><div class="laneThemeList">${G.SCORE_THEMES.map(t=>`<button data-lane-theme="${id}:${t.id}" class="${(l.theme||'classic')===t.id?'active':''}">${t.icon} ${esc(t.name)} ${(l.theme||'classic')===t.id?'✓':''}</button>`).join('')}</div></section>`:''}<section class="drawerCard"><h3>⚙️ Parts Room</h3><p class="small muted">Buy five replacement parts for $45.</p><button data-buy-parts ${s.cash<45?'disabled':''}>📦 +5 spare parts · $45</button></section>`;}
+ return `<p class="drawerIntro">Customize <b>Lane ${id}</b> with equipment that lasts, makes bowlers smile, and earns Alley Stars. Condition still needs occasional service.</p><section class="drawerCard"><div class="sectionhead"><h3>🎳 Lane ${id}</h3><span class="badge ${l.condition<45?'warn':'good'}">${Math.round(l.condition)}% condition</span></div><div class="meter"><div style="width:${l.condition}%"></div></div><div class="drawerRow"><span>Current group</span><b>${active?esc(active.name)+` (${active.size})`:'Vacant'}</b></div><div class="drawerRow"><span>Spare parts</span><b>${s.parts}</b></div><button class="primary full" data-service="${id}" ${l.condition>=98||s.cash<20||s.parts<1?'disabled':''}>🔧 Service Lane ${id} · $20 + 1 part</button></section><section class="drawerCard"><h3>⭐ Improve this lane</h3><p class="muted small">Upgrade only this lane here, or visit Build → Your Lanes to outfit every open lane at once.</p>${G.LANE_KITS.map(k=>`<div class="laneUpgradeRow"><div><b>${k.icon} ${esc(k.name)}</b><small>${esc(k.desc)}</small><small class="starReward">Counts toward your Lane Department rating</small></div><button data-lane-kit="${id}:${k.id}" ${l.kits?.[k.id]||s.cash<k.cost?'disabled':''}>${l.kits?.[k.id]?'✓ Installed':cash(k.cost)}</button></div>`).join('')}</section>${l.kits?.scoring?`<section class="drawerCard"><h3>🎬 Scoring-screen animations</h3><p class="muted small">Try new styles without buying another computer. Choose the screen that best fits your center.</p><div class="laneThemeList">${G.SCORE_THEMES.map(t=>`<button data-lane-theme="${id}:${t.id}" class="${(l.theme||'classic')===t.id?'active':''}">${t.icon} ${esc(t.name)} ${(l.theme||'classic')===t.id?'✓':''}</button>`).join('')}</div></section>`:''}<section class="drawerCard"><h3>⚙️ Parts Room</h3><p class="small muted">Buy five replacement parts for $45.</p><button data-buy-parts ${s.cash<45?'disabled':''}>📦 +5 spare parts · $45</button></section>`;}
 function partsDrawer(){return `<p class="drawerIntro">There's no separate lane oil resource in v0.3. Each lane has its own condition rating; maintenance costs spare parts plus a small service fee.</p><section class="drawerCard"><h3>⚙️ Spare Parts <span class="badge">${s.parts} available</span></h3><button data-buy-parts class="primary" ${s.cash<45?'disabled':''}>Buy 5 parts · $45</button></section><div class="laneTiles">${s.lanes.map(l=>`<button class="laneTile" data-open="lane${l.id}">🎳 Lane ${l.id}<br><b>${Math.round(l.condition)}% condition</b><div class="meter"><div style="width:${l.condition}%"></div></div>Tap to service →</button>`).join('')}</div>`;}
 function benchesDrawer(){const cost=G.benchCost(s),max=s.benches>=3;return `<p class="drawerIntro">Guests wait for a lane when all lanes are busy. Benches provide <b>two comfortable group spots</b> each, with a longer waiting tolerance. They help, but more lanes still give you more capacity.</p>
  <section class="drawerCard"><h3>🪑 Waiting Area</h3><div class="statGrid"><div><small>Installed benches</small><strong>${s.benches}/3</strong></div><div><small>Queue capacity</small><strong>${G.waitCapacity(s)} groups</strong></div></div><p class="small muted">Groups without a bench leave after two waiting hours; seated groups can wait up to four.</p><button class="primary full" data-buy-bench ${max||s.cash<cost?'disabled':''}>${max?'✓ All benches installed':`+ Install bench · ${cash(cost)}`}</button></section>`;}
@@ -127,33 +130,36 @@ function renderDrawer(){if(!drawer)return;const scroll=$('drawerBody').scrollTop
  else if(drawer==='diary'){title="Day's Story";sub='VISITOR ACTIVITY LOG';html=diaryDrawer();}
  else if(drawer==='parts'){title='Parts & Repairs';sub='OPERATIONS';html=partsDrawer();}
  else if(drawer==='benches'){title='Waiting Benches';sub='GUEST COMFORT';html=benchesDrawer();}
- else if(drawer==='ads'){title='Advertising';sub='ATTRACT CUSTOMERS';html=adsDrawer();}
+ else if(drawer==='ads'){title='Advertising';sub='ATTRACT CUSTOMERS';html=adsDrawer()+`<section class="drawerCard"><h3>🏫 Community Partnerships</h3><p>Partner with the local high school to encourage weekday family visits and grow your reputation.</p><button data-school-partnership ${s.partnerships?.school||G.lanes(s)<4||s.cash<240?'disabled':''}>${s.partnerships?.school?'✓ School partner secured':G.lanes(s)<4?'🔒 Four lanes required':'Sponsor local school · $240'}</button></section>`;}
  else if(drawer==='bar'){title='Bowling Bar';sub='DRINKS & STOCK';html=barDrawer();}
  else if(drawer.startsWith('lane')){title='Lane '+drawer.slice(4);sub='INDIVIDUAL MAINTENANCE';html=laneDrawer(Number(drawer.slice(4)));}
  else if(drawer==='arcade'){title='Arcade';sub='GAMES & MACHINES';html=arcadeDrawer();}
  else if(drawer==='decor'){title='Style & Amenities';sub='CUSTOMIZE YOUR ALLEY';html=decorDrawer();}
+ else if(G.NEW_ATTRACTIONS.some(a=>a.id===drawer)){const room=G.NEW_ATTRACTIONS.find(a=>a.id===drawer);title=room.title;sub='NEW WING ATTRACTION';html=`<div class="drawerCard"><h3>${room.icon} ${esc(room.title)}</h3><p>${esc(room.desc)}</p><p>Guests served: <b>${s.roomVisits[room.id]||0}</b> · Income per visit: <b>${cash(room.fee)}</b></p><button data-room-move="${room.id}">✥ Move room on the floor</button></div>`;}
  else if(drawer==='shop'){title='Pro Shop';sub='TEAM EQUIPMENT';html=facilityIllustration('proshop')+'<p class="drawerIntro">Your pro shop sells equipment and fits custom bowling balls for your team. <b>'+ (G.staffed(s,'proshop')?'Clerk on duty.':'Closed until you hire '+(G.neededStaff(s,'proshop')-G.countStaff(s,'proshop'))+' clerk(s)!') +'</b></p><button class="full" data-tab="employees">👥 Hire staff</button><button class="full primary" data-tab="bowlers">👟 Equip your bowlers</button>';}
- if(G.ROOM_IDS.includes(drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer)&&s.built[drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer]){
+ if(['snack','bar','arcade','proshop'].includes(drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer)&&s.built[drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer]){
   const roomId=drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer;
   const tier=s.roomTiers[roomId]||1,job=s.construction.find(j=>j.kind==='roomExpand'&&j.id===roomId),cost=G.expansionCost(roomId);
   const bonus={snack:'Adds pretzels and ice cream to the menu',bar:'More drink choices and more potential orders',proshop:'More equipment variety and stronger sales',arcade:'More games and additional arcade income'}[roomId];
   html+=`<section class="drawerCard"><h3>🧩 Floor Space · ${tier} square${tier===1?'':'s'}</h3><p class="muted small">${bonus}. Move the room for free in Alley Layout mode. Expansion occupies the square directly to its right.</p><button class="primary full" data-expand-room="${roomId}" ${tier===2||job||s.cash<cost?'disabled':''}>${tier===2?'✓ Expanded':job?'🚧 '+job.remaining+' days remaining':'⬜ Expand to 2 squares · '+cash(cost)+' · 2d'}</button><button class="full" data-room-move="${roomId}">✥ Move room on layout</button></section>`;
  }
+ const outageId=drawer==='snacks'?'snack':drawer==='shop'?'proshop':drawer;const outage=s.outages?.[outageId];if(outage){html=`<div class="repairBanner">🚧 ${esc(outage.name)} is CLOSED until repaired.<button data-repair="${esc(outageId)}" ${s.cash<outage.cost?'disabled':''}>🔧 Repair · ${cash(outage.cost)}</button></div>`+html;}
  $('drawerTitle').textContent=title;$('drawerSub').textContent=sub;$('drawerBody').innerHTML=html;$('drawerBody').scrollTop=scroll;
 }
 function renderRoomGrid(){
  const grid=$('sceneRoomGrid'),tiles=[];const occupied=new Set();
- const info={snack:['🍿','Snacks'],bar:['🍹','Bar'],proshop:['🛍️','Pro Shop'],arcade:['🕹️','Arcade']};
+ const info={snack:['🍿','Snacks'],bar:['🍹','Bar'],proshop:['🛍️','Pro Shop'],arcade:['🕹️','Arcade'],...Object.fromEntries(G.NEW_ATTRACTIONS.map(a=>[a.id,[a.icon,a.title]]))};
+ grid.style.gridTemplateRows=`repeat(${G.roomRows(s)},minmax(0,1fr))`;
  for(const id of G.ROOM_IDS){const pos=s.roomPlacements[id];if(!pos)continue;
   const w=G.footprint(s,id);for(let k=0;k<w;k++)occupied.add(`${pos.x+k},${pos.y}`);
   const live=s.built[id],building=s.construction.find(j=>j.id===id),[emoji,label]=info[id];
   const low=(id==='snack'?G.SNACKS.filter(i=>G.snackUnlocked(s,i.id)&&s.snackStock[i.id]<=s.lowStockThreshold).length:id==='bar'?G.DRINKS.filter(i=>G.drinkUnlocked(s,i.id)&&s.barStockById[i.id]<=s.lowStockThreshold).length:0);const text=live?label:'🚧 '+label,iconKey=id==='proshop'?'world.proshop':'world.'+id;
-  tiles.push(`<button class="roomTile ${live?'':'building'} ${movingRoom===id?'moving':''} ${w===2?'expanded':''}" style="grid-column:${pos.x+1} / span ${w};grid-row:${pos.y+1}" ${layoutMode?`data-room-move="${id}"`:`data-open="${id==='snack'?'snacks':id==='proshop'?'shop':id}"`} title="${layoutMode?'Select room to move':`Open ${label}`}">${icon(iconKey,emoji)}<strong>${esc(text)}</strong>${low?'<span class="tileLow">⚠ '+low+' LOW</span>':w===2?'<small>EXPANDED</small>':building?'<small>'+building.remaining+'d left</small>':''}</button>`);
+  tiles.push(`<button class="roomTile ${live?'':'building'} ${movingRoom===id?'moving':''} ${w===2?'expanded':''}" style="grid-column:${pos.x+1} / span ${w};grid-row:${pos.y+1}" ${layoutMode?`data-room-move="${id}"`:`data-open="${id==='snack'?'snacks':id==='proshop'?'shop':id}"`} title="${layoutMode?'Select room to move':`Open ${label}`}">${icon(iconKey,emoji)}<strong>${esc(text)}</strong>${G.activeOutage(s,id)?'<span class="tileLow">⚠ CLOSED</span>':low?'<span class="tileLow">⚠ '+low+' LOW</span>':w>1?'<small>'+w+' SPACES</small>':building?'<small>'+building.remaining+'d left</small>':''}</button>`);
  }
- for(let y=0;y<G.ROOM_ROWS;y++)for(let x=0;x<G.ROOM_COLS;x++)if(!occupied.has(`${x},${y}`))tiles.push(`<button class="roomTile roomEmpty ${layoutMode?'editing':''}" style="grid-column:${x+1};grid-row:${y+1}" ${layoutMode&&movingRoom?`data-place-room="${x}:${y}"`:''} aria-label="Empty square ${x+1},${y+1}">${layoutMode&&movingRoom?'+':icon('world.empty','·')}</button>`);
+ for(let y=0;y<G.roomRows(s);y++)for(let x=0;x<G.ROOM_COLS;x++)if(!occupied.has(`${x},${y}`))tiles.push(`<button class="roomTile roomEmpty ${layoutMode?'editing':''}" style="grid-column:${x+1};grid-row:${y+1}" ${layoutMode&&movingRoom?`data-place-room="${x}:${y}"`:''} aria-label="Empty square ${x+1},${y+1}">${layoutMode&&movingRoom?'+':icon('world.empty','·')}</button>`);
  grid.innerHTML=tiles.join('');
  $('toggleLayout').textContent=layoutMode?'✓ Done arranging':'✥ Rearrange rooms';$('toggleLayout').classList.toggle('primary',layoutMode);
- $('layoutHint').textContent=layoutMode?(movingRoom?'Tap an empty square to move '+info[movingRoom][1]+'. Two-square rooms need two free squares.':'Select any room to move, then tap an empty square.'):'Rooms occupy squares. Move them anytime, free.';
+ $('layoutHint').textContent=layoutMode?(movingRoom?'Tap an empty square to move '+info[movingRoom][1]+'. Larger rooms need two or three consecutive free squares.':'Select any room to move, then tap an empty square.'):'Rooms occupy squares. Move them anytime, free.';
 }
 function chooseRoomMove(id){layoutMode=true;movingRoom=id;gotoTab('alley');renderRoomGrid();toast('Select an empty square for '+id+'.');}
 function syncVisitors(events=[],instant=false){const layer=$('visitorLayer'),scene=$('scene'),box=scene.getBoundingClientRect();
@@ -161,9 +167,9 @@ function syncVisitors(events=[],instant=false){const layer=$('visitorLayer'),sce
  const center=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:((r.left+r.width/2)-box.left)/box.width*100,y:((r.top+r.height/2)-box.top)/box.height*100};};
  const entrance=center(scene.querySelector('.entranceDoor'))||{x:7,y:83};
  const desk=center($('sceneDesk'))||{x:18,y:45},wait=center($('sceneBenches'))||{x:21,y:72};
- const rooms={snack:center(scene.querySelector('[data-open="snacks"].roomTile')),bar:center(scene.querySelector('[data-open="bar"].roomTile')),arcade:center(scene.querySelector('[data-open="arcade"].roomTile')),shop:center(scene.querySelector('[data-open="shop"].roomTile'))};
+ const rooms={snack:center(scene.querySelector('[data-open="snacks"].roomTile')),bar:center(scene.querySelector('[data-open="bar"].roomTile')),arcade:center(scene.querySelector('[data-open="arcade"].roomTile')),shop:center(scene.querySelector('[data-open="shop"].roomTile'))};for(const a of G.NEW_ATTRACTIONS)rooms[a.id]=center(scene.querySelector(`[data-open="${a.id}"].roomTile`));
  const arrivals=new Set(events.filter(e=>e.type==='arrival').map(e=>e.partyId));
- const visits=new Map();for(const e of events){if(['snack','bar','arcade','shop'].includes(e.type)&&e.partyId!=null)visits.set(String(e.partyId),e.type);}
+ const visits=new Map();for(const e of events){if(['snack','bar','arcade','shop',...G.NEW_ATTRACTIONS.map(a=>a.id)].includes(e.type)&&e.partyId!=null)visits.set(String(e.partyId),e.type);}
  const desired=new Map(s.sceneGroups.map(p=>[String(p.id),p]));
  const stagedOut=new Set();
  for(const node of [...layer.children])if(node.dataset.party&&!desired.has(node.dataset.party)){
@@ -185,7 +191,7 @@ function syncVisitors(events=[],instant=false){const layer=$('visitorLayer'),sce
   if(arrivals.has(party.id)){setTimeout(()=>place(desk),70);const stop=rooms[visits.get(key)];if(stop)setTimeout(()=>place(stop),860);setTimeout(()=>place(target),stop?1860:1230);}else if(rooms[visits.get(key)]){place(rooms[visits.get(key)]);setTimeout(()=>place(target),1250);}else place(target);
  }
  // Animated walk-in customers for departures and immediate retail visits, even when no lane is assigned.
- if(!instant)for(const e of events.filter(e=>['snack','bar','arcade','shop'].includes(e.type)&&!desired.has(String(e.partyId))&&!stagedOut.has(String(e.partyId)))){
+ if(!instant)for(const e of events.filter(e=>['snack','bar','arcade','shop',...G.NEW_ATTRACTIONS.map(a=>a.id)].includes(e.type)&&!desired.has(String(e.partyId))&&!stagedOut.has(String(e.partyId)))){
   const target=rooms[e.type];if(!target)continue;const ghost=document.createElement('div');ghost.className='visitor passingVisitor';ghost.style.left=entrance.x+'%';ghost.style.top=entrance.y+'%';ghost.style.opacity='1';ghost.innerHTML='<span class="groupMarker">●</span>';layer.append(ghost);setTimeout(()=>{ghost.style.left=target.x+'%';ghost.style.top=target.y+'%';},90);setTimeout(()=>{ghost.style.left=entrance.x+'%';ghost.style.top=entrance.y+'%';ghost.style.opacity='0';},1560);setTimeout(()=>ghost.remove(),2700);
  }
 }
@@ -200,17 +206,41 @@ function showScene(){const lv=G.venueLevel(s);const phase=!G.lanes(s)?'empty':lv
  $('sceneBarStock').textContent=Object.values(s.barStockById).reduce((a,b)=>a+b,0)+' drinks';$('sceneBenchLabel').textContent=s.benches+' / 3 benches';
  const ad=G.activeCampaign(s);$('sceneAdsLabel').textContent=ad?ad.title:'Grow traffic';
  renderRoomGrid();
+ const stage=G.expansionStage(s);$('scene').style.setProperty('--wing-stage',stage);$('scene').style.setProperty('--room-rows',G.roomRows(s));$('scene').style.setProperty('--lane-rows',Math.ceil(G.laneCapacity(s)/6));
  const count=G.lanes(s),pending=G.pendingLanes(s);
- $('sceneLanes').style.gridTemplateColumns=G.laneCapacity(s)>6?'repeat(5,minmax(0,1fr))':'repeat(6,minmax(0,1fr))';
+ $('sceneLanes').style.gridTemplateColumns='repeat(6,minmax(0,1fr))';
+ $('sceneLanes').style.gridTemplateRows=`repeat(${Math.ceil(G.laneCapacity(s)/6)},minmax(0,1fr))`;
  $('sceneLanes').classList.toggle('expandedLot',G.laneCapacity(s)>6);$('sceneLanes').classList.toggle('emptyBank',!G.lanes(s));
  $('sceneLanes').innerHTML=Array.from({length:G.laneCapacity(s)},(_,i)=>{
   const id=i+1,l=s.lanes[i],job=s.construction.find(j=>j.kind==='lane'&&j.id==='lane'+id);
-  if(l){const league=id<=6&&s.league.active&&G.calendar(s.day).dayIndex===3&&s.hour>=18&&s.hour<20;const occupant=s.sceneGroups.find(x=>x.location==='lane'+id),path=assets['world.lane'];return `<button class="laneScene ${l.kits?.wood?'laneHardwood':''} ${l.kits?.scoring?'laneDigital':''}" data-open="lane${id}" aria-label="Open lane ${id}, condition ${Math.round(l.condition)} percent">${path?`<img class="lane-image" src="${esc(path)}" alt="" onerror="this.remove()">`:''}<span class="laneDamage"><div style="width:${l.condition}%"></div></span><span class="laneNumber">${id}</span>${league?'<span class="laneAvatar">🏆</span>':occupant?'<span class="laneAvatar">🎳</span>':''}<span class="laneStatus">${league?'🏆 League':occupant?'🎳 '+(s.active.find(a=>a.laneId===id)?.hours||1)+'h':Math.round(l.condition)+'%'}</span></button>`;}
+  if(l){const league=id<=6&&s.league.active&&G.calendar(s.day).dayIndex===3&&s.hour>=18&&s.hour<20;const occupant=s.sceneGroups.find(x=>x.location==='lane'+id),path=assets['world.lane'];return `<button class="laneScene ${l.kits?.wood?'laneHardwood':''} ${l.kits?.scoring?'laneDigital':''}" data-open="lane${id}" aria-label="Open lane ${id}, condition ${Math.round(l.condition)} percent">${path?`<img class="lane-image" src="${esc(path)}" alt="" onerror="this.remove()">`:''}<span class="laneDamage"><div style="width:${l.condition}%"></div></span><span class="laneNumber">${id}</span>${league?'<span class="laneAvatar">🏆</span>':occupant?'<span class="laneAvatar">🎳</span>':''}<span class="laneStatus">${G.activeOutage(s,'lane'+id)?'🛠 Closed':league?'🏆 League':occupant?'🎳 '+(s.active.find(a=>a.laneId===id)?.hours||1)+'h':Math.round(l.condition)+'%'}</span></button>`;}
   if(job)return `<button class="laneGhost building" disabled aria-label="Lane ${id} under construction"><span class="ghostPlus">🚧</span><small>${job.remaining}d</small></button>`;
   const next=i===count+pending,price=G.nextLaneCost(s);return `<button class="laneGhost ${next?'nextLane':''}" ${next?'data-buy-lane="true"':''} ${next&&s.cash<price?'disabled':''} title="${next?'Build another lane for '+cash(price):'Future lane slot'}" aria-label="${next?'Order lane '+id+' for '+cash(price):'Future lane '+id}"><span class="ghostPlus">${next?'+':'·'}</span><small>${next?cash(price):'Future'}</small></button>`;
  }).join('');
  $('constructionRibbon').innerHTML=s.construction.length?`🚧 ${s.construction.length} project${s.construction.length===1?'':'s'} underway · ${esc(s.construction.map(j=>j.title+' ('+j.remaining+'d)').join(' · '))}`:'';
  $('occupancyCount').textContent=(s.sceneGroups.filter(x=>x.kind==='bowling').length+(s.league.active&&G.calendar(s.day).dayIndex===3&&s.hour>=18&&s.hour<20?6:0))+'/'+G.lanes(s);$('waitingCount').textContent=s.queue.length;
+}
+const FUTURE_WINGS=[
+ {id:'karaoke',icon:'🎤',name:'Karaoke Lounge',space:'2 squares',idea:'Song nights, staff and a new kind of regular.'},
+ {id:'billiards',icon:'🎱',name:'Billiards Room',space:'2 squares',idea:'Pool tables, tournament nights and casual traffic.'},
+ {id:'lasertag',icon:'🔫',name:'Laser Tag',space:'2 squares',idea:'Team events and equipment upkeep.'},
+ {id:'minigolf',icon:'⛳',name:'Indoor Mini Golf',space:'2 squares',idea:'Family rounds, themed holes and outdoor space.'},
+ {icon:'🥎',name:'Bocce Court',space:'1 square',idea:'Challenging matches and low-key leagues.'},
+ {id:'partyroom',icon:'🎂',name:'Party Room',space:'2 squares',idea:'Birthday bookings, packages and catering.'},
+ {id:'banquet',icon:'🎊',name:'Banquet Hall',space:'3 squares',idea:'Larger gatherings and booked events.'},
+ {icon:'🎸',name:'Event Stage',space:'1 square',idea:'Music, comedy and audience draw.'},
+ {icon:'🍽️',name:'Full-Service Restaurant',space:'2+ squares',idea:'Menu design, chefs, tables and meal service.'}
+];
+function showGoalSection(){document.querySelectorAll('[data-goal-section]').forEach(el=>{el.hidden=el.dataset.goalSection!==goalSection;});document.querySelectorAll('[data-goal-nav]').forEach(btn=>{btn.classList.toggle('active',btn.dataset.goalNav===goalSection);btn.setAttribute('aria-pressed',String(btn.dataset.goalNav===goalSection));});}
+function renderStoryCommunity(){
+ const story=s.story||{unlocked:[],pending:[],charter:false},rat=G.departmentRatings(s),rank=G.alleyScore(s);
+ $('storyPanel').innerHTML=`<div class="sectionhead"><div><small class="eyebrow">GRANDPA GUS'S LEGACY</small><h2>📖 The Last Frame</h2><p class="muted small">Your family alley versus Vera Vale's StrikeCity. Win the fictional National Heritage Cup to earn the Heritage Charter.</p></div><span class="badge ${story.charter?'warm':''}">${story.charter?'🌟 CHARTER EARNED':story.unlocked.length+' / '+G.STORY_CHAPTERS.length+' CHAPTERS'}</span></div><div class="storyCards">${G.STORY_CHAPTERS.map((c,i)=>`<div class="storyCard ${story.unlocked.includes(c.id)?'unlocked':'locked'}"><span>${story.unlocked.includes(c.id)?c.icon:'🔒'}</span><div><b>${story.unlocked.includes(c.id)?esc(c.title):'Chapter '+(i+1)+' — ???'}</b><small>${story.unlocked.includes(c.id)?esc(c.speaker):'Keep building to unlock'}</small>${story.unlocked.includes(c.id)?`<p>${esc(c.text)}</p><small>🎯 ${esc(c.hint)}</small>`:''}</div></div>`).join('')}</div>`;
+ const regulars=G.PATRON_PROFILES.map(c=>{const p=s.patrons[c.id],status=G.patronStatus(p),seen=p.visits>0;
+ return `<article class="regularCard"><div class="regularTop"><span class="regularAvatar">${seen?'🙂':'❔'}</span><div><strong>${esc(c.name)}</strong><small>${esc(status)} · ${p.visits} visits · ${p.loyalty}/100 loyalty</small></div><span class="badge">${p.leagueMember?'👟 LEAGUE':p.visits>=3?'❤️ FAMILIAR':'👤'}</span></div><div class="meter"><div style="width:${p.loyalty}%"></div></div><p class="muted small">${seen?esc(c.trait)+' · Likes '+esc(c.wish):'Visit your center to meet this local.'}</p>${seen?`<div class="regularActions"><button data-patron="${c.id}:chat" ${p.lastTalk===s.day?'disabled':''}>💬 Chat</button><button data-patron="${c.id}:treat" ${p.lastTalk===s.day||s.cash<12?'disabled':''}>🍬 Treat · $12</button>${s.league.active&&!p.leagueMember?`<button data-patron="${c.id}:invite" ${p.lastTalk===s.day||p.visits<3||p.loyalty<55?'disabled':''}>👟 Invite to league</button>`:''}</div>`:''}</article>`}).join('');
+ $('regularsPanel').innerHTML=`<div class="sectionhead"><div><h2>❤️ Town Regulars</h2><p class="muted small">Familiar visitors return, remember your hospitality and might join your league. Each can chat once per game day.</p></div><span class="badge">${Object.values(s.patrons).filter(p=>G.patronStatus(p)!=='Not met yet').length} / 6 met</span></div><div class="regularGrid">${regulars}</div>`;
+ $('departmentsPanel').innerHTML=`<div class="sectionhead"><div><h2>⭐ Department Report Cards</h2><p class="muted small">Each department earns 0–5 stars by operating, welcoming guests and improving equipment. The total advances your overall alley rating.</p></div><span class="badge warm">${rank}/35 stars earned · Alley ${G.alleyStars(s)}★</span></div><div class="ratingGrid">${G.DEPARTMENTS.map(d=>{const r=rat[d.id];return `<div class="ratingTile"><div><span>${d.icon}</span><b>${esc(d.name)}</b></div><strong>${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</strong><small>${d.id==='lanes'?r.usage+' paid lane-hours':d.id==='comfort'||d.id==='style'?r.upgrades+' improvements':r.usage+' customer interactions'}</small><p>${esc(r.tip)}</p></div>`}).join('')}</div><p class="muted tiny">Overall stars: 1★ at 3 department points, 2★ at 8, 3★ at 14, 4★ at 21, and 5★ at 29. Story chapters and customer satisfaction are tracked separately.</p>`;
+ showGoalSection();
+ $('futureWings').innerHTML=FUTURE_WINGS.map(w=>{const a=G.NEW_ATTRACTIONS.find(x=>x.id===w.id),done=a&&s.built[a.id],job=a&&s.construction.find(j=>j.id===a.id),unlocked=a&&G.expansionStage(s)>=a.minExpansion;return `<article class="futureWing"><span>${w.icon}</span><div><strong>${esc(w.name)}</strong><small>${esc(w.space)} ${a?'· unlocks in wing '+a.minExpansion:'· future concept'}</small><p>${esc(w.idea)}</p>${a?`<button data-build="${a.id}" ${done||job||!unlocked||s.cash<a.cost?'disabled':''}>${done?'✓ OPEN':job?'🚧 '+job.remaining+' days':!unlocked?'🔒 Expand Wing '+a.minExpansion:'Build · '+cash(a.cost)+' · '+a.days+'d'}</button>`:'<small>Planned for a later version</small>'}</div></article>`}).join('');
 }
 function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent='Your Bowling Alley';$('levelLabel').textContent=`LEVEL ${level} · ${G.venueName(s).toUpperCase()}${s.specialty?' · '+G.specialtyOf(s).name.toUpperCase():''} · ⭐ ${G.alleyStars(s)}/5`;
  $('nextHour').textContent=s.hour>=G.CLOSE?'▶ Start next day':'▶ Next hour';$('toggleAuto').textContent=auto?'⏸ Pause Auto':'▶ Resume Auto';$('clockStatus').textContent=auto?'Automatic time: On · Advances every few seconds':'Automatic time: Paused · Use the buttons to advance';
@@ -218,13 +248,14 @@ function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent='Y
  const completed=G.TOURNAMENTS.filter(t=>s.tournamentWins[t.id]).length;
  $('hudStats').innerHTML=`<span class="datePill">📅 <b>W${G.calendar(s.day).week} ${G.calendar(s.day).weekday.slice(0,3)} · ${s.hour===G.CLOSE?'10 PM':G.formatHour(s.hour)}</b></span><span class="moneyPill">💵 <b>${cash(s.cash)}</b></span><span class="happyPill" title="How customers feel about their visits">${s.happiness>=78?'😄':s.happiness>=52?'🙂':'😠'} <b>${s.happiness}%</b></span>`;
  const goals=G.nextLevelGoals(s);
- $('nextGoal').innerHTML=`<div class="starShowcase"><strong>${'⭐'.repeat(G.alleyStars(s))}${'☆'.repeat(5-G.alleyStars(s))}</strong><span>Alley Stars reward permanent upgrades: rooms, lanes, furniture and décor. Guest happiness is separate.</span></div><h2>${G.venueLevel(s)>=5?'LEGENDARY ALLEY!':'Level '+(G.venueLevel(s)+1)+' — '+G.LEVELS[G.venueLevel(s)+1]?.name}</h2><div class="goalChecklist">${goals.map(g=>typeof g==='string'?esc(g):`<div class="${g.done?'complete':''}">${g.done?'✅':'◻️'} ${esc(g.label)}</div>`).join('')}</div>`;
- $('goalLevelBadge').textContent=`⭐ ${G.alleyStars(s)}/5 stars · ${G.alleyScore(s)} appeal`;
+ $('nextGoal').innerHTML=`<div class="starShowcase"><strong>${'⭐'.repeat(G.alleyStars(s))}${'☆'.repeat(5-G.alleyStars(s))}</strong><span>Alley Stars combine department ratings earned through real customer visits and improvements. Guest happiness is separate.</span></div><h2>${G.venueLevel(s)>=5?'LEGENDARY ALLEY!':'Level '+(G.venueLevel(s)+1)+' — '+G.LEVELS[G.venueLevel(s)+1]?.name}</h2><div class="goalChecklist">${goals.map(g=>typeof g==='string'?esc(g):`<div class="${g.done?'complete':''}">${g.done?'✅':'◻️'} ${esc(g.label)}</div>`).join('')}</div>`;
+ $('goalLevelBadge').textContent=`⭐ ${G.alleyStars(s)}/5 stars · ${G.alleyScore(s)}/35 department points`;
  const spec=G.specialtyOf(s);
  $('specialtyPanel').innerHTML=spec?`<div class="specialtyHeader"><span>${spec.icon}</span><div><h2>Your specialty: ${esc(spec.name)}</h2><p>${esc(spec.desc)}</p></div></div><p class="muted small">This is the identity of your first alley. Later versions may allow you to open a second location with a completely different specialty.</p>`:
  G.venueLevel(s)>=3?`<h2>✨ Choose your alley's specialty</h2><p class="muted small">Your center is established. What do you want to be known for? Choose once for this location; each direction gives a different bonus.</p><div class="specialtyChoices">${G.SPECIALTIES.map(x=>`<button data-specialty="${x.id}" class="specialtyChoice"><b>${x.icon} ${esc(x.name)}</b><small>${esc(x.tag)}</small><small>${esc(x.desc)}</small></button>`).join('')}</div>`:
  `<h2>🔒 Your future specialty</h2><p class="muted small">Reach <b>Established Alley (Level 3)</b> to choose between Family Funhouse, Serious Strikes, Social Lounge, and Neighborhood Classic. You won't be forced down one building order.</p>`;
  $('goalSideQuests').innerHTML=`<div class="quest">🎳 <b>${G.lanes(s)}/${G.laneCapacity(s)} lanes</b><small>${s.league.active?'League running!':'Six lanes unlock Thursday league nights'}</small></div><div class="quest">👥 <b>${s.employees.length} employees</b><small>Hire staff to open the counters</small></div><div class="quest">📦 <b>${s.deliveries.length} deliveries</b><small>All orders arrive next morning</small></div><div class="quest">🏆 <b>${completed}/4 trophies</b><small>Keep training your bowlers</small></div>`;
+ renderStoryCommunity();
  const lowSnack=s.built.snack&&G.SNACKS.some(i=>G.snackUnlocked(s,i.id)&&s.snackStock[i.id]<=s.lowStockThreshold);
  const lowBar=s.built.bar&&G.DRINKS.some(i=>G.drinkUnlocked(s,i.id)&&s.barStockById[i.id]<=s.lowStockThreshold);
  $('stockWarning').classList.toggle('hidden',!lowSnack);
@@ -234,8 +265,8 @@ function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent='Y
  showScene();
 }
 function renderManage(){
- const cap=G.laneCapacity(s),pendingLot=s.construction.find(j=>j.kind==='land'),lotFull=G.lanes(s)+G.pendingLanes(s)>=6;
- $('propertyPanel').innerHTML=`<div class="propertyTop"><span class="propertyEmoji">🏡</span><div><h2>Your first property</h2><p>${G.lanes(s)}/${cap} lanes open · ${cap===6?'Starter lot — maximum six lanes':'Neighboring lot purchased — four extra lane spots'}</p></div></div><div class="propertyActions"><span class="badge">${s.specialty?'✨ '+esc(G.specialtyOf(s).name):'🌱 Independent startup'}</span>${!s.landOwned?`<button data-buy-land ${!lotFull||pendingLot||s.cash<3600?'disabled':''}>${pendingLot?'🚧 Clearing the lot · '+pendingLot.remaining+'d':!lotFull?'🔒 Build six lanes first':'🗺️ Buy adjoining land · $3,600 · 4d'}</button>`:''}</div><p class="tiny muted">Start with any room, even a bar or arcade. Build and decorate to fit your own vision. You already own the empty roofed building. Build your first lane or choose an attraction; customers won't line up for bowling until at least one lane opens.</p>`;
+ const cap=G.laneCapacity(s),pendingLot=s.construction.find(j=>j.kind==='land'),lotFull=G.lanes(s)+G.pendingLanes(s)>=cap;
+ $('propertyPanel').innerHTML=`<div class="propertyTop"><span class="propertyEmoji">🏡</span><div><h2>Growing your family's bowling center</h2><p>${G.lanes(s)}/${cap} lanes open · ${G.roomRows(s)} rows of shops · Wing ${G.expansionStage(s)}/5</p></div></div><div class="propertyActions"><span class="badge">${s.specialty?'✨ '+esc(G.specialtyOf(s).name):'🌱 Independent startup'}</span>${G.expansionStage(s)<5?`<button data-buy-land ${!lotFull||pendingLot||s.cash<G.nextExpansionCost(s)?'disabled':''}>${pendingLot?'🚧 Building new wing · '+pendingLot.remaining+'d':!lotFull?'🔒 Fill all '+cap+' lane spaces first':'🗺️ Expand property · '+cash(G.nextExpansionCost(s))}</button>`:'<span class="badge">🏆 Full 24-lane property</span>'}</div><p class="propertyProgress">Every property wing adds one Shops & Activities row and up to four more lane spaces (the last adds two). Build the new lanes individually. Wing 1 unlocks billiards and party rooms; later wings unlock karaoke, mini golf, laser tag and banquet events.</p>${Object.keys(s.outages||{}).length?`<div class="repairBanner"><b>🚨 Facilities temporarily closed</b>${Object.entries(s.outages).map(([id,o])=>`<div>${esc(o.name)} — <button data-repair="${esc(id)}" ${s.cash<o.cost?'disabled':''}>Repair for ${cash(o.cost)}</button></div>`).join('')}</div>`:''}`;
  $('upgradeCount').textContent=`${G.UPGRADES.filter(x=>s.built[x.id]).length}/${G.UPGRADES.length} opened`;
  $('manageParts').textContent=`${s.parts} spare parts`;
  $('manageSnack').querySelector('small').textContent=s.built.snack?'Recipes & stock':G.isBuilding(s,'snack')?'Under construction':'Build a counter to unlock';
@@ -243,12 +274,13 @@ function renderManage(){
  $('manageAds').textContent=G.activeCampaign(s)?.title||'Flyers, radio, television';$('manageBar').textContent=s.built.bar?`${s.barVisits} drinks sold · ${s.barStock} in stock`:'Build your drinks counter';
  $('installedAmenities').innerHTML=G.FIXTURES.filter(i=>s.fixtures[i.id]).map(i=>`<span>${i.emoji} ${esc(i.name)}</span>`).join('')||'<span>✨ No amenities yet · Add your first!</span>'; $('sceneFixtures').textContent=G.FIXTURES.filter(i=>s.fixtures[i.id]).length+' amenities';
  $('constructionCount').textContent=s.construction.length+' underway';
- $('constructionList').innerHTML=s.construction.length?s.construction.map(j=>`<div class="constructionItem"><b>🚧 ${esc(j.title)}</b><div class="meter"><div style="width:${(j.total-j.remaining)/j.total*100}%"></div></div><small class="muted">${j.remaining} day${j.remaining===1?'':'s'} remaining · Opens after closing</small></div>`).join(''):'<p class="muted small">No active construction. New rooms take a few days to finish; your existing lanes keep earning while you build.</p>';
+ $('constructionList').innerHTML=s.construction.length?s.construction.map(j=>`<div class="constructionItem"><b>🚧 ${esc(j.title)}</b><div class="meter"><div style="width:${(j.total-j.remaining)/j.total*100}%"></div></div><small class="muted">${j.remaining} day${j.remaining===1?'':'s'} remaining · Opens after closing</small></div>`).join(''):'<p class="muted small">No active construction. New wings unlock new attractions. Customers keep visiting while your crew works.</p>';
  $('laneStatus').textContent=G.lanes(s)+' open · '+G.pendingLanes(s)+' building';
  $('laneTiles').innerHTML=s.lanes.map(l=>`<button class="laneTile" data-open="lane${l.id}"><div class="drawerRow"><span>🎳 Lane ${l.id}</span><b>${Math.round(l.condition)}%</b></div><div class="meter"><div style="width:${l.condition}%"></div></div><small class="muted">${l.condition<48?'Needs service':'Inspect & upgrade'} · ${G.LANE_KITS.filter(k=>l.kits?.[k.id]).length}/3 kits</small></button>`).join('');
- $('roomUpgradeList').innerHTML=G.ROOM_IDS.filter(id=>s.built[id]).map(id=>{const tier=s.roomTiers[id]||1,job=s.construction.find(j=>j.kind==='roomExpand'&&j.id===id),u=G.getUpgrade(id),cost=G.expansionCost(id);return `<div class="roomUpgradeRow"><strong>${esc(u.icon+' '+u.title)}</strong><small>${tier===2?'Expanded · 2 squares':job?'🚧 '+job.remaining+' days remaining':'1 square'}</small><button data-expand-room="${id}" ${tier===2||job||s.cash<cost?'disabled':''}>${tier===2?'✓ Done':job?'Building':cash(cost)+' · 2d'}</button></div>`;}).join('')||'<p class="muted small">Build a snack counter, bar, pro shop, or arcade to start arranging the floor.</p>';
+ $('bulkLaneKits').innerHTML=s.lanes.length?`<h3>🎳 Upgrade all lanes at once</h3><p class="muted small">Fit every lane missing a particular upgrade, with a 10% bulk discount. Newly built lanes can be equipped later.</p><div class="bulkKitList">${G.LANE_KITS.map(k=>{const info=G.bulkLaneCost(s,k.id);return `<button data-lane-kit-all="${k.id}" ${!info.count||s.cash<info.cost?'disabled':''}>${k.icon} <b>${esc(k.name)}</b><small>${info.count?info.count+' lane'+(info.count===1?'':'s')+' · '+cash(info.cost):'All installed ✓'}</small></button>`}).join('')}</div>`:'<p class="muted small">Install a lane to unlock center-wide equipment packages.</p>';
+ $('roomUpgradeList').innerHTML=G.ROOM_IDS.filter(id=>s.built[id]&&!G.NEW_ATTRACTIONS.some(a=>a.id===id)).map(id=>{const tier=s.roomTiers[id]||1,job=s.construction.find(j=>j.kind==='roomExpand'&&j.id===id),u=G.getUpgrade(id),cost=G.expansionCost(id);return `<div class="roomUpgradeRow"><strong>${esc(u.icon+' '+u.title)}</strong><small>${tier===2?'Expanded · 2 squares':job?'🚧 '+job.remaining+' days remaining':'1 square'}</small><button data-expand-room="${id}" ${tier===2||job||s.cash<cost?'disabled':''}>${tier===2?'✓ Done':job?'Building':cash(cost)+' · 2d'}</button></div>`;}).join('')||'<p class="muted small">Build a snack counter, bar, pro shop, or arcade to start arranging the floor.</p>';
  const max=G.lanes(s)+G.pendingLanes(s)>=G.laneCapacity(s);const cost=G.nextLaneCost(s);$('buyLane').disabled=max||s.cash<cost;$('buyLane').textContent=max?'✓ Lot is full — see Property expansion':`+ Build lane ${G.lanes(s)+G.pendingLanes(s)+1} · ${cash(cost)} · 2 days`;
- $('upgradeTiles').innerHTML=G.UPGRADES.map(u=>{const done=!!s.built[u.id],job=s.construction.find(j=>j.kind==='upgrade'&&j.id===u.id),miss=u.requires.find(r=>!s.built[r]);return `<article class="upgrade ${done?'done':''}">${icon('upgrade.'+u.id,u.icon)}<h3>${esc(u.title)}</h3><p>${esc(u.desc)}</p><button data-build="${u.id}" ${done||job||miss||s.cash<u.cost?'disabled':''}>${done?'✓ OPEN':job?'🚧 '+job.remaining+'d left':miss?'🔒 '+esc(G.getUpgrade(miss).title):cash(u.cost)+' · '+u.days+'d'}</button></article>`;}).join('');
+ $('upgradeTiles').innerHTML=G.UPGRADES.map(u=>{const done=!!s.built[u.id],job=s.construction.find(j=>j.kind==='upgrade'&&j.id===u.id),miss=u.requires.find(r=>!s.built[r]);const wing=G.NEW_ATTRACTIONS.find(a=>a.id===u.id),wingLocked=wing&&G.expansionStage(s)<wing.minExpansion;return `<article class="upgrade ${done?'done':''}">${icon('upgrade.'+u.id,u.icon)}<h3>${esc(u.title)}</h3><p>${esc(u.desc)}</p><button data-build="${u.id}" ${done||job||miss||wingLocked||s.cash<u.cost?'disabled':''}>${done?'✓ OPEN':job?'🚧 '+job.remaining+'d left':wingLocked?'🔒 Wing '+wing.minExpansion:miss?'🔒 '+esc(G.getUpgrade(miss).title):cash(u.cost)+' · '+u.days+'d'}</button></article>`;}).join('');
 }
 function renderBowlers(){if(!s.bowlers.some(b=>b.id===selectedBowler))selectedBowler=s.bowlers[0].id;
  $('recruit').disabled=s.cash<320||G.lanes(s)<2||s.bowlers.length>=4;
@@ -281,10 +313,37 @@ const FACILITY_TIPS={
  arcade:{title:'The Arcade is ready to play!',text:'The pinball machine has already become the loudest employee. Luckily, it works for free.',points:['🕹️ Tap Arcade to see the machines you own and buy more games.','🪙 Visiting customers actually play machines, generating revenue and unlocking additional cabinets.','🤖 Machines do not need employees or snack-style daily inventory.','⬜ Expand to two squares to fit more cabinets and unlock more variety.']},
  proshop:{title:'The Pro Shop is ready!',text:'Finally, someone who can explain why bowling balls have holes.',points:['🎳 Tap Pro Shop to access equipment and fitting.','👥 Hire a pro-shop employee from Staff before sales can begin. A larger shop needs TWO.','👜 Use the Bowlers tab to fit your team with better equipment.','🔧 The shop will get more supplies and specialized services in later versions.']}
 };
+function showStoryNotice(){
+ if(storyOpen||summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||tutorialOpen||startupOpen)return false;
+ const id=s.story?.pending?.[0];const c=G.STORY_CHAPTERS.find(x=>x.id===id);if(!c)return false;
+ storyOpen=true;$('storyIcon').textContent=c.icon;$('storyTitle').textContent=c.title;$('storySpeaker').textContent=c.speaker;$('storyText').textContent=c.text;$('storyHint').textContent='🎯 '+c.hint;
+ $('storyBackdrop').classList.remove('hidden');lastTick=Date.now();return true;
+}
+$('storyContinue').onclick=()=>{if(!storyOpen)return;storyOpen=false;$('storyBackdrop').classList.add('hidden');s.story.pending.shift();save();lastTick=Date.now();if(s.startupPending){showStartup();return;}if(!showNextOpeningNotice()&&!tutorialSeen)showTutorial();};
+function showIncident(){
+ if(incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
+ const e=s.eventQueue?.[0];if(!e)return false;incidentOpen=true;
+ $('incidentIcon').textContent=e.emoji||'🎳';$('incidentTitle').textContent=e.title;$('incidentText').textContent=e.text;$('incidentEffect').textContent=e.effect||'';
+ $('incidentKind').textContent=e.kind==='request'?'PRIVATE BOOKING REQUEST':e.kind==='bad'?'OH NO! AN ALLEY EMERGENCY':'LUCKY BREAK!';
+ $('incidentActions').innerHTML=e.kind==='request'?`<button class="primary" data-party-choice="yes">✅ Book the party</button><button data-party-choice="no">No thanks</button>`:
+ e.repairId?`<button data-repair-event="${esc(e.repairId)}" class="primary" ${s.cash<G.repairCost(s,e.repairId)?'disabled':''}>🔧 Fix now · ${cash(G.repairCost(s,e.repairId))}</button><button data-close-incident>Later — view in Build</button>`:
+ '<button data-close-incident class="primary">Got it →</button>';
+ $('incidentBackdrop').classList.remove('hidden');lastTick=Date.now();return true;
+}
+function closeIncident(){incidentOpen=false;$('incidentBackdrop').classList.add('hidden');s.eventQueue.shift();save();lastTick=Date.now();if(!showNextOpeningNotice())render();}
+function showPatronEncounter(){
+ if(incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
+ const enc=s.encounters?.[0];if(!enc)return false;const p=G.PATRON_PROFILES.find(x=>x.id===enc.id),talk=G.PATRON_DIALOGUES[enc.id];if(!p||!talk){s.encounters.shift();return false;}
+ patronOpen=true;const guestEmoji=({lou:'🎳',bea:'👟',dex:'🕹️',rosa:'🍹',nell:'🛍️',milo:'😎'})[p.id]||'🙂';$('patronPicture').innerHTML=icon('patron.'+p.id,guestEmoji);
+ $('patronTitle').textContent=p.name+' dropped by!';$('patronSpeech').textContent='“'+talk.prompt+'”';
+ $('patronActions').innerHTML=`<button class="primary" data-encounter="${p.id}:yes">💛 ${esc(talk.yes)}</button><button data-encounter="${p.id}:no">${esc(talk.no)}</button>`;
+ $('patronBackdrop').classList.remove('hidden');lastTick=Date.now();return true;
+}
+function closePatronEncounter(){patronOpen=false;$('patronBackdrop').classList.add('hidden');save();lastTick=Date.now();if(!showNextOpeningNotice())render();}
 function showNextOpeningNotice(){
- if(summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen)return false;
+ if(summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||storyOpen)return false;
  const notice=s.facilityNotices?.[0];
- if(!notice){if(pendingCutscene){const lvl=pendingCutscene;pendingCutscene=null;showCutscene(lvl);return true;}return false;}
+ if(!notice){if(showStoryNotice())return true;if(showIncident())return true;if(showPatronEncounter())return true;if(pendingCutscene){const lvl=pendingCutscene;pendingCutscene=null;showCutscene(lvl);return true;}return false;}
  const detail=FACILITY_TIPS[notice.id];if(!detail)return false;
  facilityNoticeOpen=true;
  $('facilityTitle').textContent=notice.tier===2?`${detail.title.replace(' is ready!',' just expanded!').replace(' is open for business!',' just expanded!')}`:detail.title;
@@ -307,6 +366,7 @@ function openSummary(report){if(!report)return;summaryOpen=true;
  if((report.facilities?report.facilities.bar:s.built.bar))daily.push(['Bar drinks',report.barOrders||0]);
  if((report.facilities?report.facilities.arcade:s.built.arcade))daily.push(['Arcade plays',report.arcadePlays||0]);
  if(s.league.active||report.leagueHeld)daily.push(['League revenue',cash(report.leagueIncome||0)]);
+ if(report.partyHeld)daily.push(['🎉 Private party',cash(report.partyIncome||0)]);
  daily.push(['💛 Customer mood',`${report.happiness??s.happiness}% (${(report.happinessDelta||0)>=0?'+':''}${report.happinessDelta||0})`]);
  if(report.loanPayment)daily.push(['Loan payment',cash(report.loanPayment)]);
  if(report.staffPay)daily.push(['Staff wages',cash(report.staffPay)]);
@@ -331,7 +391,7 @@ const TAB_GUIDES={
  tournaments:['🏆','Compete for glory','Enter tournaments, practice optional shots and start a Thursday league when you have six lanes.'],
  you:['🧢','You run this place','Spend your owner skill points on management, coaching or promotions as your business grows.'],
  employees:['👥','Hire the crew','The snack bar, drinks counter and pro shop must be staffed. Train employees and set wages here.'],
- goals:['⭐','Grow your Alley Stars','Upgrades earn Alley Appeal points and stars. Pair those with visitors and reputation for new alley levels.'],
+ goals:['⭐','Grow your Alley Stars','Room visits and actual improvements earn department stars. Combine department stars with reputation and visitors to level up.'],
  settings:['⚙️','The control room','Pause time, adjust the clock, export your save, or create a new bowling business.']
 };
 function guideTarget(){const selector=guideMode==='tab'?`nav [data-tab="${tabTipId}"]`:(TUTORIAL_STEPS[tutorialStep]?.target||'#sceneDesk');return document.querySelector(selector);}
@@ -361,7 +421,7 @@ function closeTutorial(){tutorialOpen=false;if(guideMode==='intro')tutorialSeen=
 window.addEventListener('resize',placeGuide);window.addEventListener('scroll',()=>{if(tutorialOpen)requestAnimationFrame(placeGuide);},true);
 $('openSettings').onclick=()=>gotoTab('settings',true);$('openTutorial').onclick=()=>showTutorial();$('tutorialSkip').onclick=closeTutorial;$('tutorialBack').onclick=()=>{if(tutorialStep>0){tutorialStep--;renderTutorial();}};$('tutorialNext').onclick=()=>{if(guideMode==='tab'||tutorialStep>=TUTORIAL_STEPS.length-1)closeTutorial();else{tutorialStep++;renderTutorial();}};
 function showCutscene(level){cutsceneOpen=true;introSeen=true;introCutscene=level===1;const intro=level===1;
- const headings={1:'The keys are finally yours!',2:'The neighborhood has noticed!',3:'A real neighborhood favorite!',4:'The town is talking!',5:'Bowling empire unlocked!'};
+ const headings={1:'Grandpa Gus’s old alley',2:'The neighborhood has noticed!',3:'A real neighborhood favorite!',4:'The town is talking!',5:'Bowling empire unlocked!'};
  const captions={1:'A perfectly empty building. The floor is yours. The loan officer is already calling. Pick your first project!',2:'Business is building! More lanes, more visitors, and fewer empty corners.',3:'More people, more lanes, more possibilities.',4:'A bigger, busier bowling destination. The competitors are noticing.',5:'Lights, lanes, and legends. You built something special.'};
  $('cutsceneTitle').textContent=headings[level]||'A new era of bowling!';$('cutsceneCaption').textContent=captions[level]||'Your bowling center has leveled up!';
  const art=$('cutsceneArt');art.className='cutsceneArt level-'+level;
@@ -381,10 +441,10 @@ $('summaryDesk').onclick=()=>{closeSummary(true);openDrawer('desk');};
 $('skipFutureSummaries').onchange=e=>{skipSummaries=e.target.checked;$('skipSummarySetting').checked=skipSummaries;save();};
 $('skipSummarySetting').onchange=e=>{skipSummaries=e.target.checked;save();};
 $('daySummaryBackdrop').onclick=e=>{if(e.target===$('daySummaryBackdrop'))closeSummary(true);};
-function stepHour(manual=false){if(welcomeOpen||summaryOpen||cutsceneOpen||tutorialOpen||startupOpen||facilityNoticeOpen||s.startupPending)return;const oldLevel=G.venueLevel(s),result=G.tickHour(s);lastTick=Date.now();render();syncVisitors(result.events);save();checkClosing(result,oldLevel);
+function stepHour(manual=false){if(welcomeOpen||summaryOpen||cutsceneOpen||tutorialOpen||startupOpen||facilityNoticeOpen||storyOpen||incidentOpen||patronOpen||s.startupPending)return;const oldLevel=G.venueLevel(s),result=G.tickHour(s);lastTick=Date.now();render();syncVisitors(result.events);save();checkClosing(result,oldLevel);
  if(manual&&!result.dayEnded)toast(`${G.formatHour(result.hour)}–${G.formatHour(result.hour+1)} · ${result.events.filter(x=>x.type==='arrival').length} group arrivals.`);
  if(drawer)renderDrawer();return result;}
-function finishDay(){if(welcomeOpen||summaryOpen||cutsceneOpen||tutorialOpen||startupOpen||facilityNoticeOpen||s.startupPending)return;const oldLevel=G.venueLevel(s);let count=0,result;do{result=G.tickHour(s);count++;}while(!result.dayEnded&&count<9);
+function finishDay(){if(welcomeOpen||summaryOpen||cutsceneOpen||tutorialOpen||startupOpen||facilityNoticeOpen||storyOpen||s.startupPending)return;const oldLevel=G.venueLevel(s);let count=0,result;do{result=G.tickHour(s);count++;}while(!result.dayEnded&&count<9);
  lastTick=Date.now();render();syncVisitors(result.events);save();if(drawer)renderDrawer();checkClosing(result,oldLevel);}
 $('nextHour').onclick=()=>stepHour(true);$('endDay').onclick=finishDay;$('toggleAuto').onclick=()=>{auto=!auto;lastTick=Date.now();render();save();toast(auto?'Auto time resumed.':'Auto time paused.');};$('recruit').onclick=()=>perform(G.recruit(s),'Welcome to the team!');$('save').onclick=()=>{save();toast('Game saved to this browser.');};
 $('reset').onclick=()=>openResetConfirm();
@@ -401,14 +461,14 @@ function hideWelcome(){welcomeOpen=false;$('welcomeBackdrop').classList.add('hid
 function resumeLoaded(){hideWelcome();render();gotoTab(tab);syncVisitors([],true);
  // On reload, do not silently advance hours in bulk or leave the game looking frozen.
  if(s.hour===G.CLOSE&&!skipSummaries&&s.lastDay&&s.lastDay.day===s.day)openSummary(s.lastDay);
- else if(s.facilityNotices?.length)showNextOpeningNotice();
- else if(!introSeen)showCutscene(1);
- else if(s.startupPending)showStartup();
+ else if(s.facilityNotices?.length||s.story?.pending?.length||s.eventQueue?.length||s.encounters?.length)showNextOpeningNotice();
+ else if(!introSeen){introSeen=true;if(!showStoryNotice())showStartup();}
+ else if(s.startupPending){if(!showStoryNotice())showStartup();}
  else if(!tutorialSeen)showTutorial();
  save();
 }
 function beginNewGame(){storeRecovery();hideWelcome();closeDrawer();s=G.newGame();lastTick=Date.now();auto=true;tab='alley';buildSection='construction';skipSummaries=false;introSeen=false;tutorialSeen=false;summaryOpen=false;pendingCutscene=null;cutsceneOpen=false;tutorialOpen=false;layoutMode=false;movingRoom=null;lastAnnouncedLevel=1;
- for(const id of ['daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','startupBackdrop','facilityBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;$('visitorLayer').replaceChildren();render();gotoTab('alley');save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('new-game');showCutscene(1);
+ for(const id of ['daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','startupBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;$('visitorLayer').replaceChildren();render();gotoTab('alley');save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('new-game');introSeen=true;showStoryNotice();
 }
 function openResetConfirm(){
  resetFromSettings=!welcomeOpen;
@@ -445,8 +505,17 @@ $('importSaveFile').onchange=async e=>{await readImportedFile(e.target.files[0])
 $('importCancel').onclick=()=>{importPending=null;$('importConfirmBackdrop').classList.add('hidden');};
 $('importConfirm').onclick=()=>useImportedSave();
 $('restoreBackup').onclick=()=>{const raw=safeRead(BACKUP);const b=candidateState(raw);if(!b){toast('No recoverable previous game is stored here.',true);return;}if(!confirm('Restore the previous game? Export your current game first if you want to keep both.'))return;importPending=b.state;useImportedSave(false);};
-$('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(tutorialOpen)closeTutorial();else if(facilityNoticeOpen){}else if(cutsceneOpen)endCutscene();else if(summaryOpen)closeSummary(true);else if(drawer)closeDrawer();}});
+$('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(tutorialOpen)closeTutorial();else if(incidentOpen||patronOpen||facilityNoticeOpen){}else if(cutsceneOpen)endCutscene();else if(summaryOpen)closeSummary(true);else if(drawer)closeDrawer();}});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.laneKitAll){perform(G.upgradeAllLanes(s,b.dataset.laneKitAll),'Center-wide equipment installed!');return;}
+ if(b.dataset.goalNav){goalSection=b.dataset.goalNav;showGoalSection();return;}
+ if(b.dataset.closeIncident!==undefined){closeIncident();return;}
+ if(b.dataset.repairEvent){const outcome=G.repairOutage(s,b.dataset.repairEvent);if(!outcome.ok){toast(outcome.reason,true);return;}closeIncident();return;}
+ if(b.dataset.repair){perform(G.repairOutage(s,b.dataset.repair),'Repairs completed. Back in business!');return;}
+ if(b.dataset.partyChoice){const outcome=G.respondPartyRequest(s,b.dataset.partyChoice==='yes');if(outcome.ok)closeIncident();else toast(outcome.reason,true);return;}
+ if(b.dataset.encounter){const [id,answer]=b.dataset.encounter.split(':');const response=G.respondEncounter(s,id,answer);if(response.ok){closePatronEncounter();toast(response.delta>0?'Friendship grew!':'They seem a little disappointed.');}else toast(response.reason,true);return;}
+ if(b.dataset.schoolPartnership!==undefined){perform(G.secureSchoolPartnership(s),'Your school partnership is official!');return;}
+ if(b.dataset.patron){const [id,action]=b.dataset.patron.split(':');perform(G.talkToPatron(s,id,action),action==='invite'?'New league member!':'You made their day a little brighter.');return;}
  if(b.id==='toggleLayout'){layoutMode=!layoutMode;movingRoom=null;if(layoutMode){gotoTab('alley');$('exitLayout').classList.remove('hidden');}else $('exitLayout').classList.add('hidden');renderRoomGrid();return;}
  if(b.dataset.roomMove){if(!s.built[b.dataset.roomMove]&&!G.isBuilding(s,b.dataset.roomMove))return;closeDrawer();layoutMode=true;movingRoom=b.dataset.roomMove;gotoTab('alley');$('exitLayout').classList.remove('hidden');renderRoomGrid();toast('Tap an empty floor square to move your '+b.dataset.roomMove+'.');return;}
  if(b.dataset.placeRoom){const [x,y]=b.dataset.placeRoom.split(':').map(Number);if(perform(G.moveRoom(s,movingRoom,x,y),'Room moved!')){movingRoom=null;renderRoomGrid();}return;}
@@ -477,7 +546,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(b.dataset.startLeague!==undefined){perform(G.startLeague(s),'Your weekly league is now open!');return;}
  if(b.dataset.barPrice){perform(G.setBarPrice(s,s.barPrice+Number(b.dataset.barPrice)));return;}
  if(b.dataset.buyParts!==undefined){perform(G.buyParts(s),'Spare parts restocked.');return;}
- if(b.dataset.laneKit){const [id,kit]=b.dataset.laneKit.split(':');perform(G.upgradeLane(s,id,kit),'Lane '+id+' improved! +Alley Appeal');return;}
+ if(b.dataset.laneKit){const [id,kit]=b.dataset.laneKit.split(':');perform(G.upgradeLane(s,id,kit),'Lane '+id+' improved!');return;}
  if(b.dataset.laneTheme){const [id,theme]=b.dataset.laneTheme.split(':');perform(G.setLaneTheme(s,id,theme),'New scoring animation selected!');return;}
  if(b.dataset.service){perform(G.serviceLane(s,Number(b.dataset.service)),'Lane '+b.dataset.service+' serviced.');return;}
  if(b.dataset.restock){perform(G.restockSnack(s,b.dataset.restock),'Order placed! Delivery tomorrow morning.');return;}
@@ -492,7 +561,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 for(const k of ['angle','spin','power']){$(k).oninput=()=>{$('v'+k[0].toUpperCase()+k.slice(1)).textContent=$(k).value+(k==='power'?'%':'');};$(k).dispatchEvent(new Event('input'));}
 $('roll').onclick=()=>{const r=G.bowlShot(s,$('angle').value,$('spin').value,$('power').value);if(perform(r))$('shotResult').textContent=r.result;};
 // v0.9: Reopen deliberately. Never simulate days while the player is choosing a save.
-setInterval(()=>{const now=Date.now();if(auto&&!cloudGateOpen&&!welcomeOpen&&!summaryOpen&&!cutsceneOpen&&!tutorialOpen&&!startupOpen&&!facilityNoticeOpen&&!s.startupPending&&now-lastTick>=MS_HOUR){
+setInterval(()=>{const now=Date.now();if(auto&&!cloudGateOpen&&!welcomeOpen&&!summaryOpen&&!cutsceneOpen&&!tutorialOpen&&!startupOpen&&!facilityNoticeOpen&&!incidentOpen&&!patronOpen&&!storyOpen&&!s.startupPending&&now-lastTick>=MS_HOUR){
  try{const lv=G.venueLevel(s),result=G.tickHour(s);lastTick=now;render();syncVisitors(result.events);if(drawer)renderDrawer();save();checkClosing(result,lv);}
  catch(e){auto=false;lastTick=Date.now();console.error('Game clock paused to protect save',e);toast('Clock paused to protect your game. Open Settings to export a backup.',true);save();}
 }},160);
@@ -503,7 +572,7 @@ function unlockDemo(){
  cloudMode=false;KEY='gutter-to-glory-v091-demo';BACKUP='gutter-to-glory-backup-v091-demo';
  const d=candidateState(safeRead(KEY));if(d){s=d.state;hadSavedGame=true;introSeen=true;tutorialSeen=true;}
  cloudGateOpen=false;lastAnnouncedLevel=G.venueLevel(s);
- if(hadSavedGame||hadBrokenSave){showWelcome();}else{welcomeOpen=false;render();gotoTab('alley');showCutscene(1);}
+ if(hadSavedGame||hadBrokenSave){showWelcome();}else{welcomeOpen=false;render();gotoTab('alley');introSeen=true;showStoryNotice();}
 }
 function readBrowserCandidate(uid){
  const saved=candidateState(safeRead('gutter-to-glory-v091-user-'+uid));
@@ -511,19 +580,19 @@ function readBrowserCandidate(uid){
 }
 function unlockCloud(uid,snapshot,source='cloud'){
  cloudMode=true;KEY='gutter-to-glory-v091-user-'+uid;BACKUP='gutter-to-glory-v091-backup-'+uid;
- for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
- closeDrawer();summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;
+ for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
+ closeDrawer();summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;
  if(snapshot){const imported=G.migrate(snapshot.state||snapshot);if(!imported||!G.checkState(imported))throw Error('Save file was rejected by the game engine');
    s=imported;introSeen=true;tutorialSeen=true;welcomeOpen=false;}
  else{s=G.newGame();introSeen=false;tutorialSeen=false;welcomeOpen=false;skipSummaries=false;tab='alley';auto=true;}
  cloudGateOpen=false;lastAnnouncedLevel=G.venueLevel(s);lastTick=Date.now();render();gotoTab(tab);syncVisitors([],true);save();
- if(!snapshot)showCutscene(1);
+ if(!snapshot){introSeen=true;showStoryNotice();}
  else if(s.startupPending)showStartup();
- else if(s.facilityNotices?.length)showNextOpeningNotice();
+ else if(s.facilityNotices?.length||s.story?.pending?.length||s.eventQueue?.length||s.encounters?.length)showNextOpeningNotice();
  else if(s.hour===G.CLOSE&&!skipSummaries&&s.lastDay?.day===s.day)openSummary(s.lastDay);
 }
 function lockCloud(){cloudGateOpen=true;welcomeOpen=true;cloudMode=false;closeDrawer();
- for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
+ for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
  summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;s=G.newGame();lastTick=Date.now();render();}
 window.GTGApp={
  unlockDemo,unlockCloud,lockCloud,readBrowserCandidate,
