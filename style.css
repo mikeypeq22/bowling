@@ -495,3 +495,16 @@ button.primary:hover:not(:disabled){background:#fce090}
 /* Keep the customization control above the growing Shops & Activities footprint. */
 .scene .sceneStyle{top:57px;right:3%;bottom:auto;z-index:5;}
 @media(max-width:690px){.scene .sceneStyle{top:55px;right:3%;}}
+
+/* v0.99: map navigation, booking cards and accessible controls */
+.venueMapTools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0 9px;padding:9px 10px;border:1px solid var(--edge,#39526d);border-radius:12px;background:var(--panel,#17283b);color:var(--txt,#f6f4e9);font-size:12px}
+.venueMapTools button{min-width:34px;min-height:32px;padding:4px 8px}.venueMapTools span{font-variant-numeric:tabular-nums;font-weight:800}.alleyLayout .column{overflow-x:auto;scrollbar-width:thin}
+.bookingPanel{margin-bottom:16px}.calendarDays{display:flex;gap:6px;overflow-x:auto;padding:9px 0}.calendarDays button{flex:0 0 auto;min-width:64px;padding:8px;border-radius:9px}.calendarDays button.active{background:#16466b;color:white}.calendarDays button small{display:block;font-size:10px}
+.bookingCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px;margin:12px 0}.bookingCard{padding:13px}.bookingCard h3{font-size:16px}.bookingCard small{display:block;color:var(--muted,#64748b)}
+.contractActions{display:flex;gap:8px;flex-wrap:wrap;margin:9px 0}.contractActions button{flex:1 1 145px}.bookingList>div{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-bottom:1px solid #cbd5e155;padding:9px 0}.bookingList small{font-size:12px}
+.rivalPanel{padding:14px;margin-top:13px;border:1px dashed #bd7f5d;border-radius:13px;background:#f9e5d322}
+body.lowMotion *, body.lowMotion *::before,body.lowMotion *::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+body.largeText .scene,body.largeText .venueMapTools{font-size:115%}body.largeText .roomTile,body.largeText .laneScene{font-size:115%}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid #1b7bcc!important;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+@media(max-width:420px){.venueMapTools{gap:4px;padding:6px}.venueMapTools button{font-size:11px;padding:5px;min-height:36px}.bookingCards{grid-template-columns:1fr}}

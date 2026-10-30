@@ -1,41 +1,26 @@
-# From Gutter to Glory — v0.98 Release Notes
+# From Gutter to Glory v0.99 — Connections & Consequences
 
-## The Town Comes Alive Update
+## Highlights
 
-### Opening story
+- New **first-time guided clock tutorial** points to the time HUD and explains one-hour time jumps, automatic time (~5.2 real seconds per game hour), the 2–10 PM daily schedule, Next Hour, Finish Day and day-based deliveries/construction.
+- **Zoomable venue map** controls (80–140%) plus Shops/Lanes jump shortcuts. The already scrollable 24-lane venue remains available. Added low-motion and large-text controls in Settings, with keyboard focus highlighting.
+- **Booking calendar** under Compete. Select one of the next 2–14 game days and sign birthday, school, company, charity, visiting-team or off-site outreach contracts. Deposits arrive on signing; the remainder is earned during the event. Catering is an extra, charged upfront and rewarding later. Detects overlap and Thursday league conflicts. Existing random full-alley party requests remain supported.
+- **Community partnerships** under Advertising: high schools, youth teams, charities, employers, nearby businesses. Different lane and reputation requirements, upfront sponsorship fees, traffic impact, weekly revenue or goodwill.
+- **VIP groups** that can return over time, named groups with distinct interests and visit counts, plus light seasonal legacy/community events. Regular-customer encounters now have three dialogue choices.
+- **Emergency Mechanic** employee in Staff: automatically repairs closed facilities when the parts and labor budget permit, and can replenish parts. Optional 28-day emergency coverage discounts repair work.
+- **Room-specific improvements** available for all 13 rooms, including the existing four departments and nine additional attractions. Custom upgrades add atmosphere and improve revenue or rating. New: Bocce Court, Live Event Stage and Full-Service Restaurant at later property expansions.
+- **Vera Vale responds** with occasional competing promotional campaigns, rumors and buyout pressure. Rival pressure has a modest effect on traffic; community outreach and legal counsel are optional countermoves. Winning the national championship secures the story conclusion. The darker two-path rivalry is **only a future design proposal**, documented separately.
+- **Community hardship protection**: up to two repair payment plans can finance emergency shutdown repairs that a struggling player cannot afford; the amount goes onto the existing in-game loan. Real-money payments are NOT involved.
 
-**The Last Frame**, Grandpa Gus's inheritance story, appears **before** the startup loan and décor choices for a new game. Removed the extra “The keys are finally yours” opening popup. Existing saves retain unlocked story chapters.
+## Compatibility
 
-### Random events and repairs
+- Save engine advances from schema version 13 to 14. Older saves are migrated in memory while preserving lanes, cash, story milestones, regulars, inventory and workers. Export your game before upgrading.
+- Firebase rules, credentials, account provider UI, Google/email login and cloud save wire format remain unchanged. The project requires a real deployment test to confirm cross-device cloud saving.
+- No advertisement network, app-store billing or real-money monetization has been integrated.
 
-- A daily event check begins on day 7, with roughly a 20% chance **only after the five-day global cooldown has elapsed**. All surprise events, including big-party requests, share the cooldown.
-- Positive scenarios include local publicity, recommendations, cash gifts, spare-parts help and visitor surges.
-- Negative scenarios include individual lane breakdowns, leaking snacks/bar rooms, restroom issues, and problems in other built departments. The affected location **closes until repaired**. The event offers immediate repair or postponement; the Build view also exposes outstanding repairs.
-- Repair costs vary by affected facility; the repair is a player choice. Normal lane servicing is separate from incident repairs.
-- One queued surprise or regular-visitor conversation can be addressed at a time, with its state preserved for reopening.
+## Notes
 
-### Business expansion
-
-- `6 → 10 → 14 → 18 → 22 → 24` total *available slots*. Property wing construction opens four lane slots and one shop row per wing, except the last wing adds the final two lane slots. Individual lanes must still be constructed and paid for.
-- The shops/activities grid grows from two to seven rows (five squares across), preserving existing room placements when migrating v0.97 saves.
-- New **operational** attractions: Billiards and Party Room (first wing), Karaoke (second), Indoor Mini Golf (third), Laser Tag (fourth), Banquet Hall (fifth). Larger attractions occupy two or three grid squares and receive revenue from visitors.
-- Other researched amenities (bocce, event stage, fine dining) remain future ideas.
-
-### Community, bookings and guest flow
-
-- Six familiar patrons—Lou, Bea, Dex, Rosa, Nell and Milo—can appear with character prompts, a portrait placeholder and two dialogue options affecting loyalty (positive +12, negative −8).
-- Random private-party invitations can be accepted or declined. Accepted parties hold **all finished lanes from 6–8 PM** on a future day and pay **2× the usual lane income** for that two-hour booking. Regular guests may wait or become unhappy.
-- Arrival rates vary by opening hour and weekday. Friday, Saturday and Sunday are more popular; weekday afternoons are quieter. Existing reputation, price, advertising, stars and capacity effects remain relevant.
-- Advertising offers an optional **local-school partnership** after four lanes, for a one-time $240 in-game fee and a boost to school-day traffic.
-
-### Compatibility
-
-- Save schema v13; automated tests cover migrating v0.97 schema 12, retaining story/loan/customers/lanes, and new event state.
-- Google and email account code and existing Firebase client configuration are preserved. Live Firebase sign-in, security rules and cloud save roundtrip have **not** been independently verified for this release.
-- The standalone demo saves **locally only**. GitHub Pages build relies on separately configured Firebase for cloud accounts.
-
-### Known limits & next steps
-
-- A large 24-lane property is shown in a longer scrollable layout on mobile; a navigable zoom/pan floor plan is a useful future improvement.
-- A full booking-calendar UI, multiple concurrent parties, named parties meeting regulars, staff incident dispatch, and intelligent technician emergency repairs are future work.
-- Long-term challenge: maintain an economy where unexpected closures are inconvenient but don't trap a low-cash new player. Monitor reports from human playtests.
+- The 5-day shared minimum for random incidents, luck events and party requests remains in force. Seasonal mini-story events also obey it.
+- Off-site outreach does not occupy bowling lanes.
+- Rival business pressure is part of the **community** route at this stage, not a crime campaign.
+- Emergency mechanic maintenance is different from the existing Lane Technician's regular lane servicing.

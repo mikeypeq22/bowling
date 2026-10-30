@@ -1,4 +1,4 @@
-/* From Gutter to Glory v0.98 — deterministic simulation; no UI dependencies. */
+/* From Gutter to Glory v0.99 — deterministic simulation; no UI dependencies. */
 (function(root,factory){const core=factory();if(typeof module==='object'&&module.exports)module.exports=core;root.BowlingCore=core;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const OPEN=14,CLOSE=22;
@@ -36,7 +36,10 @@ const NEW_ATTRACTIONS=[
  {id:'karaoke',title:'Karaoke Lounge',icon:'🎤',cost:1900,days:4,minExpansion:2,slots:2,fee:16,desc:'Singing nights and a reason to stay after the last strike.'},
  {id:'minigolf',title:'Indoor Mini Golf',icon:'⛳',cost:2800,days:4,minExpansion:3,slots:2,fee:22,desc:'A compact indoor course for families and groups.'},
  {id:'lasertag',title:'Laser Tag',icon:'🔫',cost:3800,days:5,minExpansion:4,slots:2,fee:28,desc:'Team battles for families, schools and big parties.'},
- {id:'banquet',title:'Banquet Hall',icon:'🎉',cost:4700,days:5,minExpansion:5,slots:3,fee:35,desc:'Large booked events with higher-value guests.'}
+ {id:'banquet',title:'Banquet Hall',icon:'🎉',cost:4700,days:5,minExpansion:5,slots:3,fee:35,desc:'Large booked events with higher-value guests.'},
+ {id:'bocce',title:'Bocce Court',icon:'🥎',cost:2100,days:3,minExpansion:2,slots:2,fee:17,desc:'A relaxed indoor court for families, teams, and league nights.'},
+ {id:'stage',title:'Live Event Stage',icon:'🎸',cost:3350,days:4,minExpansion:4,slots:2,fee:23,desc:'Local bands, karaoke finals, and visiting comedians perform here.'},
+ {id:'restaurant',title:'Full-Service Restaurant',icon:'🍽️',cost:5500,days:6,minExpansion:5,slots:3,fee:42,desc:'A dining destination that attracts higher-value guests.'}
 ];
 const EVENT_CATALOG=[
  {id:'viral',emoji:'📣',kind:'good',title:'A little town goes wild',text:'A customer showed everyone their strike dance. The video is trending locally.',effect:'Traffic rises for the next two days.'},
@@ -57,8 +60,52 @@ const EVENT_CATALOG=[
  {id:'proshop',emoji:'🧯',kind:'bad',title:'The pro shop springs a leak',text:'A burst pipe is threatening the shoe boxes.',effect:'Pro shop sales pause until repairs are completed.'},
  {id:'billiards',emoji:'🎱',kind:'bad',title:'The pool tables need help',text:'A water leak in the new wing has closed billiards.',effect:'Billiards temporarily stops serving visitors.'},
  {id:'partyroom',emoji:'🎂',kind:'bad',title:'A wall of very wet balloons',text:'A pipe above the party room leaked onto the decorations.',effect:'The party room is closed until fixed.'},
- {id:'karaoke',emoji:'🎤',kind:'bad',title:'Silence has fallen upon karaoke',text:'The sound system and ceiling are not on speaking terms.',effect:'Karaoke is closed until repaired.'}
+ {id:'karaoke',emoji:'🎤',kind:'bad',title:'Silence has fallen upon karaoke',text:'The sound system and ceiling are not on speaking terms.',effect:'Karaoke is closed until repaired.'},
+ {id:'pricewar',emoji:'🏢',kind:'rival',title:'StrikeCity offers cut-price lanes',text:'Vera Vale is buying billboards advertising discounted bowling across town.',effect:'A short-lived slowdown in visitor demand.'},
+ {id:'smear',emoji:'🗞️',kind:'rival',title:'Vera questions Gus’s legacy',text:'StrikeCity published a snarky article about your family alley.',effect:'A temporary reputation setback, or less with community support.'},
+ {id:'rivaloffer',emoji:'📜',kind:'rival',title:'Vera sends another buyout letter',text:'StrikeCity offers to acquire the property. The letter is annoyingly scented.',effect:'The pressure rises; respond through neighborhood outreach or legal counsel.'}
 
+];
+const PARTNERSHIP_CATALOG=[
+ {id:'school',name:'Local High School',icon:'🏫',cost:240,minLanes:4,minRep:0,boost:.12,weekly:0,desc:'More weekday school and family traffic.'},
+ {id:'teams',name:'Youth Bowling Teams',icon:'👟',cost:360,minLanes:6,minRep:10,boost:.09,weekly:60,desc:'Weekly practice fees and loyal league families.'},
+ {id:'charity',name:'Neighborhood Charities',icon:'❤️',cost:280,minLanes:3,minRep:12,boost:.08,weekly:0,desc:'Local goodwill, charity nights and reputation.'},
+ {id:'office',name:'Local Employers',icon:'🏢',cost:500,minLanes:6,minRep:25,boost:.10,weekly:95,desc:'Corporate bowling nights and recurring team-building groups.'},
+ {id:'neighbors',name:'Nearby Businesses',icon:'🤝',cost:310,minLanes:2,minRep:8,boost:.07,weekly:35,desc:'Cross-promotions, lunch-time visits and discounts.'}
+];
+const BOOKING_TYPES=[
+ {id:'birthday',name:'Birthday Party',icon:'🎂',minLanes:2,deposit:90,total:420,cater:110,bonus:145,desc:'Two-hour birthday package with a reserved lane block.'},
+ {id:'school',name:'School Field Trip',icon:'🏫',minLanes:4,deposit:120,total:620,cater:140,bonus:170,desc:'Afternoon youth bowling with optional catering.'},
+ {id:'office',name:'Corporate Bowling Night',icon:'🏢',minLanes:6,deposit:230,total:1100,cater:275,bonus:360,desc:'Premium after-work booking; fewer lanes for walk-ins.'},
+ {id:'charity',name:'Charity Tournament',icon:'❤️',minLanes:4,deposit:140,total:730,cater:160,bonus:190,desc:'A fundraiser that also strengthens local reputation.'},
+ {id:'team',name:'Visiting Team Practice',icon:'🎳',minLanes:6,deposit:95,total:510,cater:95,bonus:115,desc:'Reserve six lanes for a visiting team. Your regular Thursday league still has priority.'},
+ {id:'outreach',name:'Off-Site Community Booth',icon:'🚚',minLanes:1,deposit:45,total:215,cater:0,bonus:0,offsite:true,desc:'Promote Grandpa Gus’s alley at a local fair. No bowling lanes are reserved.'}
+];
+const ROOM_DETAILS=[
+ {id:'snack',name:'Better Snack Ovens',icon:'🍕',cost:190,bonus:1,desc:'Hotter food, happier customers.'},
+ {id:'bar',name:'Lounge Seating',icon:'🛋️',cost:240,bonus:1,desc:'Make the bar more comfortable and welcoming.'},
+ {id:'arcade',name:'Neon Prize Wall',icon:'🎁',cost:210,bonus:1,desc:'A showcase for arcade prizes and trophies.'},
+ {id:'proshop',name:'Professional Fitting Bench',icon:'🧰',cost:310,bonus:1,desc:'A clean professional corner for pro-shop visitors.'},
+ {id:'billiards',name:'Premium Pool Tables',icon:'🎱',cost:320,bonus:1,desc:'A billiards room worthy of the neighborhood league.'},
+ {id:'partyroom',name:'Party Decorations',icon:'🎈',cost:190,bonus:1,desc:'Birthday banners and easy-clean furniture.'},
+ {id:'karaoke',name:'Stage Lights',icon:'🎤',cost:290,bonus:1,desc:'Make karaoke nights feel like concerts.'},
+ {id:'minigolf',name:'Glow Golf',icon:'⛳',cost:350,bonus:1,desc:'Light up the putting course.'},
+ {id:'lasertag',name:'Arena Effects',icon:'✨',cost:400,bonus:1,desc:'A more immersive laser-tag arena.'},
+ {id:'banquet',name:'Formal Tables',icon:'🍽️',cost:400,bonus:1,desc:'A polished banquet presentation.'},
+ {id:'bocce',name:'Tournament Bocce Markers',icon:'🥎',cost:260,bonus:1,desc:'Make the court ready for serious social competition.'},
+ {id:'stage',name:'Professional Sound System',icon:'🎵',cost:440,bonus:1,desc:'Better sound for bands and comedy nights.'},
+ {id:'restaurant',name:'Chef’s Open Kitchen',icon:'👨‍🍳',cost:490,bonus:1,desc:'Give guests a beautiful view of the kitchen.'}
+];
+const SEASONAL_ARCS=[
+ {id:'gusday',name:'Grandpa Gus Memorial Roll-Off',emoji:'💌',text:'The old league sends photos of Gus and invites the town to roll in his honor.',reward:'Reputation +3 and community goodwill.'},
+ {id:'students',name:'Back-to-School Bowling Week',emoji:'🎒',text:'Students and families want an afternoon together before the new term.',reward:'Three days of extra customer traffic.'},
+ {id:'retro',name:'Retro Night Revisited',emoji:'🪩',text:'The Silver Strikers challenge the Cosmic Cosplayers to an unforgettable themed evening.',reward:'Extra tips and a burst of excitement.'},
+ {id:'charity',name:'Bowl for the Neighborhood',emoji:'🤝',text:'The Firehouse Rollers organize a benefit bowling night to support local families.',reward:'Reputation and VIP loyalty improve.'}
+];
+const VIP_GROUPS=[
+ {id:'silver',name:'Silver Strikers',icon:'👵',trait:'Retired league legends who love a fair price',boost:3},
+ {id:'cosplay',name:'Cosmic Cosplayers',icon:'👾',trait:'Arcade enthusiasts with a flair for dramatic entrances',boost:2},
+ {id:'firefighters',name:'Firehouse Rollers',icon:'🚒',trait:'Community volunteers who bring friends',boost:4}
 ];
 const PARTY_REQUEST_NAMES=['Office Team-Building Night','Big Birthday Bowling Bash','Neighborhood Reunion','Company Appreciation Night','School Staff Party','Retirement Strike Party'];
 function expansionStage(s){return Math.max(0,Math.min(5,Number.isInteger(s.expansionStage)?s.expansionStage:(s.landOwned?1:0)));}
@@ -204,8 +251,9 @@ function departmentRatings(s){
  const result={lanes:{stars:laneStars,usage:laneHours,upgrades:kits,tip:'Add lanes, install lane equipment and keep bowlers coming back.'}};
  for(const id of ['snack','bar','arcade','proshop']){
   const visits=Math.max(0,s.roomVisits?.[id]||0),built=!!s.built[id],expanded=(s.roomTiers?.[id]||1)>=2;
-  const stars=!built?0:1+(visits>=6?1:0)+(visits>=24?1:0)+(expanded?1:0)+(expanded&&visits>=60?1:0);
-  result[id]={stars,usage:visits,upgrades:expanded?1:0,tip:!built?'Build the room to start earning stars.':'Serve more guests and expand the room to grow its rating.'};
+  const stars=!built?0:1+(visits>=6?1:0)+(visits>=24?1:0)+(expanded?1:0)+(expanded&&visits>=60?1:0)+(s.roomDetails?.[id]?1:0);
+  const starsCapped=Math.min(5,stars);
+  result[id]={stars:starsCapped,usage:visits,upgrades:(expanded?1:0)+(s.roomDetails?.[id]?1:0),tip:!built?'Build the room to start earning stars.':'Serve more guests and expand the room to grow its rating.'};
  }
  const comforts=(s.benches||0)+['restrooms','lockers','ballracks','tv'].filter(id=>s.fixtures[id]).length;
  const decor=['wallart','neon','tv'].filter(id=>s.fixtures[id]).length+(s.wallPaint!=='original'?1:0)+(s.starterStyle&&s.starterStyle!=='original'?1:0)+Math.min(2,NEW_ATTRACTIONS.filter(a=>s.built[a.id]).length);
@@ -317,7 +365,7 @@ function advanceStory(s){
  if(venueLevel(s)>=3)openChapter(s,'established');
  if(s.league.active)openChapter(s,'league');
  if((s.tournamentWins?.regional||0)>0)openChapter(s,'regional');
- if((s.tournamentWins?.national||0)>0){openChapter(s,'national');s.story.charter=true;}
+ if((s.tournamentWins?.national||0)>0){openChapter(s,'national');if(!s.story.charter){s.rival.pressure=0;s.rep=money(s.rep+10);note(s,'🏆 The National Heritage Cup victory silenced StrikeCity. Your community rallied to protect the alley!','story');}s.story.charter=true;}
 }
 function patronStatus(p){return p.leagueMember?'League Member':p.visits>=3&&p.loyalty>=35?'Regular':p.visits?'Visitor':'Not met yet';}
 function greetPatron(s,party,experience='bowling'){
@@ -361,17 +409,66 @@ const PATRON_DIALOGUES={
  milo:{prompt:'My friends asked if we could get a group discount someday.',yes:'Tell them they are always welcome.',no:'No discounts. Ever.'}
 };
 function respondEncounter(s,id,answer){const e=s.encounters[0],p=s.patrons[id];if(!e||e.id!==id||!p)return {ok:false,reason:'That conversation is not available'};
- const profile=PATRON_PROFILES.find(x=>x.id===id),good=answer==='yes';if(!['yes','no'].includes(answer))return {ok:false,reason:'Choose one of the answers'};
- const delta=good?12:-8;p.loyalty=clamp(p.loyalty+delta,0,100);p.lastTalk=s.day;s.encounters.shift();
- note(s,`${profile.name}: “${good?'You made my day!':'Well, I suppose that is your call.'}” (${delta>0?'+':''}${delta} loyalty)`,'feedback');
+ const profile=PATRON_PROFILES.find(x=>x.id===id),good=answer==='yes';if(!['yes','no','listen'].includes(answer))return {ok:false,reason:'Choose one of the answers'};
+ const delta=answer==='listen'?(isBuilt(s,profile.wish)?7:3):good?12:-8;p.loyalty=clamp(p.loyalty+delta,0,100);p.lastTalk=s.day;s.encounters.shift();
+ note(s,`${profile.name}: “${good?'You made my day!':answer==='listen'?'Thanks for hearing me out.':'Well, I suppose that is your call.'}” (${delta>0?'+':''}${delta} loyalty)`,'feedback');
  return {ok:true,delta};
 }
 function repairCost(s,id){return s.outages?.[String(id)]?.cost||0;}
 function repairOutage(s,id){const broken=s.outages?.[String(id)];if(!broken)return {ok:false,reason:'Nothing is broken here'};
- if(!spend(s,broken.cost))return {ok:false,reason:`Repairs cost $${broken.cost}. Keep earning and try again.`};
- s.today.expenses=money(s.today.expenses+broken.cost);delete s.outages[String(id)];log(s,`Repaired ${broken.name} for $${broken.cost}.`);note(s,`🔧 ${broken.name} has reopened!`,'build');return {ok:true,cost:broken.cost};
+ const cost=s.emergencyCoverageUntil>=s.day?Math.ceil(broken.cost*.7):broken.cost;
+ if(!spend(s,cost))return {ok:false,reason:`Repairs cost $${cost}. A community payment plan is also available.`};
+ s.today.expenses=money(s.today.expenses+cost);delete s.outages[String(id)];log(s,`Repaired ${broken.name} for $${cost}.`);note(s,`🔧 ${broken.name} has reopened!`,'build');return {ok:true,cost};
 }
-function secureSchoolPartnership(s){
+function buyRoomDetail(s,id){const option=ROOM_DETAILS.find(x=>x.id===id);if(!option||!isBuilt(s,id))return {ok:false,reason:'Build this room first'};
+ if(s.roomDetails[id])return {ok:false,reason:'Already installed'};if(!spend(s,option.cost))return {ok:false,reason:'Not enough cash'};
+ s.roomDetails[id]=true;recordCharge(s,'capex',option.cost);s.rep=money(s.rep+.7);note(s,`${option.icon} Added ${option.name} to ${id}.`,'build');return {ok:true};}
+function negotiatePartnership(s,id){const x=PARTNERSHIP_CATALOG.find(x=>x.id===id);if(!x)return {ok:false,reason:'Unknown partner'};
+ if(s.partnerships[id])return {ok:false,reason:'Already partnered'};if(lanes(s)<x.minLanes||s.rep<x.minRep)return {ok:false,reason:`Needs ${x.minLanes} lanes and ${x.minRep} reputation`};
+ if(!spend(s,x.cost))return {ok:false,reason:'Not enough cash for the sponsorship'};s.partnerships[id]=true;recordCharge(s,'marketingSpend',x.cost);s.rep=money(s.rep+(id==='charity'?5:2));
+ note(s,`${x.icon} New partnership: ${x.name}. ${x.desc}`,'marketing');return {ok:true};}
+function contractCollision(s,day,start,end){return (s.bookings||[]).some(b=>b.day===day&&b.status==='booked'&&start<b.end&&end>b.start)||!!(s.partyBooking&&s.partyBooking.day===day&&start<s.partyBooking.end&&end>s.partyBooking.start)||!!(s.league.active&&calendar(day).dayIndex===3&&start<20&&end>18);}
+function bookContract(s,id,daysAhead=3,catering=false){const t=BOOKING_TYPES.find(x=>x.id===id);if(!t)return {ok:false,reason:'Unknown event type'};
+ if(lanes(s)<t.minLanes)return {ok:false,reason:`Need ${t.minLanes} lanes for this event`};daysAhead=Number(daysAhead);if(!Number.isInteger(daysAhead)||daysAhead<2||daysAhead>14)return {ok:false,reason:'Book between 2 and 14 days ahead'};
+ const day=s.day+daysAhead,start=id==='school'||id==='outreach'?15:18,end=start+2;if(!t.offsite&&contractCollision(s,day,start,end))return {ok:false,reason:'Another booking or league already uses that time'};
+ const cateringCost=catering?t.cater:0;if(!spend(s,cateringCost))return {ok:false,reason:'Not enough money to prepare catering'};
+ const deposit=t.deposit,remaining=t.total-deposit+(catering?t.bonus:0);
+ s.cash=money(s.cash+deposit);s.earned=money(s.earned+deposit);s.today.partyIncome=money(s.today.partyIncome+deposit);s.today.income=money(s.today.income+deposit);
+ if(cateringCost){s.today.expenses=money(s.today.expenses+cateringCost);s.today.net=money(s.today.income-s.today.expenses);}
+ s.bookingSerial++;const booked={id:s.bookingSerial,type:id,name:t.name,day,start,end,deposit,remaining,catering:!!catering,offsite:!!t.offsite,paid:false,status:'booked'};
+ s.bookings.push(booked);s.bookings=s.bookings.filter(b=>b.status==='booked'||b.day>=s.day-45);note(s,`📆 ${t.name} booked for Day ${day} (${formatHour(start)}–${formatHour(end)}). Deposit +$${deposit}.${catering?' Catering confirmed.':''}`,'league');return {ok:true,booking:booked};}
+function hireEmergencyMechanic(s){return hireEmployee(s,'mechanic');}
+function buyEmergencyCoverage(s){if(s.emergencyCoverageUntil>=s.day)return {ok:false,reason:'Already covered'};
+ if(lanes(s)<2)return {ok:false,reason:'Open two lanes first'};if(!spend(s,160))return {ok:false,reason:'Coverage costs $160'};
+ s.emergencyCoverageUntil=s.day+28;recordCharge(s,'capex',160);note(s,'🛡️ Emergency service coverage: 28 game days of discounted repairs.','staff');return {ok:true};}
+function paymentPlanRepair(s,id){const outage=s.outages?.[String(id)];if(!outage)return {ok:false,reason:'No repairs needed'};
+ if(s.hardshipUses>=2)return {ok:false,reason:'Your two community repair grants have already been used'};
+ if(s.cash>=outage.cost)return {ok:false,reason:'Pay the standard repair fee when affordable'};
+ const paid=Math.max(0,Math.min(s.cash,Math.floor(outage.cost*.25))),financed=outage.cost-paid;
+ s.cash=money(s.cash-paid);s.loan.balance=money(s.loan.balance+financed);s.loan.payment=Math.max(35,s.loan.payment||35);s.hardshipUses++;
+ delete s.outages[String(id)];s.rep=Math.max(0,money(s.rep-1));note(s,`❤️ Community repair assistance reopened ${outage.name}; $${financed} added to your loan. (${s.hardshipUses}/2 grants.)`,'staff');return {ok:true,financed};}
+function respondToRival(s,choice){if(!['outreach','legal'].includes(choice))return {ok:false,reason:'Choose an appropriate response'};
+ const cost=choice==='outreach'?145:260;if(!spend(s,cost))return {ok:false,reason:'Not enough cash'};
+ recordCharge(s,'marketingSpend',cost);s.rival.pressure=Math.max(0,s.rival.pressure-(choice==='outreach'?16:28));s.rival.lastResponseDay=s.day;
+ if(choice==='outreach'){s.rep=money(s.rep+3);s.rival.community+=1;}else s.rival.protectionUntil=s.day+21;
+ note(s,choice==='outreach'?'❤️ The neighborhood rallied behind your alley.':'⚖️ A local attorney reviewed Vera’s threats; your business is protected for 21 days.','marketing');return {ok:true};}
+function emergencyMechanicShift(s){if(!countStaff(s,'mechanic'))return;
+ const outages=Object.entries(s.outages||{});if(!outages.length)return;
+ if(s.parts<2&&s.cash>=45){s.parts+=5;s.cash=money(s.cash-45);s.today.expenses=money(s.today.expenses+45);note(s,'🧰 Emergency mechanic purchased five spare parts ($45).','staff');}
+ for(const [id,o] of outages){if(s.parts<1)break;const cost=Math.max(12,Math.ceil(o.cost*(s.emergencyCoverageUntil>=s.day?.3:.55)));
+  if(s.cash<cost)continue;s.cash=money(s.cash-cost);s.parts--;s.today.expenses=money(s.today.expenses+cost);delete s.outages[id];note(s,`🧰 The emergency mechanic reopened ${o.name} automatically for $${cost} and one spare part.`,'staff');}
+}
+function weeklyPartnerBenefit(s){if(calendar(s.day).dayIndex!==6)return;
+ for(const p of PARTNERSHIP_CATALOG){if(!s.partnerships[p.id])continue;if(p.weekly)addIncome(s,'otherIncome',p.weekly);
+  if(p.id==='charity')s.rep=money(s.rep+1);}
+}
+function checkVIPGroup(s){if(s.startupPending||lanes(s)<3||s.day<8||roll(s)>.10)return;
+ const v=VIP_GROUPS[Math.floor(roll(s)*VIP_GROUPS.length)];const record=s.vipGroups[v.id];record.visits++;record.lastDay=s.day;
+ const bonus=Math.round(24+v.boost*lanes(s));addIncome(s,'otherIncome',bonus);note(s,`${v.icon} ${v.name} returned! ${v.trait}. Group sales +$${bonus}.`,'feedback');
+ if(record.visits===3){s.rep=money(s.rep+2);note(s,`${v.name} are now recognized VIP regulars! Reputation +2.`,'feedback');}
+}
+function secureSchoolPartnership(s){return negotiatePartnership(s,'school');}
+function legacySchoolPartnership(s){
  if(s.partnerships?.school)return {ok:false,reason:'The local school partnership is already active'};
  if(lanes(s)<4)return {ok:false,reason:'Four lanes are needed before the local school can partner with you'};
  if(!spend(s,240))return {ok:false,reason:'Sponsorship costs $240'};
@@ -379,13 +476,18 @@ function secureSchoolPartnership(s){
  note(s,'🏫 Signed a local-school partnership. More youth and family visits Monday–Friday!','marketing');return {ok:true};
 }
 function respondPartyRequest(s,accept){const request=s.pendingPartyRequest;if(!request)return {ok:false,reason:'No booking request waiting'};
+ if(accept&&contractCollision(s,request.day,request.start,request.end))return {ok:false,reason:'A league or signed contract already has those lanes. Decline this offer.'};
  if(accept){s.partyBooking={...request,status:'accepted'};note(s,`Booked ${request.name}: all lanes reserved ${formatHour(request.start)}–${formatHour(request.end)} on Day ${request.day}, for 2× the normal lane rate.`,'league');}
  else note(s,`Declined ${request.name}. Your regular visitors will have the lanes to themselves.`,'feedback');
  s.pendingPartyRequest=null;return {ok:true,accepted:!!accept};
 }
 function rollRandomEvent(s){
- if(s.startupPending||s.day<7||s.day-(s.lastRandomEventDay||-100)<5||roll(s)>.20)return false;
- const eligible=EVENT_CATALOG.filter(e=>e.kind==='good'||e.id==='lane'&&s.lanes.length>0||e.id==='restrooms'&&s.fixtures.restrooms||s.built[e.id]);
+ if(s.startupPending||s.day<7||s.day-(s.lastRandomEventDay||-100)<5)return false;
+ if(s.day%28===14&&s.lanes.length>0){const arc=SEASONAL_ARCS[(Math.floor(s.day/28))%SEASONAL_ARCS.length];const entry={id:'season-'+arc.id,title:arc.name,emoji:arc.emoji,kind:'good',text:arc.text,effect:arc.reward,day:s.day};s.lastRandomEventDay=s.day;s.eventQueue.push(entry);s.eventHistory.unshift(entry);s.eventHistory=s.eventHistory.slice(0,25);
+  if(arc.id==='students'){s.eventBoostFactor=1.6;s.eventBoostUntil=s.day+2;}else if(arc.id==='retro')s.cash=money(s.cash+145);else{s.rep=money(s.rep+3);if(arc.id==='charity')for(const p of Object.values(s.patrons||{}))p.loyalty=clamp(p.loyalty+3,0,100);}
+  note(s,`${arc.emoji} ${arc.name}: ${arc.text}`,'story');return true;}
+ if(roll(s)>.20)return false;
+ const eligible=EVENT_CATALOG.filter(e=>e.kind==='good'||e.kind==='rival'||e.id==='lane'&&s.lanes.length>0||e.id==='restrooms'&&s.fixtures.restrooms||s.built[e.id]);
  if(!eligible.length)return false;
  // Party invitations are also random events, and share the five-day cooldown.
  if(s.day>=9&&s.lanes.length>=2&&!s.pendingPartyRequest&&!s.partyBooking&&s.day-s.lastPartyRequestDay>=10&&roll(s)<.27){
@@ -398,7 +500,11 @@ function rollRandomEvent(s){
  const chosen=eligible[Math.floor(roll(s)*eligible.length)];
  if(chosen.kind==='bad'&&activeOutage(s,chosen.id))return false;
  s.lastRandomEventDay=s.day;const entry={...chosen,day:s.day};
- if(chosen.kind==='good'){
+ if(chosen.kind==='rival'){
+  s.rival.pressure=Math.min(100,s.rival.pressure+12);if(chosen.id==='pricewar'){s.eventBoostFactor=s.rival.protectionUntil>=s.day?.95:.72;s.eventBoostUntil=s.day+3;}
+  else if(chosen.id==='smear')s.rep=Math.max(0,money(s.rep-(s.rival.community?1:3)));
+  entry.effect+=' StrikeCity pressure '+s.rival.pressure+'/100. Go to Goals → Story to respond.';
+ }else if(chosen.kind==='good'){
   if(['viral','school','mystery'].includes(chosen.id)){s.eventBoostFactor=chosen.id==='viral'?1.85:chosen.id==='mystery'?1.7:1.6;s.eventBoostUntil=s.day+2;}
   if(['review','neighborhood','nostalgia'].includes(chosen.id)){s.rep=money(s.rep+(chosen.id==='nostalgia'?2:3));s.happiness=clamp(s.happiness+(chosen.id==='neighborhood'?4:2),0,100);}
   if(['donation','birthday'].includes(chosen.id))s.cash=money(s.cash+(chosen.id==='birthday'?120:180));
@@ -414,7 +520,7 @@ function rollRandomEvent(s){
  return true;
 }
 function newDayStats(day){return {partyIncome:0,partyHeld:false,eventNotes:[],satisfied:0,unhappy:0,happinessDelta:0,loanPayment:0,techServices:0,techPartsBought:0,techExpenses:0,laneHours:0,day,week:calendar(day).week,weekday:calendar(day).weekday,arcadePlays:0,leagueIncome:0,leagueHeld:false,leagueHours:0,arrivals:0,served:0,left:0,waited:0,benchSaves:0,spentOnSnacks:0,snackOrders:0,snackMisses:0,barOrders:0,barMisses:0,walkIns:0,staffPay:0,laneIncome:0,shoeIncome:0,snackIncome:0,barIncome:0,otherIncome:0,marketingSpend:0,capex:0,expenses:0,income:0,net:0,groups:[],feedback:[],events:[]};}
-function newGame(seed=271828){return {version:13,story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
+function newGame(seed=271828){return {version:14,bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false,teams:false,charity:false,office:false,neighbors:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
  built:{roof:true},lanes:[],parts:4,benches:0,construction:[],facilityNotices:[],campaign:null,barStock:0,barPrice:9,barVisits:0,barStockById:Object.fromEntries(DRINKS.map(i=>[i.id,0])),barPrices:Object.fromEntries(DRINKS.map(i=>[i.id,i.price])),arcadeVisits:0,arcadeMachines:{},fixtures:{},wallPaint:'original',league:{active:false,season:0,sessions:0,totalRevenue:0,lastDay:0},nextDayCharges:{capex:0,marketingSpend:0},
  roomPlacements:{},roomTiers:{},roomVisits:{snack:0,bar:0,arcade:0,proshop:0},snackStock:{soda:0,popcorn:0,hotdog:0,pizza:0,nachos:0,pretzel:0,icecream:0,fries:0,burger:0,cheeseburger:0},snackPrices:Object.fromEntries(SNACKS.map(x=>[x.id,x.price])),
  pricing:{lane:18,shoes:3},deliveries:[],lowStockThreshold:3,employees:[],employeeSerial:0,partyCounter:0,queue:[],active:[],sceneGroups:[],
@@ -465,14 +571,15 @@ function finishSingleConstruction(s,j){
  grantXP(s,12);advanceStory(s);note(s,`Construction complete: ${j.title}! Available next morning.`,'build');log(s,`Completed ${j.title}.`);
 }
 function finishConstruction(s){const left=[];for(const j of s.construction){j.remaining--;if(j.remaining>0)left.push(j);else finishSingleConstruction(s,j);}s.construction=left;}
-const EMPLOYEE_ROLES={snack:{name:'Snack Counter',fee:48,wage:12},bar:{name:'Bowling Bar',fee:58,wage:14},proshop:{name:'Pro Shop',fee:68,wage:15},stocker:{name:'Stock Clerk',fee:100,wage:16}};
+const EMPLOYEE_ROLES={mechanic:{name:'Emergency Mechanic',fee:320,wage:25},snack:{name:'Snack Counter',fee:48,wage:12},bar:{name:'Bowling Bar',fee:58,wage:14},proshop:{name:'Pro Shop',fee:68,wage:15},stocker:{name:'Stock Clerk',fee:100,wage:16}};
 const EMPLOYEE_NAMES=['Jo','Rae','Pat','Dani','Max','Kit','Sky','Bev','Toni','Jules','Frankie','Nico'];
-function neededStaff(s,role){if(role==='stocker')return 1;if(!isBuilt(s,role))return 0;return s.roomTiers[role]===2?2:1;}
+function neededStaff(s,role){if(role==='stocker'||role==='mechanic')return 1;if(!isBuilt(s,role))return 0;return s.roomTiers[role]===2?2:1;}
 function countStaff(s,role){return (s.employees||[]).filter(e=>e.role===role).length;}
 function staffed(s,role){return !activeOutage(s,role)&&countStaff(s,role)>=neededStaff(s,role)&&neededStaff(s,role)>0;}
 function hireEmployee(s,role){const r=EMPLOYEE_ROLES[role];if(!r)return {ok:false,reason:'Unknown position'};
+ if(role==='mechanic'&&lanes(s)<2)return {ok:false,reason:'Open two lanes before hiring the emergency mechanic'};
  if(role==='stocker'&&!isBuilt(s,'snack')&&!isBuilt(s,'bar'))return {ok:false,reason:'Open a snack counter or bar first'};
- if(role!=='stocker'&&!isBuilt(s,role))return {ok:false,reason:'Build that facility first'};
+ if(!['stocker','mechanic'].includes(role)&&!isBuilt(s,role))return {ok:false,reason:'Build that facility first'};
  if(countStaff(s,role)>=neededStaff(s,role))return {ok:false,reason:'All positions are filled'};
  if(!spend(s,r.fee))return {ok:false,reason:'Not enough cash for hiring and training'};
  s.employeeSerial++;const name=EMPLOYEE_NAMES[(s.employeeSerial-1)%EMPLOYEE_NAMES.length];
@@ -558,7 +665,7 @@ function walkIn(s){const choices=[];if(staffed(s,'snack'))choices.push('snack');
  const p=newParty(s),dest=choices[Math.floor(roll(s)*choices.length)];s.today.arrivals++;s.today.walkIns++;greetPatron(s,p,'walkin');
  note(s,`${groupText(p)} popped in just for ${dest==='snack'?'a bite':dest==='bar'?'a drink':dest==='arcade'?'the arcade':'some gear'} — no bowling tonight.`,'arrival',p.id);
  if(dest==='snack')maybeSnack(s,p,'walkin');else if(dest==='bar')maybeBar(s,p,'walkin');else if(dest==='arcade')maybeArcade(s,p);
- else if(dest==='shop'){addIncome(s,'otherIncome',12);s.roomVisits.proshop++;note(s,`${groupText(p)} bought pro-shop supplies (+$12).`,'shop',p.id);}else{const room=NEW_ATTRACTIONS.find(x=>x.id===dest);if(room){addIncome(s,'otherIncome',room.fee);s.roomVisits[dest]=(s.roomVisits[dest]||0)+1;note(s,`${groupText(p)} visited ${room.title} (+$${room.fee}).`,dest,p.id);}}
+ else if(dest==='shop'){addIncome(s,'otherIncome',s.roomDetails.proshop?17:12);s.roomVisits.proshop++;note(s,`${groupText(p)} bought pro-shop supplies (+$12).`,'shop',p.id);}else{const room=NEW_ATTRACTIONS.find(x=>x.id===dest);if(room){const income=room.fee+(s.roomDetails[dest]?Math.round(room.fee*.2):0);addIncome(s,'otherIncome',income);s.roomVisits[dest]=(s.roomVisits[dest]||0)+1;note(s,`${groupText(p)} visited ${room.title} (+$${income}).`,dest,p.id);}}
 }
 function groupText(p){return `${p.name}'s group (${p.size})`;}
 // Expected bowling groups per hour, not a near-guaranteed arrival on each of three rolls.
@@ -578,7 +685,9 @@ function chanceOfArrival(s){
 function trafficMultiplier(s){
  const dow=calendar(s.day).dayIndex, dayFactor=[.70,.78,.85,.96,1.24,1.42,1.20][dow];
  const clockFactor= s.hour<16?.48:s.hour<18?.74:s.hour<20?1.17:1.37;
- const eventFactor=(s.eventBoostUntil>=s.day?(s.eventBoostFactor||1):1)*(s.partnerships?.school&&dow<=4?1.13:1);
+ const partnerFactor=PARTNERSHIP_CATALOG.reduce((n,p)=>n*(s.partnerships?.[p.id]&&(p.id!=='school'||dow<=4)?1+p.boost:1),1);
+ const rivalFactor=s.rival?.protectionUntil>=s.day?1:Math.max(.83,1-(s.rival?.pressure||0)*.002);
+ const eventFactor=(s.eventBoostUntil>=s.day?(s.eventBoostFactor||1):1)*partnerFactor*rivalFactor;
  return dayFactor*clockFactor*eventFactor;
 }
 function GUEST_TRAFFIC_BONUS(s,openRooms){return openRooms*.10+Math.max(0,alleyStars(s)-1)*.12+(isBuilt(s,'lights')?.18:0)+s.ownerSkills.promoter*.16+(s.fixtures.neon?.06:0);}
@@ -588,16 +697,16 @@ function maybeSnack(s,p,reason){if(!isBuilt(s,'snack')||activeOutage(s,'snack'))
  if(roll(s)>(reason==='wait'?.33:reason==='walkin'?.88:.52)*serviceFactor(s,'snack'))return;
  const eligible=SNACKS.filter(i=>snackUnlocked(s,i.id));if(!eligible.length)return;
  const item=eligible[Math.floor(roll(s)*eligible.length)];if(s.snackStock[item.id]<=0){s.today.snackMisses++;note(s,`${groupText(p)} wanted ${item.name.toLowerCase()}, but it was sold out.`,'feedback',p.id);return;}
- s.snackStock[item.id]--;const price=s.snackPrices[item.id];addIncome(s,'snackIncome',price);s.today.snackOrders++;s.today.spentOnSnacks+=price;
+ s.snackStock[item.id]--;const price=s.snackPrices[item.id];addIncome(s,'snackIncome',price+(s.roomDetails.snack?2:0));s.today.snackOrders++;s.today.spentOnSnacks+=price;
  note(s,`${groupText(p)} bought ${item.name.toLowerCase()} (+$${price}).`,'snack',p.id);s.roomVisits.snack++;if(p.patronId==='bea')s.patrons.bea.loyalty=clamp(s.patrons.bea.loyalty+3,0,100);
 }
 function maybeBar(s,p,reason){if(!isBuilt(s,'bar')||activeOutage(s,'bar')||!staffed(s,'bar')||roll(s)>((reason==='wait'?.26:reason==='walkin'?.88:.39)+(s.roomTiers.bar===2?.12:0))*serviceFactor(s,'bar'))return;
  const unlocked=DRINKS.filter(i=>drinkUnlocked(s,i.id));if(!unlocked.length)return;
  const stocked=unlocked.filter(i=>s.barStockById[i.id]>0);if(!stocked.length){s.today.barMisses++;note(s,`${groupText(p)} found the bar out of drinks.`,'feedback',p.id);return;}
- const drink=stocked[Math.floor(roll(s)*stocked.length)];s.barStockById[drink.id]--;s.barStock=Math.max(0,s.barStock-1);const price=s.barPrices[drink.id];addIncome(s,'barIncome',price+(s.specialty==='lounge'?2:0));s.today.barOrders++;s.barVisits++;s.roomVisits.bar++;if(p.patronId==='rosa')s.patrons.rosa.loyalty=clamp(s.patrons.rosa.loyalty+3,0,100);
+ const drink=stocked[Math.floor(roll(s)*stocked.length)];s.barStockById[drink.id]--;s.barStock=Math.max(0,s.barStock-1);const price=s.barPrices[drink.id];addIncome(s,'barIncome',price+(s.specialty==='lounge'?2:0)+(s.roomDetails.bar?2:0));s.today.barOrders++;s.barVisits++;s.roomVisits.bar++;if(p.patronId==='rosa')s.patrons.rosa.loyalty=clamp(s.patrons.rosa.loyalty+3,0,100);
  note(s,`${groupText(p)} ordered ${drink.name.toLowerCase()} at the bar (+$${price}).`,'bar',p.id);}
 function maybeArcade(s,p){if(!isBuilt(s,'arcade')||activeOutage(s,'arcade')||roll(s)>.88)return;const owned=MACHINES.filter(i=>s.arcadeMachines[i.id]);if(!owned.length)return;
- const machine=owned[Math.floor(roll(s)*owned.length)];addIncome(s,'otherIncome',machine.fee);s.today.arcadePlays++;s.arcadeVisits++;s.roomVisits.arcade++;if(p.patronId==='dex')s.patrons.dex.loyalty=clamp(s.patrons.dex.loyalty+3,0,100);note(s,`${groupText(p)} played ${machine.name} (+$${machine.fee}).`,'arcade',p.id);}
+ const machine=owned[Math.floor(roll(s)*owned.length)];addIncome(s,'otherIncome',machine.fee+(s.roomDetails.arcade?1:0));s.today.arcadePlays++;s.arcadeVisits++;s.roomVisits.arcade++;if(p.patronId==='dex')s.patrons.dex.loyalty=clamp(s.patrons.dex.loyalty+3,0,100);note(s,`${groupText(p)} played ${machine.name} (+$${machine.fee}).`,'arcade',p.id);}
 function serve(s,p,free){
  // Rotate lane assignments so even quieter alleys use lanes 4, 5 and 6.
  const rotation=s.laneRotation||0;const pick=free.findIndex(l=>l.id>rotation);const lane=free.splice(pick>=0?pick:0,1)[0];
@@ -645,7 +754,7 @@ function finishDay(s){const t=s.today;t.facilities={snack:isBuilt(s,'snack'),bar
  if(t.served>0&&t.left===0)complaints.push('Overheard on the lanes: “'+quote(s,ALLEY_GOSSIP)+'”');
  // Count each primary bowling visit once; shortages add a small, bounded penalty.
  t.satisfied=t.served;t.unhappy=t.left;
- const score=clamp(3*t.satisfied-2*t.unhappy-Math.min(5,(t.snackMisses||0)+(t.barMisses||0))+Math.min(5,t.happyReturns||0),-12,15);
+ const score=clamp(3*t.satisfied-2*t.unhappy-Math.min(5,(t.snackMisses||0)+(t.barMisses||0))+Math.min(5,t.happyReturns||0)+(s.roomDetails.snack?1:0)+(s.roomDetails.bar?1:0),-12,15);
  const target=clamp(65+score*2+(s.specialty==='family'&&s.fixtures.wallart?4:0),0,100);
  const oldH=s.happiness;s.happiness=clamp(Math.round(.82*s.happiness+.18*target),0,100);t.happinessDelta=s.happiness-oldH;t.happiness=s.happiness;
  s.happinessHistory.push({day:s.day,value:s.happiness});s.happinessHistory=s.happinessHistory.slice(-35);
@@ -653,7 +762,7 @@ function finishDay(s){const t=s.today;t.facilities={snack:isBuilt(s,'snack'),bar
   const due=Math.min(s.loan.balance,s.loan.payment);if(s.cash>=due){s.cash=money(s.cash-due);s.loan.balance=money(s.loan.balance-due);t.loanPayment=due;t.expenses=money(t.expenses+due);s.loan.lastPaymentDay=s.day;log(s,`Paid $${due} toward the startup loan.`);}
   else complaints.push('The town loan payment was deferred until you have enough cash.');
  }
- payStaff(s);technicianShift(s);finishConstruction(s);restockAuto(s);rollRandomEvent(s);t.net=money(t.income-t.expenses);
+ payStaff(s);technicianShift(s);emergencyMechanicShift(s);weeklyPartnerBenefit(s);finishConstruction(s);restockAuto(s);rollRandomEvent(s);t.net=money(t.income-t.expenses);
  s.lastDay=structuredCloneSafe(t);s.dayReports.unshift(structuredCloneSafe(t));s.dayReports=s.dayReports.slice(0,21);
  log(s,`Closed: ${t.served} groups bowled, ${t.left} left; +$${Math.round(t.net)} net.`);
 }
@@ -668,9 +777,12 @@ function tickHour(s){
    note(s,`${groupText(old.party)} stayed on lane ${old.laneId} another hour (+$${s.pricing.lane}).`,'bowling',old.party.id);
   }else{note(s,`${groupText(old.party)} finished their session on lane ${old.laneId} and headed out.`,'exit',old.party.id);maybeSnack(s,old.party,'exit');maybeBar(s,old.party,'exit');}
  }
- const booking=s.partyBooking&&s.partyBooking.status==='accepted'&&s.partyBooking.day===s.day&&h>=s.partyBooking.start&&h<s.partyBooking.end;
+ const calendarBooking=(s.bookings||[]).find(b=>b.status==='booked'&&b.day===s.day&&h>=b.start&&h<b.end&&!b.paid);
+ const venueBooking=(s.bookings||[]).find(b=>b.status==='booked'&&!b.offsite&&b.day===s.day&&h>=b.start&&h<b.end);
+ if(calendarBooking&&!calendarBooking.paid){addIncome(s,'partyIncome',calendarBooking.remaining);calendarBooking.paid=true;note(s,`📆 ${calendarBooking.name} checked in! Final contract payment +$${calendarBooking.remaining}.`,'league');}
+ const booking=!!venueBooking||s.partyBooking&&s.partyBooking.status==='accepted'&&s.partyBooking.day===s.day&&h>=s.partyBooking.start&&h<s.partyBooking.end;
  const leagueEvening=s.league.active&&calendar(s.day).dayIndex===3&&h>=18&&h<20;if(leagueEvening){s.today.leagueHours++;note(s,'Thursday league has commandeered ALL SIX lanes until 8 PM. Walk-ins may need to wait.','league');}
- if(booking){const amount=lanes(s)*s.pricing.lane*2;addIncome(s,'partyIncome',amount);s.today.partyHeld=true;note(s,`🎉 ${s.partyBooking.name} has reserved every lane, earning +$${amount} this hour.`, 'league');}
+ if(booking){s.today.partyHeld=true;if(!venueBooking){const amount=lanes(s)*s.pricing.lane*2;addIncome(s,'partyIncome',amount);note(s,`🎉 ${s.partyBooking.name} has reserved every lane, earning +$${amount} this hour.`,'league');}}
  const free=s.lanes.filter(l=>l.condition>20&&!activeOutage(s,'lane'+l.id)&&!booking&&(!leagueEvening||l.id>6)&&!s.active.some(x=>x.laneId===l.id)); // league reserves the original six lanes, even after land expansion
  for(const [i,p] of s.queue.entries()){p.waited++;p.seated=i<s.benches*2;if(p.waited===2&&(p.seated||s.fixtures.tv)){s.today.benchSaves++;note(s,`${groupText(p)} is comfortable on the waiting bench and decided to stay.`,'bench',p.id);}}
  const stillWaiting=[];
@@ -681,6 +793,7 @@ function tickHour(s){
  // A building without lanes is a quiet pre-opening construction site, not a queue disaster.
  // Three opportunities for group arrivals within an hour once lanes are usable.
  const demand=s.lanes.length?chanceOfArrival(s)*trafficMultiplier(s):0;
+ if(h===18)checkVIPGroup(s);
  let arrivals=0;
  for(let i=0;i<5;i++)if(roll(s)<Math.min(.85,demand/5))arrivals++;
  for(let i=0;i<arrivals;i++){
@@ -707,6 +820,7 @@ function tickHour(s){
  ...s.queue.map(x=>({id:x.id,name:x.name,size:x.size,location:'wait',kind:'waiting'}))];
  s.hour++;s.today.net=money(s.today.income-s.today.expenses);grantXP(s,1);
  if(s.hour===CLOSE){
+   for(const b of s.bookings||[])if(b.day===s.day&&b.status==='booked'){b.status='complete';if(b.type==='charity')s.rep=money(s.rep+2);}
    if(s.partyBooking?.day===s.day)s.partyBooking=null;
    for(const x of s.active){note(s,`${groupText(x.party)} finished their ${x.hours||1}-hour booking on lane ${x.laneId} at closing.`,'exit',x.party.id);maybeSnack(s,x.party,'exit');maybeBar(s,x.party,'exit');}
    for(const x of s.queue){s.today.left++;upsetPatron(s,x);note(s,`${groupText(x)} left grumbling: "I've spent the whole night watching other people bowl."`,'left',x.id);}
@@ -731,21 +845,22 @@ function tournament(s,id){const t=TOURNAMENTS.find(x=>x.id===id);if(!t)return {o
 function bowlShot(s,angle,spin,power){if(!s.lanes.length)return {ok:false,reason:'Build your first lane before practicing'};if(s.practiceLeft<=0)return {ok:false,reason:'Practice resets tomorrow'};angle=Number(angle);spin=Number(spin);power=Number(power);if(![angle,spin,power].every(Number.isFinite))return {ok:false,reason:'Invalid shot'};
  angle=clamp(angle,-10,10);spin=clamp(spin,-5,5);power=clamp(power,60,100);const condition=s.lanes[0].condition;const sweet=(100-condition)/28;const down=clamp(Math.round(10-Math.abs(angle+spin*.5-sweet)*1.35-(100-power)/29+(roll(s)-.5)*2.2),0,10);
  s.practiceLeft--;grantXP(s,down===10?5:2);s.practiceStreak=down===10?s.practiceStreak+1:0;log(s,`Practice: ${down===10?'STRIKE!':down+' pins'}.`);return {ok:true,down,result:down===10?'STRIKE!':down+' pins down'};}
-function checkState(s){return !!(s&&s.version===13&&s.story&&Array.isArray(s.story.unlocked)&&Array.isArray(s.story.pending)&&typeof s.story.charter==='boolean'&&s.patrons&&PATRON_PROFILES.every(p=>s.patrons[p.id]&&Number.isInteger(s.patrons[p.id].visits)&&s.patrons[p.id].loyalty>=0&&s.patrons[p.id].loyalty<=100)&&Number.isInteger(s.laneRotation)&&s.laneRotation>=0&&Number.isInteger(s.storyCursor)&&typeof s.startupPending==='boolean'&&Number.isFinite(s.happiness)&&s.happiness>=0&&s.happiness<=100&&Array.isArray(s.happinessHistory)&&s.loan&&Number.isFinite(s.loan.balance)&&s.loan.balance>=0&&Array.isArray(s.employees)&&Array.isArray(s.deliveries)&&Array.isArray(s.facilityNotices)&&s.facilityNotices.every(x=>['snack','bar','arcade','proshop'].includes(x.id)&&[1,2].includes(x.tier))&&Number.isInteger(s.lowStockThreshold)&&s.lowStockThreshold>=1&&s.lowStockThreshold<=12&&s.hour>=OPEN&&s.hour<=CLOSE&&s.day>=1&&Number.isFinite(s.cash)&&Number.isFinite(s.rep)&&Number.isInteger(s.parts)&&s.parts>=0&&Number.isInteger(s.benches)&&s.benches>=0&&s.benches<=3&&Number.isInteger(s.barStock)&&s.barStock>=0&&Number.isInteger(s.barPrice)&&s.barPrice>=6&&s.barPrice<=14&&Number.isInteger(s.totalServed)&&s.totalServed>=0&&Number.isInteger(s.minVenueLevel)&&s.minVenueLevel>=1&&s.minVenueLevel<=5&&s.barStockById&&DRINKS.every(i=>Number.isInteger(s.barStockById[i.id])&&s.barStockById[i.id]>=0&&Number.isInteger(s.barPrices[i.id]))&&s.arcadeMachines&&s.fixtures&&PAINTS.some(p=>p.id===s.wallPaint)&&s.league&&Array.isArray(s.construction)&&s.construction.every(j=>j.remaining>0&&j.remaining<=j.total&&['lane','upgrade','roomExpand','land'].includes(j.kind))&&Number.isInteger(s.expansionStage)&&s.expansionStage>=0&&s.expansionStage<=5&&s.outages&&s.partnerships&&Array.isArray(s.eventQueue)&&Array.isArray(s.eventHistory)&&Array.isArray(s.encounters)&&Array.isArray(s.lanes)&&s.lanes.length>=0&&s.lanes.length+pendingLanes(s)<=laneCapacity(s)&&s.lanes.every(l=>Number.isInteger(l.id)&&l.condition>=0&&l.condition<=100&&l.kits&&LANE_KITS.every(k=>typeof l.kits[k.id]==='undefined'||l.kits[k.id]===true)&&SCORE_THEMES.some(t=>t.id===l.theme)&&(l.animationUnlocked===undefined||typeof l.animationUnlocked==='boolean'))&&SNACKS.every(i=>Number.isInteger(s.snackStock[i.id])&&s.snackStock[i.id]>=0)&&s.queue.length<=waitCapacity(s)&&ROOM_IDS.every(id=>(!s.roomPlacements[id]||canPlaceRoom(s,id,s.roomPlacements[id].x,s.roomPlacements[id].y)))&&s.bowlers.every(b=>['aim','spare','power','focus'].every(k=>b[k]>=0&&b[k]<=95)));}
+function checkState(s){return !!(s&&s.version===14&&Array.isArray(s.bookings)&&s.roomDetails&&s.vipGroups&&s.rival&&Number.isInteger(s.hardshipUses)&&s.story&&Array.isArray(s.story.unlocked)&&Array.isArray(s.story.pending)&&typeof s.story.charter==='boolean'&&s.patrons&&PATRON_PROFILES.every(p=>s.patrons[p.id]&&Number.isInteger(s.patrons[p.id].visits)&&s.patrons[p.id].loyalty>=0&&s.patrons[p.id].loyalty<=100)&&Number.isInteger(s.laneRotation)&&s.laneRotation>=0&&Number.isInteger(s.storyCursor)&&typeof s.startupPending==='boolean'&&Number.isFinite(s.happiness)&&s.happiness>=0&&s.happiness<=100&&Array.isArray(s.happinessHistory)&&s.loan&&Number.isFinite(s.loan.balance)&&s.loan.balance>=0&&Array.isArray(s.employees)&&Array.isArray(s.deliveries)&&Array.isArray(s.facilityNotices)&&s.facilityNotices.every(x=>['snack','bar','arcade','proshop'].includes(x.id)&&[1,2].includes(x.tier))&&Number.isInteger(s.lowStockThreshold)&&s.lowStockThreshold>=1&&s.lowStockThreshold<=12&&s.hour>=OPEN&&s.hour<=CLOSE&&s.day>=1&&Number.isFinite(s.cash)&&Number.isFinite(s.rep)&&Number.isInteger(s.parts)&&s.parts>=0&&Number.isInteger(s.benches)&&s.benches>=0&&s.benches<=3&&Number.isInteger(s.barStock)&&s.barStock>=0&&Number.isInteger(s.barPrice)&&s.barPrice>=6&&s.barPrice<=14&&Number.isInteger(s.totalServed)&&s.totalServed>=0&&Number.isInteger(s.minVenueLevel)&&s.minVenueLevel>=1&&s.minVenueLevel<=5&&s.barStockById&&DRINKS.every(i=>Number.isInteger(s.barStockById[i.id])&&s.barStockById[i.id]>=0&&Number.isInteger(s.barPrices[i.id]))&&s.arcadeMachines&&s.fixtures&&PAINTS.some(p=>p.id===s.wallPaint)&&s.league&&Array.isArray(s.construction)&&s.construction.every(j=>j.remaining>0&&j.remaining<=j.total&&['lane','upgrade','roomExpand','land'].includes(j.kind))&&Number.isInteger(s.expansionStage)&&s.expansionStage>=0&&s.expansionStage<=5&&s.outages&&s.partnerships&&Array.isArray(s.eventQueue)&&Array.isArray(s.eventHistory)&&Array.isArray(s.encounters)&&Array.isArray(s.lanes)&&s.lanes.length>=0&&s.lanes.length+pendingLanes(s)<=laneCapacity(s)&&s.lanes.every(l=>Number.isInteger(l.id)&&l.condition>=0&&l.condition<=100&&l.kits&&LANE_KITS.every(k=>typeof l.kits[k.id]==='undefined'||l.kits[k.id]===true)&&SCORE_THEMES.some(t=>t.id===l.theme)&&(l.animationUnlocked===undefined||typeof l.animationUnlocked==='boolean'))&&SNACKS.every(i=>Number.isInteger(s.snackStock[i.id])&&s.snackStock[i.id]>=0)&&s.queue.length<=waitCapacity(s)&&ROOM_IDS.every(id=>(!s.roomPlacements[id]||canPlaceRoom(s,id,s.roomPlacements[id].x,s.roomPlacements[id].y)))&&s.bowlers.every(b=>['aim','spare','power','focus'].every(k=>b[k]>=0&&b[k]<=95)));}
 // Preserve v0.3 (and older v0.1/0.2) game progress without editing the old save.
 function migrate(legacy){
- if(legacy?.version===13)return checkState(legacy)?legacy:null;
+ if(legacy?.version===14)return checkState(legacy)?legacy:null;
+ if(legacy?.version===13){const s={...structuredCloneSafe(legacy),version:14,bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},partnerships:{school:!!legacy.partnerships?.school,teams:false,charity:false,office:false,neighbors:false}};s.log=['v0.99: New contracts, VIPs, room details and rivalry added. Old progress kept.',...(s.log||[])].slice(0,60);return checkState(s)?s:null;}
  if(legacy?.version===12){const s={...structuredCloneSafe(legacy),version:13,expansionStage:legacy.landOwned?1:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false}};
   s.today={...newDayStats(s.day),...s.today};s.lastDay={...newDayStats(s.lastDay?.day||0),...s.lastDay};s.dayReports=(s.dayReports||[]).map(r=>({...newDayStats(r.day),...r}));
   s.story={...s.story,unlocked:[...new Set(['inheritance',...(s.story?.unlocked||[])])],pending:(s.story?.pending||[]).filter(id=>id!=='inheritance')};
   s.log=['v0.98: Your existing lanes, rooms and Gus’s story are preserved. New wings and incidents are available.',...(s.log||[])].slice(0,60);
-  return checkState(s)?s:null;}
+  return migrate(s);}
 
  if(legacy?.version===11){const s={...structuredCloneSafe(legacy),version:12,story:freshStory(),patrons:freshPatrons()};
   s.minVenueLevel=Math.max(s.minVenueLevel||1,previousLevel(s));
   if(!s.startupPending){for(const chapter of STORY_CHAPTERS){let earned=chapter.id==='inheritance'||chapter.id==='firstlane'&&lanes(s)>0||chapter.id==='offer'&&s.totalServed>=20||chapter.id==='established'&&s.minVenueLevel>=3||chapter.id==='league'&&s.league.active||chapter.id==='regional'&&!!s.tournamentWins.regional||chapter.id==='national'&&!!s.tournamentWins.national;if(earned)openChapter(s,chapter.id,true);}}
   s.story.charter=!!s.tournamentWins.national;
-  s.log=['v0.97: Grandpa Gus’s story and department ratings are here. Your original progress is safe.',...(s.log||[])].slice(0,60);return checkState(s)?s:null;}
+  s.log=['v0.97: Grandpa Gus’s story and department ratings are here. Your original progress is safe.',...(s.log||[])].slice(0,60);return migrate(s);}
 
  if(legacy?.version===10){const s={...structuredCloneSafe(legacy),version:11,laneRotation:0,storyCursor:0};s.today={...newDayStats(s.day),...s.today};s.lastDay={...newDayStats(s.lastDay?.day||0),...s.lastDay};s.dayReports=(s.dayReports||[]).map(r=>({...newDayStats(r.day),...r}));s.log=['v0.96: Rotating lanes, longer sessions, and technician automation are ready. Progress is preserved.',...(s.log||[])].slice(0,60);return migrate(s);}
  if(legacy?.version===9){const s={...structuredCloneSafe(legacy),version:10,lanes:legacy.lanes.map(l=>({...l,kits:{...l.kits},theme:l.theme||'classic',animationUnlocked:!!l.animationUnlocked}))};s.log=['v0.95: Alley Stars and lane upgrade systems are ready. Existing progress is preserved.',...(s.log||[])].slice(0,60);return migrate(s);}
@@ -772,5 +887,5 @@ function migrate(legacy){
  // v0.3 lane2/lane3 were already built; keep all existing lanes immediately usable.
  s.log=['Save upgraded to v0.4. Your existing rooms, lanes and bowlers are ready.',...(legacy.log||[])].slice(0,60);
  return migrate(s);}
-return {OPEN,CLOSE,DAYS,calendar,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
+return {OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
 });
