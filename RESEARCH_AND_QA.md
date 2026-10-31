@@ -1,17 +1,18 @@
-# v0.99 — Research and QA
+# Research & QA — v1.00
 
-## Engineering scope
+## Verified in local tests
 
-The full v0.99 parking lot is represented in this build. Key areas: zoomable 24-lane map; signed event booking calendar with deposits/catering/outreach; five partnership types; named VIP groups and light seasonal events; emergency mechanic and optional coverage; bocce/stage/restaurant and room-specific customization; Vera Vale rival-business behavior and storyline responses; two financial hardship repair plans; low-motion and larger text settings.
+- Node engine tests cover fresh schema, migration from v14, permanent branch choice, contradictory choice rejection, Back Alley risk/cost choices, adaptive AI action scheduling, prevention of less-than-five-day surprise event spacing, two-town purchases and switching, and separate story locks.
+- 120 additional daily simulations from a developed Back Alley scenario: 14 targeted Vera moves and 19 scheduled major events with no gap under five game days. Counts are seed-dependent.
+- Chromium browser checks at 320px, 390px and 1280px: active story selection, changed color palette, dark management actions, Settings development shortcut, preview/cloud-sync isolation, route reversal on returning to real save, and no observed JavaScript exceptions.
+- Additional Chromium screenshots at 390px and 1280px for path decision, Back Alley screen and Settings preview.
 
-## Coverage
+## Not verified
 
-- Node syntax validation of game engine and controller.
-- Deterministic simulation spanning 350 days checked for state validity and five-day incident cooldown.
-- v0.98 game save migration validated (schema 13→14), keeping day and cash.
-- Browser smoke tests at 320px, 390px and 1280px. Checked first-time clock tutorial, booking calendar, future wings catalog, rival/story panel, VIP groups, and map zoom. No runtime JavaScript page errors in these smoke tests.
-- Additional tests cover partnership purchases, booking conflicts, event payouts and deposits, mechanic repairs, repair coverage, and national story trigger.
+- Real Firebase login, external cloud credentials, public GitHub Pages deployment, iOS/Safari behavior, and payment systems. These require an online environment and real test devices.
+- Full long-run economic balance across all possible combinations of 24 lanes, two towns, major incidents and story choices.
 
-## Deployment limitations
+## Safety
 
-External live Firebase Auth/Firestore cloud saving and mobile Safari behavior have not been tested here. Actual store packaging and real-money billing are not part of v0.99.
+- Development preview never triggers a cloud save. Manual cloud writes are rejected while preview is active; preview state uses a different local-storage key.
+- Permanent route choice can be reversed only by resetting or replacing a town through save import / developer testing, not through ordinary gameplay.

@@ -164,6 +164,7 @@ async function chooseNew(){const cloud=window.GTGCloudChoice?.cloud;
  if(cloud&&!confirm('Start a new cloud game? This replaces your existing online progress. Export first if needed.'))return;
  try{openGame(null,true);}catch(e){fail(e.message);}}
 async function saveNow(reason='manual'){
+ if(app.isDevelopmentPreview?.()){setStatus('🧪 Local development preview — cloud saving is disabled to protect your real game. Use Exit Preview in Settings.',true);return false;}
  if(!user||!store||blocked){if(blocked)setStatus('Sync paused: another device changed your cloud save. Export a backup and reload to compare versions.',true);return false;}
  const targetUid=user.uid,generation=signedInGeneration;
  const game=JSON.parse(JSON.stringify(app.snapshot()));

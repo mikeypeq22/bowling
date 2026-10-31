@@ -1,46 +1,32 @@
-# From Gutter to Glory — v0.99
+# From Gutter to Glory — v1.00
 
-**The Town Comes Alive Update** · browser-based, mobile-first bowling-center management game.
+**The Two Roads Update** — web-based bowling alley management with optional Teen-oriented cartoon noir branch.
 
-## What's new
+## New features
 
-- Grandpa Gus's **The Last Frame** story is shown before selecting a startup loan. The old “The keys are finally yours” popup is gone.
-- **Random town events** start after day 6, with a shared minimum of **five full game days** between events. Some bring customers, reputation, supplies or cash; others close individual lanes or facilities pending a paid repair.
-- **Private party requests** arrive as an event: accept or decline a booking. Accepted parties reserve the entire bowling center for two hours at **double lane rental income**, at the possible cost of disappointed walk-ins.
-- **Property wings:** the original six-lane property expands in stages to 10, 14, 18, 22 and finally **24 lane slots**. Each wing adds another row of shops. Players purchase **each lane individually** after the property expansion is complete.
-- Six new purchasable attractions across the wings: **Billiards, Party Room, Karaoke, Indoor Mini Golf, Laser Tag and Banquet Hall.** Several occupy two or three floor-grid squares. More advanced attractions are still future ideas.
-- **Regular visitors** can start an on-screen conversation; choices increase or decrease their loyalty. Conversations are stored in game progress.
-- **Daypart and weekly seasonality:** late evenings and Friday–Sunday tend to be busier than early afternoons and the first weekdays. **School partnerships** become available under advertising for suitable centers.
+- After the first formal StrikeCity buyout offer (20 customers served), choose **The Legacy** or **The Back Alley**. The choice is permanent **within that location**. You may defer it and choose later under Goals → Story.
+- The Legacy has community and tournament-driven objectives. The Back Alley has a darker palette, alternate night-time dialogue, heightened threat popups, four tradeoff decisions, and its own **Midnight Accord** ending. This story contains implied questionable dealings and threats, without graphic violence. Intended Teen+ tone; **not an official age rating**.
+- Vera runs a **rule-based adaptive adversary**. Every 6–9 game days when eligible, her next move uses the player's heat, defense, influence, reputation and local support. Opponent actions share the five-game-day surprise-event cooldown. Vera is not a network/LLM AI; it is local, deterministic simulation logic.
+- **Multi-town franchise (initial implementation):** reach six lanes, three Alley Stars, choose your current path and save $8,000 to open Riverside. Switch towns under Settings → Your Towns. Each retains its own progression, cash, day, rating, staffing and story decision; one town may follow Legacy while the other follows Back Alley. Only the active town advances time.
+- **Development Testing in Settings:** Jump to the rival decision or load a developed example of either route. Creates a realistic six-lane Day 24 bowling center. **Test mode has an independent browser-save key and blocks cloud synchronization**. Press Exit Preview to restore your real session, or refresh the page. Preview mode is deliberately local-only and disables Auto to give time to inspect screens.
 
-## Playing and deploying
+## Playing the game
 
-- Open `From_Gutter_to_Glory_Playable_v0.99.html` for the standalone version; it saves in your browser and **does not** use cloud sign-in.
-- Extract `From_Gutter_to_Glory_GitHub_Pages_v0.99.zip` and upload **its contents**, including `index.html`, `engine.js`, `app.js`, `cloud.js`, `style.css`, `firebase-config.js`, and the `assets` directory, into the root of your GitHub Pages repository. Do not upload the ZIP unchanged.
-- The full source and release/testing notes are in `From_Gutter_to_Glory_Project_v0.99.zip`.
-- **Back up your current game** from Settings → Export before replacing live files.
+**Standalone demo:** open `From_Gutter_to_Glory_Playable_v1.00.html` in a browser. This is local-only and requires no Firebase.
 
-## Saving, security and compatibility
+**GitHub Pages:** extract `From_Gutter_to_Glory_GitHub_Pages_v1.00.zip` and upload the contents to the root of the GitHub Pages project. Keep `index.html`, `engine.js`, `app.js`, `cloud.js`, `style.css`, `firebase-config.js` and `assets/` side by side. Upload extracted files, not the ZIP itself. The Firebase client config is the same as v0.99; no new Firebase setup is intended.
 
-- Save schema is now **v14** and includes migration from v0.98/v13 and earlier versions. Existing loans, lanes, staff, story and regulars are retained. Do not clear local browser storage before exporting a backup.
-- The previous Firebase project client configuration is retained. These files **do not** create or configure a Firebase project automatically. Cloud login and saving must be tested on the deployed site; they have not been verified live for this release.
-- `firebase-config.js` contains Firebase *public browser-app configuration*, not a service account key. Never place administrator credentials in GitHub. Apply the provided `firestore.rules` in Firebase Console and keep each user's documents private.
+**Export your live save before upgrading** via Settings → Export Save. v0.99 saves (schema 14) migrate to schema 15. Existing players remain *undecided* about their story until the buyout offer, so previous game choices aren't retroactively locked.
 
-## Art customizations
+**Cloud safety:** the standalone version is local-only; the development preview on the deployed build is also intentionally local-only. While previewing, the code explicitly stops Firestore writes. The existing live Google/email login and cross-device cloud synchronization still require testing with real devices and Firebase.
 
-Art paths are centralized in `assets/asset-map.js`. Players can supply custom PNG, WebP or other browser-supported graphics in `assets/`, and then change the filename in the map. Missing images fall back to built-in visuals. New patron and attraction artwork slots are available.
+## Development files
 
-## Current limitations
+`engine.js` is the core deterministic simulation; `app.js` manages the UI; `style.css` has the themes; `index.html` contains the overlays and controls; `cloud.js` retains authentication and encrypted-transport cloud functionality. `assets/asset-map.js` maps optional custom art. `tests/engine_smoke.js` checks schema migration, campaign lock-in, AI spacing and separate-location state.
 
-- The random-event cooldown is **at least five days**, not an exact repeating event schedule; some periods will be quiet.
-- Event repairs are intentional player decisions. The Lane Technician's ordinary servicing does not automatically repair exceptional incident closures.
-- The user interface shows all 24 lanes on a tall, scrollable mobile screen; larger properties will need a more compact camera/zoom system in a later version.
-- Parties reserve lanes, but there is not yet a reservation calendar with multiple simultaneous advance bookings.
-- The fictional National Heritage Cup/Heritage Charter and Vera Vale story remain narrative/game systems, not real accreditations.
+### In-game objectives
 
-## What v0.99 adds
+- Legacy: win the fictional National Heritage Cup, gain four community allies via outreach, and earn four Alley Stars. The Heritage Charter is an imaginary story award, not an official bowling accreditation.
+- Back Alley: 65 Security, 45 Influence, 40 reputation, six bowling lanes and rival pressure at or below 25. Security, contacts, clandestine offers and lay-low choices affect progress, heat and local trust.
 
-See `RELEASE_NOTES.md` for full feature details. The new clock tutorial, booking calendar, partnerships, VIP groups, emergency mechanic, personal room details, later attractions, rival business pressure, community repair assistance, and mobile map/accessibility controls are now available. `RIVAL_PATHS_FUTURE_DESIGN.md` contains the proposed *optional* darker story mode; it is not a playable campaign in this release.
-
-### Deployment
-
-Upload the **contents** of the v0.99 GitHub Pages ZIP to your existing GitHub Pages repository, replacing older source files. Preserve backups of your cloud and exported save before updating. The Firebase config remains from the previously configured project. Local standalone HTML is demo-only and does not upload to Firestore. Real Firebase sign-in and saves must still be verified on physical devices.
+No paid or real-world criminal systems are included. This is a fictional story layer over the bowling game.

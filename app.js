@@ -1,4 +1,4 @@
-/* From Gutter to Glory v0.99 — visual game controller. Gameplay lives in engine.js. */
+/* From Gutter to Glory v1.00 — visual game controller. Gameplay lives in engine.js. */
 (()=>{'use strict';
 const G=window.BowlingCore;
 let KEY='gutter-to-glory-v091-demo',BACKUP='gutter-to-glory-backup-v091-demo';const PREVIOUS='gutter-to-glory-v09',LEGACY='gutter-to-glory-v07',UIKEY='gutter-to-glory-ui-v09',OLDUI='gutter-to-glory-ui-v08';
@@ -24,9 +24,9 @@ const assets={...defaultAssets,...window.BOWLING_ASSETS};
 const icon=(key,emoji,extra='')=>`<span class="icon-art ${extra}" aria-hidden="true"><span>${emoji}</span>${assets[key]?`<img src="${esc(assets[key])}" alt="" onerror="this.remove()">`:''}</span>`;
 document.querySelectorAll('[data-icon]').forEach(el=>{el.outerHTML=icon(el.dataset.icon,el.dataset.emoji)});
 let s=G.newGame(),auto=true,tab='alley',buildSection='construction',drawer=null,selectedBowler='maya',lastTick=Date.now(),timerToast=null,summaryOpen=false,skipSummaries=false,introSeen=false,layoutMode=false,movingRoom=null,cutsceneOpen=false,pendingCutscene=null,tutorialSeen=false,tutorialOpen=false,tutorialStep=0,introCutscene=false,hadSavedGame=false,hadNewUI=false,welcomeOpen=false,hadBrokenSave=false,saveSource=null,importPending=null,saveAvailable=true,resetFromSettings=false;
-let cloudGateOpen=true,cloudSaveSignal=null,cloudMode=false;
+let cloudGateOpen=true,cloudSaveSignal=null,cloudMode=false,devPreviewMode=false,devOriginal=null;
 let guideMode='intro',tabTipId=null,seenTabTips={};
-let storyOpen=false,incidentOpen=false,patronOpen=false,goalSection='story';
+let storyOpen=false,incidentOpen=false,patronOpen=false,branchOpen=false,goalSection='story';
 let sceneZoom=100,lowMotion=false,largeText=false,bookingDayAhead=3;
 let selectedFinance='standard',selectedStyle='original',startupOpen=false,facilityNoticeOpen=false;
 function safeRead(key){try{return localStorage.getItem(key);}catch(e){saveAvailable=false;return null;}}
@@ -238,7 +238,13 @@ const FUTURE_WINGS=[
 function showGoalSection(){document.querySelectorAll('[data-goal-section]').forEach(el=>{el.hidden=el.dataset.goalSection!==goalSection;});document.querySelectorAll('[data-goal-nav]').forEach(btn=>{btn.classList.toggle('active',btn.dataset.goalNav===goalSection);btn.setAttribute('aria-pressed',String(btn.dataset.goalNav===goalSection));});}
 function renderStoryCommunity(){
  const story=s.story||{unlocked:[],pending:[],charter:false},rat=G.departmentRatings(s),rank=G.alleyScore(s);
- $('storyPanel').innerHTML=`<div class="sectionhead"><div><small class="eyebrow">GRANDPA GUS'S LEGACY</small><h2>📖 The Last Frame</h2><p class="muted small">Your family alley versus Vera Vale's StrikeCity. Win the fictional National Heritage Cup to earn the Heritage Charter.</p></div><span class="badge ${story.charter?'warm':''}">${story.charter?'🌟 CHARTER EARNED':story.unlocked.length+' / '+G.STORY_CHAPTERS.length+' CHAPTERS'}</span></div><div class="storyCards">${G.STORY_CHAPTERS.map((c,i)=>`<div class="storyCard ${story.unlocked.includes(c.id)?'unlocked':'locked'}"><span>${story.unlocked.includes(c.id)?c.icon:'🔒'}</span><div><b>${story.unlocked.includes(c.id)?esc(c.title):'Chapter '+(i+1)+' — ???'}</b><small>${story.unlocked.includes(c.id)?esc(c.speaker):'Keep building to unlock'}</small>${story.unlocked.includes(c.id)?`<p>${esc(c.text)}</p><small>🎯 ${esc(c.hint)}</small>`:''}</div></div>`).join('')}</div><section class="rivalPanel"><h3>🏢 StrikeCity Rival Watch</h3><p>Vera Vale's pressure: <b>${s.rival.pressure}/100</b>. Defend the family name through community outreach or legal help—not by purchasing a magic win.</p><div class="meter"><div style="width:${s.rival.pressure}%"></div></div><div class="contractActions"><button data-rival="outreach" ${s.cash<145?'disabled':''}>❤️ Community outreach · $145</button><button data-rival="legal" ${s.cash<260?'disabled':''}>⚖️ Legal counsel · $260</button></div><small>${s.rival.protectionUntil>=s.day?'Legal protection active until Day '+s.rival.protectionUntil:'Community supporters: '+s.rival.community} · National Heritage Cup remains the storyline goal. A second, darker rivalry campaign is in the design notebook for a later release.</small></section>`;
+ const camp=s.campaignStory,selected=G.campaignOf(s),dark=camp.path==='backalley';
+ const branchSelect=G.campaignReady(s)&&camp.path==='undecided'?`<div class="campaignDecisionNotice"><h3>📜 Vera's offer demands an answer</h3><p>Two permanent stories; your decision belongs to <b>${esc(s.locationName)}</b>, not your whole franchise.</p><button class="primary" data-show-branch>Choose your rivalry path →</button></div>`:'';
+ const noirmenu=dark?`<div class="noirDashboard"><h3>🌒 Back Alley · Night Operations</h3><p class="muted small">Teen-oriented cartoon noir: implied shady deals, threatening pressure, staff safety and moral consequences. No graphic violence.</p><div class="noirStats"><span>🔐 Security <b>${camp.security}/100</b></span><span>🕴️ Influence <b>${camp.influence}/100</b></span><span>🌡️ Heat <b>${camp.heat}/100</b></span><span>🤝 Trust <b>${camp.trust}/100</b></span></div><p><b>Current objective:</b> ${esc(G.campaignMission(s))}</p><div class="noirActions">${G.NOIR_ACTIONS.map(x=>`<button data-noir-action="${x.id}" ${camp.victory||s.cash<x.cost||s.day-camp.lastActionDay<2?'disabled':''}><b>${esc(x.name)}${x.cost?' · '+cash(x.cost):''}</b><small>${esc(x.description)}</small></button>`).join('')}</div>${camp.victory?'<p class="victoryText">🌒 Midnight Accord completed. Your alley continues after the story.</p>':''}</div>`:'';
+ const legacyMenu=camp.path==='legacy'?`<p>🌟 <b>The Legacy:</b> Win the National Heritage Cup, build 4 community alliances and earn 4 Alley Stars. <small>${esc(G.campaignMission(s))}</small></p><div class="contractActions"><button data-rival="outreach" ${s.cash<145?'disabled':''}>❤️ Community outreach · $145</button><button data-rival="legal" ${s.cash<260?'disabled':''}>⚖️ Legal counsel · $260</button></div>${camp.victory?'<p class="victoryText">🌟 Community Charter awarded!</p>':''}`:'';
+ const history=(camp.aiMemory||[]).slice(0,4).map(item=>`<div class="aiMove"><b>Day ${item.day}</b> · ${esc(item.action.replaceAll('-',' '))} · Pressure ${item.pressure}</div>`).join('');
+ $('storyPanel').innerHTML=`<div class="sectionhead"><div><small class="eyebrow">${dark?'THE NIGHT SHIFT · THE BACK ALLEY':"GRANDPA GUS’S LEGACY"}</small><h2>${dark?'🌒 The Back Alley':'📖 The Last Frame'}</h2><p class="muted small">${dark?'Vera is watching. Protect your crew, balance influence and heat, and keep the bowling business alive.':'Your family alley versus Vera Vale’s StrikeCity. The town’s future depends on your choices.'}</p></div><span class="badge ${camp.victory?'warm':''}">${selected?selected.icon+' '+selected.name:'📜 RIVALRY UNDECIDED'}</span></div>${branchSelect}<div class="storyCards">${G.STORY_CHAPTERS.map((chapter,i)=>`<div class="storyCard ${story.unlocked.includes(chapter.id)?'unlocked':'locked'}"><span>${story.unlocked.includes(chapter.id)?chapter.icon:'🔒'}</span><div><b>${story.unlocked.includes(chapter.id)?esc(chapter.title):'Chapter '+(i+1)+' — ???'}</b><small>${story.unlocked.includes(chapter.id)?esc(chapter.speaker):'Keep building to unlock'}</small>${story.unlocked.includes(chapter.id)?`<p>${esc(dark&&chapter.id==='national'?'Your tournament victory earns attention, but the Midnight Accord will be won through protecting people and dismantling Vera’s grip.':chapter.text)}</p><small>🎯 ${esc(dark&&chapter.id==='national'?'Keep the lanes running and complete the Back Alley objectives.':chapter.hint)}</small>`:''}</div></div>`).join('')}</div><section class="rivalPanel"><h3>🏢 StrikeCity Rival AI</h3><p>Vera’s pressure: <b>${s.rival.pressure}/100</b>. Her next strategy depends on your security, influence, community support, reputation and Heat.</p><div class="meter"><div style="width:${s.rival.pressure}%"></div></div>${legacyMenu}${noirmenu}${!selected?'<p class="muted small">The campaign choice unlocks after the first formal buyout offer. You can keep operating the alley until then.</p>':''}<h3 style="margin-top:14px">🧠 Vera's recent moves</h3>${history||'<p class="muted small">Vera is studying your business. No targeted moves yet.</p>'}<small>Next planned AI move: ${selected?'Day '+camp.nextAIMoveDay:'after you choose a path'}. The five-game-day global surprise-event cooldown still applies.</small></section>`;
+
  const regulars=G.PATRON_PROFILES.map(c=>{const p=s.patrons[c.id],status=G.patronStatus(p),seen=p.visits>0;
  return `<article class="regularCard"><div class="regularTop"><span class="regularAvatar">${seen?'🙂':'❔'}</span><div><strong>${esc(c.name)}</strong><small>${esc(status)} · ${p.visits} visits · ${p.loyalty}/100 loyalty</small></div><span class="badge">${p.leagueMember?'👟 LEAGUE':p.visits>=3?'❤️ FAMILIAR':'👤'}</span></div><div class="meter"><div style="width:${p.loyalty}%"></div></div><p class="muted small">${seen?esc(c.trait)+' · Likes '+esc(c.wish):'Visit your center to meet this local.'}</p>${seen?`<div class="regularActions"><button data-patron="${c.id}:chat" ${p.lastTalk===s.day?'disabled':''}>💬 Chat</button><button data-patron="${c.id}:treat" ${p.lastTalk===s.day||s.cash<12?'disabled':''}>🍬 Treat · $12</button>${s.league.active&&!p.leagueMember?`<button data-patron="${c.id}:invite" ${p.lastTalk===s.day||p.visits<3||p.loyalty<55?'disabled':''}>👟 Invite to league</button>`:''}</div>`:''}</article>`}).join('');
  $('regularsPanel').innerHTML=`<div class="sectionhead"><div><h2>❤️ Town Regulars</h2><p class="muted small">Familiar visitors return, remember your hospitality and might join your league. Each can chat once per game day.</p></div><span class="badge">${Object.values(s.patrons).filter(p=>G.patronStatus(p)!=='Not met yet').length} / 6 met</span></div><div class="regularGrid">${regulars}</div><h3>🌟 Returning VIP Groups</h3><p class="muted small">🗓️ A seasonal story celebration comes around roughly every 28 game days, beginning on Day 14. A new surprise can only appear after the five-day event cooldown.</p><p class="muted small">Different groups visit more often as the center grows. Watch for seasonal celebrations and loyalty milestones.</p><div class="ratingGrid">${G.VIP_GROUPS.map(g=>`<div class="ratingTile"><b>${g.icon} ${esc(g.name)}</b><p>${esc(g.trait)}</p><small>${s.vipGroups[g.id].visits} visits · last seen ${s.vipGroups[g.id].lastDay?'Day '+s.vipGroups[g.id].lastDay:'not yet'}</small></div>`).join('')}</div>`;
@@ -246,7 +252,32 @@ function renderStoryCommunity(){
  showGoalSection();
  $('futureWings').innerHTML=[...FUTURE_WINGS,...G.NEW_ATTRACTIONS.filter(a=>!FUTURE_WINGS.some(f=>f.id===a.id)).map(a=>({id:a.id,icon:a.icon,name:a.title,space:a.slots+' spaces',idea:a.desc}))].map(w=>{const a=G.NEW_ATTRACTIONS.find(x=>x.id===w.id),done=a&&s.built[a.id],job=a&&s.construction.find(j=>j.id===a.id),unlocked=a&&G.expansionStage(s)>=a.minExpansion;return `<article class="futureWing"><span>${w.icon}</span><div><strong>${esc(w.name)}</strong><small>${esc(w.space)} ${a?'· unlocks in wing '+a.minExpansion:'· future concept'}</small><p>${esc(w.idea)}</p>${a?`<button data-build="${a.id}" ${done||job||!unlocked||s.cash<a.cost?'disabled':''}>${done?'✓ OPEN':job?'🚧 '+job.remaining+' days':!unlocked?'🔒 Expand Wing '+a.minExpansion:'Build · '+cash(a.cost)+' · '+a.days+'d'}</button>`:'<small>Planned for a later version</small>'}</div></article>`}).join('');
 }
-function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent='Your Bowling Alley';$('levelLabel').textContent=`LEVEL ${level} · ${G.venueName(s).toUpperCase()}${s.specialty?' · '+G.specialtyOf(s).name.toUpperCase():''} · ⭐ ${G.alleyStars(s)}/5`;
+function renderFranchise(){
+ const ids=['home',...(s.portfolio?.opened||[])],active=s.portfolio?.activeId||'home';
+ $('franchisePanel').innerHTML=`<h2>🏘️ Your Towns</h2><p class="muted small">Each town has its own business, save progress, economy, and permanent rivalry path. Switch towns anytime. Game days advance only in the active town.</p><div class="townChoices">${ids.map(id=>{const state=id===active?s:s.portfolio?.snapshots?.[id];const path=G.campaignOf(state||{});return `<button data-switch-town="${id}" ${id===active?'disabled':''}><b>${id==='home'?'🏠 Gus’s Town':'🌉 Riverside'}</b><small>${path?path.icon+' '+path.name:'📜 Campaign undecided'} · ${G.lanes(state||s)} lanes ${id===active?'· CURRENT':''}</small></button>`;}).join('')}</div>${!ids.includes('riverside')?`<p class="muted small">An optional second town lets you choose the opposite storyline later. Requires a chosen path, six lanes, 3 Alley Stars and $8,000.</p><button data-open-second-town ${!G.canOpenSecondTown(s)?'disabled':''}>🌉 Open Riverside · $8,000</button>`:''}`;
+}
+function showBranchDecision(force=false){
+ if(branchOpen||storyOpen||summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||tutorialOpen||startupOpen||incidentOpen||patronOpen||s.campaignStory?.path!=='undecided'||!G.campaignReady(s)||(!force&&s.campaignStory.promptDismissed))return false;
+ branchOpen=true;$('branchBackdrop').classList.remove('hidden');lastTick=Date.now();return true;
+}
+function hideBranchDecision(){branchOpen=false;$('branchBackdrop').classList.add('hidden');}
+function exitDevelopmentPreview(){
+ if(!devPreviewMode)return;
+ if(!devOriginal){toast('Real game session cannot be located. Refresh the page to reload your authenticated save.',true);return;}
+ s=devOriginal.state;KEY=devOriginal.key;BACKUP=devOriginal.backup;cloudMode=devOriginal.cloudMode;devPreviewMode=false;devOriginal=null;
+ branchOpen=false;hideBranchDecision();auto=false;lastAnnouncedLevel=G.venueLevel(s);lastTick=Date.now();
+ render();gotoTab('settings');save();toast('Back to your real game. Development preview did not sync to the cloud.');
+}
+function prepareDevelopment(mode){
+ const labels={decision:'a developed alley at the rivalry decision',backalley:'a developed alley already committed to The Back Alley',legacy:'a developed Legacy campaign'};
+ if(!confirm('DEV TEST ONLY: Replace your current active game with '+labels[mode]+'?\n\nA recovery copy will be kept when browser storage allows. Export your current save for a permanent backup.'))return;
+ const test=G.developmentScenario(mode);if(!test){toast('Could not construct a valid test alley.',true);return;}
+ storeRecovery();if(!devPreviewMode)devOriginal={key:KEY,backup:BACKUP,cloudMode,state:structuredClone(s)};devPreviewMode=true;KEY='gutter-to-glory-v100-development-preview';BACKUP='gutter-to-glory-v100-development-backup';cloudMode=false;s=test;introSeen=true;tutorialSeen=true;welcomeOpen=false;summaryOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;branchOpen=false;facilityNoticeOpen=false;cutsceneOpen=false;hideBranchDecision();
+ for(const id of ['storyBackdrop','incidentBackdrop','patronBackdrop','facilityBackdrop','daySummaryBackdrop','cutsceneBackdrop'])$(id).classList.add('hidden');
+ tab='goals';goalSection='story';auto=false;lastAnnouncedLevel=G.venueLevel(s);lastTick=Date.now();render();gotoTab('goals');showGoalSection();save();
+ toast('Development preview loaded. Auto time is paused.');if(mode==='decision')showBranchDecision(true);
+}
+function renderAlley(){const level=G.venueLevel(s);$('venueName').textContent=(s.locationName||'Your Bowling Alley')+' · '+(G.campaignOf(s)?.name||'Bowling Alley');$('levelLabel').textContent=`LEVEL ${level} · ${G.venueName(s).toUpperCase()}${s.specialty?' · '+G.specialtyOf(s).name.toUpperCase():''} · ⭐ ${G.alleyStars(s)}/5`;
  $('nextHour').textContent=s.hour>=G.CLOSE?'▶ Start next day':'▶ Next hour';$('toggleAuto').textContent=auto?'⏸ Pause Auto':'▶ Resume Auto';$('clockStatus').textContent=auto?'Automatic time: On · Advances every few seconds':'Automatic time: Paused · Use the buttons to advance';
  $('miniEvents').innerHTML=eventsHTML(s.today.events.slice(-8));
  const completed=G.TOURNAMENTS.filter(t=>s.tournamentWins[t.id]).length;
@@ -315,7 +346,7 @@ function renderEmployees(){let wage=s.employees.reduce((n,e)=>n+e.wage,0)+(s.bui
  $('stockControls').innerHTML=`<p>Low stock means <b>${s.lowStockThreshold} or fewer</b> units. The Stock Clerk places orders at closing; deliveries arrive the following morning.</p><div class="thresholdControl"><b>Low stock trigger</b><button data-threshold="-1" ${s.lowStockThreshold<=1?'disabled':''}>−</button><strong>${s.lowStockThreshold}</strong><button data-threshold="1" ${s.lowStockThreshold>=12?'disabled':''}>+</button></div><div class="deliveryList">${s.deliveries.length?s.deliveries.map(d=>`<div>📦 ${esc(d.name)} ×${d.amount} · Week ${G.calendar(d.arriveDay).week}, ${G.calendar(d.arriveDay).weekday}</div>`).join(''):'📭 No deliveries currently scheduled'}</div>`;
  $('staffList').innerHTML=s.employees.length?s.employees.map(e=>`<div class="employeeCard"><div class="employeePortrait">${icon('employee.'+e.role,e.role==='snack'?'🍿':e.role==='bar'?'🍹':e.role==='proshop'?'🎳':'📦')}</div><div class="employeeDetails"><h3>${esc(e.name)} <small>Lv ${e.skill}</small></h3><p>${esc(G.EMPLOYEE_ROLES[e.role].name)} · Happiness ${Math.round(e.morale)}%</p><div class="moraleMeter"><div style="width:${e.morale}%"></div></div><div class="wageControl"><span>Daily pay:</span><button data-wage="${e.id}:-1" ${e.wage<=8?'disabled':''}>−</button><b>${cash(e.wage)}</b><button data-wage="${e.id}:1" ${e.wage>=32?'disabled':''}>+</button><button data-train-staff="${e.id}" ${e.skill>=3||s.cash<65+e.skill*35?'disabled':''}>${e.skill>=3?'✓ Trained':'🎓 Train · '+cash(65+e.skill*35)}</button></div></div></div>`).join(''):'<div class="staffEmpty">🫠 It’s just you and a lot of unpaid bowling pins. Hire someone when a counter opens.</div>';
 }
-function render(){applyAccessibility();renderAlley();renderManage();renderBowlers();renderTournaments();renderYou();renderEmployees();showBuildSection();$('skipSummarySetting').checked=skipSummaries;const status=$('saveStatus');if(status)status.textContent=saveAvailable?'Autosave is on · local to this browser':'Browser storage is unavailable — export a backup file';}
+function render(){document.body.classList.toggle('noirMode',s.campaignStory?.path==='backalley');document.body.classList.toggle('legacyMode',s.campaignStory?.path==='legacy');renderFranchise();applyAccessibility();renderAlley();renderManage();renderBowlers();renderTournaments();renderYou();renderEmployees();showBuildSection();$('skipSummarySetting').checked=skipSummaries;const status=$('saveStatus');if(status)status.textContent=devPreviewMode?'🧪 LOCAL TEST MODE — cloud saving is DISABLED. Real progress remains separate.':saveAvailable?'Autosave is on · local to this browser':'Browser storage is unavailable — export a backup file';$('devPreviewAlert').classList.toggle('hidden',!devPreviewMode);$('devExitPreview').classList.toggle('hidden',!devPreviewMode);}
 function renderOvernightRush(){const target=$('overnightRush');if(!target)return;
  const jobs=s.construction||[];target.innerHTML=jobs.length?`<h3>🌙 Overnight Construction Crew</h3><p class="muted small">Skip the remaining wait for one project with in-game cash. Optional—regular construction finishes for free.</p><div class="rushList">${jobs.map(j=>{const cost=G.rushCost(j);return `<div class="rushRow"><span><b>🚧 ${esc(j.title)}</b><small>${j.remaining} day${j.remaining===1?'':'s'} left</small></span><button data-rush="${esc(j.kind)}:${esc(j.id)}" ${s.cash<cost?'disabled':''}>Rush · ${cash(cost)}</button></div>`;}).join('')}</div>`:'<p class="muted small">✅ All projects are finished or you have no construction underway tonight.</p>';
 }
@@ -326,17 +357,17 @@ const FACILITY_TIPS={
  proshop:{title:'The Pro Shop is ready!',text:'Finally, someone who can explain why bowling balls have holes.',points:['🎳 Tap Pro Shop to access equipment and fitting.','👥 Hire a pro-shop employee from Staff before sales can begin. A larger shop needs TWO.','👜 Use the Bowlers tab to fit your team with better equipment.','🔧 The shop will get more supplies and specialized services in later versions.']}
 };
 function showStoryNotice(){
- if(storyOpen||summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||tutorialOpen||startupOpen)return false;
+ if(branchOpen||storyOpen||summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||tutorialOpen||startupOpen)return false;
  const id=s.story?.pending?.[0];const c=G.STORY_CHAPTERS.find(x=>x.id===id);if(!c)return false;
- storyOpen=true;$('storyIcon').textContent=c.icon;$('storyTitle').textContent=c.title;$('storySpeaker').textContent=c.speaker;$('storyText').textContent=c.text;$('storyHint').textContent='🎯 '+c.hint;
+ storyOpen=true;$('storyIcon').textContent=c.icon;$('storyTitle').textContent=c.title;$('storySpeaker').textContent=c.speaker;$('storyText').textContent=s.campaignStory.path==='backalley'&&id==='national'?'The tournament win brings good publicity, but the Midnight Accord is still yours to earn.':c.text;$('storyHint').textContent='🎯 '+(s.campaignStory.path==='backalley'&&id==='national'?'Keep the business thriving while you complete the Back Alley mission.':c.hint);
  $('storyBackdrop').classList.remove('hidden');lastTick=Date.now();return true;
 }
 $('storyContinue').onclick=()=>{if(!storyOpen)return;storyOpen=false;$('storyBackdrop').classList.add('hidden');s.story.pending.shift();save();lastTick=Date.now();if(s.startupPending){showStartup();return;}if(!showNextOpeningNotice()&&!tutorialSeen)showTutorial();};
 function showIncident(){
- if(incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
+ if(branchOpen||incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
  const e=s.eventQueue?.[0];if(!e)return false;incidentOpen=true;
  $('incidentIcon').textContent=e.emoji||'🎳';$('incidentTitle').textContent=e.title;$('incidentText').textContent=e.text;$('incidentEffect').textContent=e.effect||'';
- $('incidentKind').textContent=e.kind==='request'?'PRIVATE BOOKING REQUEST':e.kind==='bad'?'OH NO! AN ALLEY EMERGENCY':e.kind==='rival'?'STRIKECITY MAKES A MOVE':'LUCKY BREAK!';
+ $('incidentKind').textContent=e.kind==='request'?'PRIVATE BOOKING REQUEST':e.kind==='bad'?'OH NO! AN ALLEY EMERGENCY':e.kind==='rival'?'STRIKECITY MAKES A MOVE':e.kind==='noir'?'AFTER HOURS · A MESSAGE FROM VERA':'LUCKY BREAK!';
  $('incidentActions').innerHTML=e.kind==='request'?`<button class="primary" data-party-choice="yes">✅ Book the party</button><button data-party-choice="no">No thanks</button>`:
  e.repairId?`<button data-repair-event="${esc(e.repairId)}" class="primary" ${s.cash<G.repairCost(s,e.repairId)?'disabled':''}>🔧 Fix now · ${cash(G.repairCost(s,e.repairId))}</button><button data-close-incident>Later — view in Build</button>`:
  '<button data-close-incident class="primary">Got it →</button>';
@@ -344,7 +375,7 @@ function showIncident(){
 }
 function closeIncident(){incidentOpen=false;$('incidentBackdrop').classList.add('hidden');s.eventQueue.shift();save();lastTick=Date.now();if(!showNextOpeningNotice())render();}
 function showPatronEncounter(){
- if(incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
+ if(branchOpen||incidentOpen||patronOpen||summaryOpen||storyOpen||facilityNoticeOpen||startupOpen||cutsceneOpen||cloudGateOpen||welcomeOpen)return false;
  const enc=s.encounters?.[0];if(!enc)return false;const p=G.PATRON_PROFILES.find(x=>x.id===enc.id),talk=G.PATRON_DIALOGUES[enc.id];if(!p||!talk){s.encounters.shift();return false;}
  patronOpen=true;const guestEmoji=({lou:'🎳',bea:'👟',dex:'🕹️',rosa:'🍹',nell:'🛍️',milo:'😎'})[p.id]||'🙂';$('patronPicture').innerHTML=icon('patron.'+p.id,guestEmoji);
  $('patronTitle').textContent=p.name+' dropped by!';$('patronSpeech').textContent='“'+talk.prompt+'”';
@@ -353,9 +384,9 @@ function showPatronEncounter(){
 }
 function closePatronEncounter(){patronOpen=false;$('patronBackdrop').classList.add('hidden');save();lastTick=Date.now();if(!showNextOpeningNotice())render();}
 function showNextOpeningNotice(){
- if(summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||storyOpen)return false;
+ if(branchOpen||summaryOpen||facilityNoticeOpen||welcomeOpen||cloudGateOpen||storyOpen)return false;
  const notice=s.facilityNotices?.[0];
- if(!notice){if(showStoryNotice())return true;if(showIncident())return true;if(showPatronEncounter())return true;if(pendingCutscene){const lvl=pendingCutscene;pendingCutscene=null;showCutscene(lvl);return true;}return false;}
+ if(!notice){if(showStoryNotice())return true;if(showBranchDecision())return true;if(showIncident())return true;if(showPatronEncounter())return true;if(pendingCutscene){const lvl=pendingCutscene;pendingCutscene=null;showCutscene(lvl);return true;}return false;}
  const detail=FACILITY_TIPS[notice.id];if(!detail)return false;
  facilityNoticeOpen=true;
  $('facilityTitle').textContent=notice.tier===2?`${detail.title.replace(' is ready!',' just expanded!').replace(' is open for business!',' just expanded!')}`:detail.title;
@@ -383,7 +414,7 @@ function openSummary(report){if(!report)return;summaryOpen=true;
  if(report.loanPayment)daily.push(['Loan payment',cash(report.loanPayment)]);
  if(report.staffPay)daily.push(['Staff wages',cash(report.staffPay)]);
  if(report.capex)daily.push(['Spent building',cash(report.capex)]);
- $('daySummaryBody').innerHTML=`<div class="summaryHeadline"><span>📣 THE LAST PIN HAS FALLEN</span><strong class="${report.net>=0?'positive':'negative'}">${cash(report.net)} operating net</strong></div>
+ $('daySummaryBody').innerHTML=`<div class="summaryHeadline"><span>${s.campaignStory?.path==='backalley'?'🌒 AFTER HOURS · THE NIGHT REPORT':'📣 THE LAST PIN HAS FALLEN'}</span><strong class="${report.net>=0?'positive':'negative'}">${cash(report.net)} operating net</strong></div>
  <div class="summaryGrid">${daily.map(([k,v])=>`<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>
  <h3 class="summarySubtitle">🎤 Overheard at the alley</h3>${feedback.length?feedback.slice(-2).map(x=>`<div class="review">💬 ${esc(x)}</div>`).join(''):'<p class="muted small">"Nothing fell apart today. I can live with that." — Your accountant</p>'}
  `;
@@ -483,7 +514,7 @@ function resumeLoaded(){hideWelcome();render();gotoTab(tab);syncVisitors([],true
  save();
 }
 function beginNewGame(){storeRecovery();hideWelcome();closeDrawer();s=G.newGame();lastTick=Date.now();auto=true;tab='alley';buildSection='construction';skipSummaries=false;introSeen=false;tutorialSeen=false;summaryOpen=false;pendingCutscene=null;cutsceneOpen=false;tutorialOpen=false;layoutMode=false;movingRoom=null;lastAnnouncedLevel=1;
- for(const id of ['daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','startupBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;$('visitorLayer').replaceChildren();render();gotoTab('alley');save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('new-game');introSeen=true;showStoryNotice();
+ for(const id of ['daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','startupBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop','branchBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;branchOpen=false;$('visitorLayer').replaceChildren();render();gotoTab('alley');save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('new-game');introSeen=true;showStoryNotice();
 }
 function openResetConfirm(){
  resetFromSettings=!welcomeOpen;
@@ -522,6 +553,14 @@ $('importConfirm').onclick=()=>useImportedSave();
 $('restoreBackup').onclick=()=>{const raw=safeRead(BACKUP);const b=candidateState(raw);if(!b){toast('No recoverable previous game is stored here.',true);return;}if(!confirm('Restore the previous game? Export your current game first if you want to keep both.'))return;importPending=b.state;useImportedSave(false);};
 $('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(tutorialOpen)closeTutorial();else if(incidentOpen||patronOpen||facilityNoticeOpen){}else if(cutsceneOpen)endCutscene();else if(summaryOpen)closeSummary(true);else if(drawer)closeDrawer();}});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.showBranch!==undefined){showBranchDecision(true);return;}
+ if(b.dataset.campaignChoice){const path=b.dataset.campaignChoice;const label=G.CAMPAIGN_PATHS.find(x=>x.id===path)?.name;if(!label)return;if(!confirm('Permanently commit '+s.locationName+' to '+label+'? This location cannot switch to the other storyline. A different town may choose differently.'))return;const r=G.chooseCampaign(s,path);if(!r.ok){toast(r.reason,true);return;}hideBranchDecision();render();save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('campaign');toast(label+' begins!');return;}
+ if(b.dataset.branchLater!==undefined){s.campaignStory.promptDismissed=true;hideBranchDecision();render();save();return;}
+ if(b.dataset.noirAction){perform(G.campaignAction(s,b.dataset.noirAction),'Night operations decision made.');return;}
+ if(b.id==='devExitPreview'){exitDevelopmentPreview();return;}
+ if(b.dataset.devScenario){prepareDevelopment(b.dataset.devScenario);return;}
+ if(b.dataset.openSecondTown!==undefined){if(!confirm('Spend $8,000 to open a new empty building in Riverside? Its finances, game time, and story path will be separate.'))return;perform(G.openSecondTown(s),'Your second town is open! Switch locations from Settings.');return;}
+ if(b.dataset.switchTown){const next=G.switchTown(s,b.dataset.switchTown);if(!next){toast('Unable to switch to that location.',true);return;}s=next;auto=false;lastAnnouncedLevel=G.venueLevel(s);lastTick=Date.now();render();gotoTab('settings');save();if(cloudMode&&cloudSaveSignal)cloudSaveSignal('switch-town');toast('Switched to '+s.locationName+'; auto time paused.');return;}
  if(b.dataset.laneKitAll){perform(G.upgradeAllLanes(s,b.dataset.laneKitAll),'Center-wide equipment installed!');return;}
  if(b.dataset.goalNav){goalSection=b.dataset.goalNav;showGoalSection();return;}
  if(b.dataset.closeIncident!==undefined){closeIncident();return;}
@@ -604,8 +643,8 @@ function readBrowserCandidate(uid){
 }
 function unlockCloud(uid,snapshot,source='cloud'){
  cloudMode=true;KEY='gutter-to-glory-v091-user-'+uid;BACKUP='gutter-to-glory-v091-backup-'+uid;
- for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
- closeDrawer();summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;
+ for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop','branchBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
+ closeDrawer();summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;storyOpen=false;incidentOpen=false;patronOpen=false;branchOpen=false;
  if(snapshot){const imported=G.migrate(snapshot.state||snapshot);if(!imported||!G.checkState(imported))throw Error('Save file was rejected by the game engine');
    s=imported;introSeen=true;tutorialSeen=true;welcomeOpen=false;}
  else{s=G.newGame();introSeen=false;tutorialSeen=false;welcomeOpen=false;skipSummaries=false;tab='alley';auto=true;}
@@ -616,13 +655,14 @@ function unlockCloud(uid,snapshot,source='cloud'){
  else if(s.hour===G.CLOSE&&!skipSummaries&&s.lastDay?.day===s.day)openSummary(s.lastDay);
 }
 function lockCloud(){cloudGateOpen=true;welcomeOpen=true;cloudMode=false;closeDrawer();
- for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
+ for(const id of ['welcomeBackdrop','daySummaryBackdrop','cutsceneBackdrop','tutorialBackdrop','facilityBackdrop','storyBackdrop','incidentBackdrop','patronBackdrop','branchBackdrop'])$(id).classList.add('hidden');facilityNoticeOpen=false;
  summaryOpen=false;cutsceneOpen=false;tutorialOpen=false;s=G.newGame();lastTick=Date.now();render();}
 window.GTGApp={
  unlockDemo,unlockCloud,lockCloud,readBrowserCandidate,
  validate(snapshot){try{const v=G.migrate(snapshot?.state||snapshot);return !!v&&G.checkState(v);}catch{return false;}},
  snapshot(){return {state:structuredClone(s),lastTick:Date.now()};},
  registerCloudSave(fn){cloudSaveSignal=fn;},
+ isDevelopmentPreview(){return devPreviewMode;},
  notify(message,error=false){toast(message,error);},
  getBrief(snapshot){const v=G.migrate(snapshot.state||snapshot);return `Week ${G.calendar(v.day).week} · ${G.calendar(v.day).weekday} · Level ${G.venueLevel(v)} · ${cash(v.cash)}`;},
  getLevel(){return G.venueLevel(s);},getDay(){return s.day;}

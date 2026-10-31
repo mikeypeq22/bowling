@@ -1,10 +1,8 @@
-# v0.99 decisions
+# v1.00 Decisions
 
-- Preserve original gameplay economy, Firebase provider integration and existing cloud-save document structure.
-- Keep story and financial events fictional. No real-money pay-to-repair options.
-- Implement all nine v0.99 parking lot themes as playable lightweight systems or usable UI, with deeper mechanics deferred separately.
-- Preserve a single five-day cooldown for major random incidents, rival events, lucky breaks, party requests and scheduled seasonal surprises.
-- Keep emergency maintenance and the existing Lane Technician separate roles.
-- Allow all room-specific visual/detail improvements; they must be purchased only for already-built rooms.
-- Offer a friendly financial fallback for a crucial random repair: two payment plans maximum, added to the in-game loan.
-- Optional darker rivalry branch remains design-only, with clear choice and tonal content safeguards in a future version; no automatic shift into that campaign.
+- **Locked:** After first buyout, choose one of two story campaigns, permanent for that location. A separate town can choose differently.
+- **Tone:** Legacy remains cozy; Back Alley is moody comic-noir for Teen-oriented audiences, with implied wrongdoing but no graphic violence. No official age-rating claim.
+- **AI:** Rule-based deterministic Vera adversary responds to property defenses, alliances and Heat; global events still at least five game days apart.
+- **Replayability:** Riverside initially supports exactly two towns; separate finances, game days and campaigns.
+- **Testing:** Settings development shortcut builds a midgame, disposable local-only preview and does not write to a live cloud account.
+- **Save:** Schema 15, migrates v14 while keeping existing businesses intact and not forcing a route choice.
