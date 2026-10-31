@@ -1,8 +1,10 @@
-# v1.00 Decisions
+# Decisions — v1.01
 
-- **Locked:** After first buyout, choose one of two story campaigns, permanent for that location. A separate town can choose differently.
-- **Tone:** Legacy remains cozy; Back Alley is moody comic-noir for Teen-oriented audiences, with implied wrongdoing but no graphic violence. No official age-rating claim.
-- **AI:** Rule-based deterministic Vera adversary responds to property defenses, alliances and Heat; global events still at least five game days apart.
-- **Replayability:** Riverside initially supports exactly two towns; separate finances, game days and campaigns.
-- **Testing:** Settings development shortcut builds a midgame, disposable local-only preview and does not write to a live cloud account.
-- **Save:** Schema 15, migrates v14 while keeping existing businesses intact and not forcing a route choice.
+1. Chosen dark/legacy route stays locked per town, and other towns can select differently.
+2. Keep one simulation engine for shared bowling/economy systems. Give dark route distinct venue presentation, security economics, sabotage and win conditions.
+3. New physical defenses: door guards, cameras, staff preparedness; three levels each. Better defenses reduce sabotage success. Vary sabotage targets, consequences, and recovery cost.
+4. Fictional Casino Lounge is a neon ticket-games arcade; no wagers, cashout or player gambling. App-store age rating remains to be assessed.
+5. Allow investigating sabotage only after hiring door security. Existing repair system still works.
+6. Replace Back Alley chapter emphasis with six dark story episodes; retain the inherited family story as a shared prologue.
+7. Remove AI terminology from narrative choice; adversary logic is an implementation detail.
+8. Existing v1.00 saves migrate to v1.01. Development preview remains local-only and does not sync cloud.

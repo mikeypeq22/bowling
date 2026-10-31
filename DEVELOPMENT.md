@@ -1,14 +1,7 @@
-# Development — v1.00
+# Development — v1.01
 
-## Architecture
+**Architecture:** shared `engine.js` (version 16), campaign-specific state in `campaignStory.nightOps` stored separately per town, `app.js` UI switches by `campaignStory.path`, existing `cloud.js` Firebase unchanged.
 
-One simulation module and UI for both campaigns; `campaignStory` tracks per-location route, metrics, AI memory and victory; `portfolio` stores each parked location without a nested `portfolio` property, preventing recursive saves. `switchTown` returns a new valid root state, permitting existing save and render flows to work. `migrate` upgrades v14 data safely.
+The dark path now depends on actual revenue generating venue operations, security purchases, and successfully handling sabotage. Avoid regressions in existing game-day scheduling, incident cooldown, local storage and Firestore. Long-term options: security staffing costs, animated staff at the entrance, specialized Casino Lounge artwork, consequences across the town, dynamic minor characters, deeper multiweek storylines, and optional campaign difficulty.
 
-## Future
-
-- More longform branching scenes, staff loyalty, consequential relationship quests and finale cutscenes.
-- Deeper AI telegraphing and counter-strategy for Vera, configurable difficulty and battle logs.
-- Location switching UI accessible from the alley top navigation.
-- PWA and Capacitor prototype after the mobile save path is stabilized.
-
-Dev-test scenarios use independent storage and reject cloud writes in `cloud.js` until exited.
+**Privacy & purchases:** there are no in-app purchases or real-money gambling; casino-themed machines use ordinary attraction fees and tickets only.

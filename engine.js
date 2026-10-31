@@ -1,4 +1,4 @@
-/* From Gutter to Glory v1.00 — deterministic simulation; no UI dependencies. */
+/* From Gutter to Glory v1.01 — deterministic simulation; no UI dependencies. */
 (function(root,factory){const core=factory();if(typeof module==='object'&&module.exports)module.exports=core;root.BowlingCore=core;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const OPEN=14,CLOSE=22;
@@ -359,7 +359,59 @@ const CAMPAIGN_PATHS=[
  {id:'legacy',name:'The Legacy',icon:'🌟',tone:'warm',description:'Save the alley through tournaments, community trust and a nationally recognized landmark.'},
  {id:'backalley',name:'The Back Alley',icon:'🌒',tone:'teen-noir',description:'A noir-flavored struggle of security, favors and consequences. No graphic violence or detailed criminal instruction.'}
 ];
-function newCampaign(){return {path:'undecided',chosenDay:0,security:12,influence:0,heat:0,trust:50,defenseWins:0,lastActionDay:0,lastAIMoveDay:0,nextAIMoveDay:0,aiStyle:'uncommitted',aiMemory:[],history:[],victory:false};}
+
+// The Back Alley is a separate play loop, built on the shared center simulation.
+// The casino-themed lounge uses fictional arcade-prize credits: there is no
+// real-money wagering, withdrawal, gambling account, or player purchase.
+const NIGHT_DEFENSES=[
+ {id:'entrance',name:'Door Security',icon:'🚪',levels:['Unstaffed','Night Doorman','Trained Door Crew','Reinforced Entrance'],costs:[0,290,470,750],power:[0,14,32,54],descriptions:['A uniformed doorman deters trouble','A reliable two-person night crew','A reinforced door and a trained night shift']},
+ {id:'cameras',name:'Camera Network',icon:'📹',levels:['None','Entry Cameras','All-Area Cameras','Monitoring Office'],costs:[0,240,420,690],power:[0,13,29,47],descriptions:['Watch the entrance and corridor','Watch your lanes, lounges and storage','Record incidents and identify patterns']},
+ {id:'crew',name:'Staff Preparedness',icon:'🧰',levels:['Unprepared','Safety Briefings','Emergency Drills','Night Manager'],costs:[0,170,330,540],power:[0,10,22,38],descriptions:['Teach the crew how to report threats','Practice a calm emergency response','A night manager handles trouble and protects staff']}
+];
+const BACK_ALLEY_CHAPTERS=[
+ {id:'noir-opening',title:'A Knock After Closing',speaker:'Lou · the old night watchman',text:'Vera knows this place matters to you. She is betting the night shift will make you quit. Get someone at the front door before her people get ideas.',hint:'Build Door Security level 1 in Build → Night Defenses.'},
+ {id:'noir-door',title:'The Man in the Gray Coat',speaker:'Rosa · bartender',text:'A stranger asked who closes up and whether our cameras work. He did not buy a drink. I am not frightened. I am just saying our people deserve a safe way home.',hint:'Upgrade cameras and keep the crew safe.'},
+ {id:'noir-lounge',title:'Lucky After Dark',speaker:'Dex · regular',text:'The arcade used to shut down at eight. What if we turn it into a flashy, ticket-only Casino Lounge? No bets, just games, neon and a reason for the whole town to stay late.',hint:'Build the arcade space to open the new Casino Lounge.'},
+ {id:'noir-firsthit',title:'The First Broken Promise',speaker:'Bea · league organizer',text:'We found a damaged return in the morning. Vera says it is a coincidence. Grandpa used to say a coincidence is just a problem wearing a nice jacket.',hint:'Repair any damaged rooms, install defenses, and document Vera’s moves.'},
+ {id:'noir-crew',title:'Nobody Stands Alone',speaker:'Nell · equipment specialist',text:'The lane crew, the doorman, and the people behind the counter finally trust one another. That is a stronger wall than anything made of brick.',hint:'Prepare your staff and successfully defend against Vera.'},
+ {id:'noir-accord',title:'The Midnight Accord',speaker:'Grandpa Gus · from his old journal',text:'A bowling alley is not made of pins and polished boards. It is made of people who refuse to be pushed out. Winning is not worth losing your people.',hint:'Finish the Back Alley campaign while keeping the business open.'}
+];
+function newNightOps(){return {entrance:0,cameras:0,crew:0,defended:0,incidents:0,nightRevenue:0,chapters:[],pending:[],responseWins:0};}
+function nightProtection(s){const n=s.campaignStory?.nightOps||newNightOps();return NIGHT_DEFENSES.reduce((total,d)=>total+d.power[n[d.id]||0],0);}
+function buyNightDefense(s,id){
+ if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Night defenses are available only in The Back Alley'};
+ const d=NIGHT_DEFENSES.find(x=>x.id===id);if(!d)return {ok:false,reason:'Unknown security improvement'};
+ const n=s.campaignStory.nightOps||=newNightOps(),level=n[id]||0;if(level>=3)return {ok:false,reason:'Already fully upgraded'};
+ const cost=d.costs[level+1];if(!spend(s,cost))return {ok:false,reason:'Not enough cash for this upgrade'};
+ n[id]=level+1;s.campaignStory.security=clamp(12+nightProtection(s),0,100);recordCharge(s,'capex',cost);
+ note(s,`${d.icon} ${d.name} upgraded to ${d.levels[n[id]]}. Vera will have a harder time disrupting the alley.`,'build');advanceBackAlley(s);checkCampaignVictory(s);return {ok:true};
+}
+function unlockNightChapter(s,id){const n=s.campaignStory?.nightOps;if(!n||n.chapters.includes(id))return false;
+ const ch=BACK_ALLEY_CHAPTERS.find(c=>c.id===id);if(!ch)return false;
+ n.chapters.push(id);n.pending.push(id);s.eventQueue.push({id:'chapter-'+id,emoji:'🌒',kind:'noir',title:ch.title,text:`${ch.speaker}: “${ch.text}”`,effect:`NEXT: ${ch.hint}`,day:s.day});
+ note(s,`🌒 Story: ${ch.title}`,'story');return true;
+}
+function advanceBackAlley(s){if(s.campaignStory?.path!=='backalley')return;
+ const n=s.campaignStory.nightOps||=newNightOps();unlockNightChapter(s,'noir-opening');
+ if(n.entrance>=1)unlockNightChapter(s,'noir-door');
+ if(s.built.arcade)unlockNightChapter(s,'noir-lounge');
+ if(n.incidents>=1)unlockNightChapter(s,'noir-firsthit');
+ if(n.defended>=1&&n.crew>=1)unlockNightChapter(s,'noir-crew');
+ if(s.campaignStory.victory)unlockNightChapter(s,'noir-accord');
+}
+function emergencyResponse(s,id){
+ if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Not a Back Alley incident'};
+ const outage=s.outages?.[id];if(!outage||!outage.rival)return {ok:false,reason:'No rival damage to investigate here'};
+ if(!s.campaignStory.nightOps.entrance)return {ok:false,reason:'Hire door security before sending the crew to investigate'};
+ const cost=70;if(!spend(s,cost))return {ok:false,reason:'Not enough cash for a supervised repair'};
+ delete s.outages[id];s.campaignStory.nightOps.responseWins++;s.campaignStory.influence=clamp(s.campaignStory.influence+7,0,100);
+ s.rival.pressure=clamp(s.rival.pressure-10,0,100);recordCharge(s,'capex',cost);
+ note(s,`🕵️ Your night crew documented the sabotage and reopened ${outage.name}. Vera loses influence.`,'story');advanceBackAlley(s);checkCampaignVictory(s);return {ok:true};
+}
+function backAlleyArcadeName(s){return s.campaignStory?.path==='backalley'?'Casino Lounge':'Arcade';}
+function darkMachineName(id){return ({pinball:'Midnight Jackpot',crane:'Lucky Vault',invaders:'Neon High Stakes',hockey:'House Rules',racer:'Midnight Run'})[id]||id;}
+
+function newCampaign(){return {nightOps:newNightOps(),path:'undecided',chosenDay:0,security:12,influence:0,heat:0,trust:50,defenseWins:0,lastActionDay:0,lastAIMoveDay:0,nextAIMoveDay:0,aiStyle:'uncommitted',aiMemory:[],history:[],victory:false};}
 function campaignReady(s){return !s.startupPending&&(s.story?.unlocked||[]).includes('offer');}
 function campaignOf(s){return CAMPAIGN_PATHS.find(p=>p.id===s.campaignStory?.path)||null;}
 function chooseCampaign(s,id){
@@ -370,12 +422,13 @@ function chooseCampaign(s,id){
  s.campaignStory={...s.campaignStory,path:id,chosenDay:s.day,aiStyle:id==='backalley'?'intimidation':'public-relations',nextAIMoveDay:s.day+6};
  s.story.pending=s.story.pending.filter(x=>x!=='offer');
  s.rival.pressure=Math.max(12,s.rival.pressure);
+ if(id==='backalley')advanceBackAlley(s);
  const msg=id==='backalley'?'🌒 The Back Alley begins. Vera is no longer just a business problem. Protect your crew, choose your contacts carefully, and decide what you are willing to risk.':'🌟 The Legacy begins. Build a landmark strong enough to outlast StrikeCity and rally the town.';
  log(s,msg);note(s,msg,'story');return {ok:true,path:id};
 }
 function campaignMission(s){
  const c=s.campaignStory;
- if(c.path==='backalley')return `Midnight Accord: ${c.security}/65 security · ${c.influence}/45 influence · ${Math.round(s.rep)}/40 reputation · ${lanes(s)}/6 lanes · Vera pressure ${s.rival.pressure}/25 maximum`;
+ if(c.path==='backalley')return `Midnight Accord: door crew Lv ${c.nightOps.entrance}/2 · cameras Lv ${c.nightOps.cameras}/2 · crew Lv ${c.nightOps.crew}/1 · defended ${c.nightOps.defended}/2 · casino visits ${s.roomVisits.arcade||0}/35 · Vera pressure ${s.rival.pressure}/40 maximum`;
  if(c.path==='legacy')return `Heritage Charter: ${s.tournamentWins.national||0} national victories · ${s.rival.community}/4 neighborhood allies · ${alleyStars(s)}/4 alley stars`;
  return 'Continue until Vera sends her first buyout offer.';
 }
@@ -402,8 +455,8 @@ function campaignAction(s,id){
  return {ok:true};
 }
 function checkCampaignVictory(s){const c=s.campaignStory;if(c.victory)return false;
- if(c.path==='backalley'&&c.security>=65&&c.influence>=45&&s.rep>=40&&lanes(s)>=6&&s.rival.pressure<=25){
-  c.victory=true;s.rep=money(s.rep+12);const msg='🌒 Midnight Accord: Vera backs down after your neighborhood network and security team hold the line. You kept the lanes open—but the city will remember every compromise.';c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'noir-finale',emoji:'🌒',title:'The Midnight Accord',kind:'noir',text:msg,effect:'Campaign complete. Your bowling center continues to operate.'});log(s,msg);return true;
+ if(c.path==='backalley'&&c.nightOps.entrance>=2&&c.nightOps.cameras>=2&&c.nightOps.crew>=1&&c.nightOps.defended>=2&&s.built.arcade&&(s.roomVisits.arcade||0)>=35&&lanes(s)>=6&&s.rival.pressure<=40){
+  c.victory=true;advanceBackAlley(s);s.rep=money(s.rep+12);const msg='🌒 Midnight Accord: Vera backs down after your neighborhood network and security team hold the line. You kept the lanes open—but the city will remember every compromise.';c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'noir-finale',emoji:'🌒',title:'The Midnight Accord',kind:'noir',text:msg,effect:'Campaign complete. Your bowling center continues to operate.'});log(s,msg);return true;
  }
  if(c.path==='legacy'&&(s.tournamentWins.national||0)>0&&s.rival.community>=4&&alleyStars(s)>=4){
   c.victory=true;const msg='🌟 Community Charter: Your National Heritage Cup victory and neighbors safeguard the alley as a beloved landmark.';c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'legacy-finale',emoji:'🌟',title:'Community Charter',kind:'good',text:msg,effect:'Campaign complete. Continue improving your bowling center.'});log(s,msg);return true;
@@ -415,28 +468,41 @@ function checkCampaignVictory(s){const c=s.campaignStory;if(c.victory)return fal
 function rivalAIMove(s){
  const c=s.campaignStory;if(c.path==='undecided'||c.victory||s.startupPending||s.day<c.nextAIMoveDay)return false;
  if(s.day-(s.lastRandomEventDay??-100)<5)return false;
- const guarded=c.security>=45,connected=c.influence>=30,publicSupport=s.rival.community>=3||s.rep>=60;
- const action=c.path==='backalley'?(c.heat>=35?'paper-trail':guarded?'supplier-pressure':connected?'watchers':'night-threat'):(publicSupport?'price-war':'permit-challenge');
- const mitigated=action==='night-threat'&&guarded||action==='watchers'&&connected||publicSupport&&action==='price-war';
- const increase=mitigated?4:action==='night-threat'?16:12;
- s.rival.pressure=clamp(s.rival.pressure+increase,0,100);
- if(action==='night-threat')c.trust=clamp(c.trust-(guarded?1:4),0,100);
- if(action==='paper-trail')c.heat=clamp(c.heat+5,0,100);
- if(action==='supplier-pressure')s.eventBoostFactor=.88;
- if(action==='price-war')s.eventBoostFactor=publicSupport?.94:.79;
- if(['supplier-pressure','price-war'].includes(action))s.eventBoostUntil=s.day+2;
- const headlines={
-  'paper-trail':['A name on the wrong paperwork','Vera has started asking pointed questions about your late-night associations. Suspicion rises.'],
-  'supplier-pressure':['An unexpected delivery delay','StrikeCity is squeezing local suppliers. Your upgraded security prevents more serious trouble.'],
-  'watchers':['Unknown cars in the parking lot','Vera tests your nerves with an intimidating show of interest. Your local contacts know who to call.'],
-  'night-threat':['A warning after closing','Someone has been leaving unsettling messages for the staff. You need better security.'],
-  'price-war':['StrikeCity undercuts your prices','Vera runs an aggressive discount campaign. Your loyal customers soften the impact.'],
-  'permit-challenge':['A suspiciously timed inspection','Vera challenges your permits. Documents and community allies help you prepare.']
- };
- const [title,text]=headlines[action],entry={id:'vera-ai-'+action,kind:c.path==='backalley'?'noir':'rival',emoji:c.path==='backalley'?'🌒':'🏢',title,text,effect:`Vera pressure +${increase}. AI observed: ${action.replace(/-/g,' ')}. Build your countermeasures.`,day:s.day};
+ const dark=c.path==='backalley',n=c.nightOps||newNightOps(),protection=nightProtection(s);
+ let action='permit-challenge',entry;
+ if(dark){
+  const targets=[...s.lanes.filter(l=>!activeOutage(s,'lane'+l.id)).map(l=>({id:'lane'+l.id,name:'Lane '+l.id})),
+   ...['snack','bar','arcade','proshop','restrooms'].filter(id=>id==='restrooms'?s.fixtures.restrooms:s.built[id]).filter(id=>!activeOutage(s,id)).map(id=>({id,name:id==='arcade'?'Casino Lounge':id==='bar'?'Speakeasy':id==='snack'?'Night Grill':id==='proshop'?'Backroom Outfitters':'Restrooms'}))];
+  action=c.heat>=45?'paper-trail':s.built.arcade&&n.cameras<2?'neon-blackout':n.entrance<1?'door-intimidation':n.crew<1?'staff-scare':'targeted-sabotage';
+  const chance=clamp(.72-protection*.006, .07,.8),success=targets.length>0&&roll(s)<chance;
+  const chosen=action==='neon-blackout'?targets.find(t=>t.id==='arcade'):action==='staff-scare'?targets.find(t=>t.id==='bar'||t.id==='snack'):action==='door-intimidation'?targets.find(t=>t.id.startsWith('lane')):null;
+  const target=chosen||(targets.length?targets[Math.floor(roll(s)*targets.length)]:null);
+  if(success&&target){const cost=110+Math.floor(roll(s)*140);s.outages[target.id]={name:target.name,cost,day:s.day,rival:true};n.incidents++;
+   if(action==='paper-trail'){s.rep=Math.max(0,money(s.rep-2));s.eventBoostFactor=.85;s.eventBoostUntil=s.day+2;}
+   if(action==='door-intimidation'){s.eventBoostFactor=.82;s.eventBoostUntil=s.day+2;}
+   if(action==='staff-scare')for(const employee of s.employees||[])employee.morale=clamp((employee.morale??70)-5,0,100);
+   s.rival.pressure=clamp(s.rival.pressure+12,0,100);c.trust=clamp(c.trust-4,0,100);
+   const method={
+   'paper-trail':`Vera's lawyers show up with a surprise challenge to your permits. ${target.name} is temporarily sealed, and the bad publicity slows visits.`,
+   'neon-blackout':`The power fails in your Casino Lounge after a stranger visits the utility closet. Vera calls it unfortunate luck.`,
+   'door-intimidation':`A group of intimidating visitors rattles the entrance and damages ${target.name}. Some customers avoid the alley for two nights.`,
+   'staff-scare':`Your crew finds signs of interference at ${target.name}. Everyone is shaken, and staff morale drops.`,
+   'targeted-sabotage':`A suspicious overnight malfunction closes ${target.name}. Vera denies involvement, but you recognize her pattern.`
+   };
+   entry={id:'vera-'+action,kind:'noir',emoji:'🚨',title:({'paper-trail':'A Sudden Permit Challenge','neon-blackout':'The Neon Goes Dark','door-intimidation':'Trouble at the Front Door','staff-scare':'A Warning for the Crew','targeted-sabotage':'Another StrikeCity Interference'})[action],text:method[action],effect:`${target.name} is CLOSED until repaired. Standard repair $${cost}; investigate with security for $70.`,repairId:target.id,day:s.day};
+  }else{n.defended++;c.influence=clamp(c.influence+6,0,100);c.trust=clamp(c.trust+2,0,100);s.rival.pressure=clamp(s.rival.pressure-8,0,100);
+   entry={id:'vera-repelled',kind:'noir',emoji:'🛡️',title:'Your night crew held the line',text:`Vera tried to unsettle the operation, but your security measures stopped the disruption. Staff feel safer and the town notices.`,effect:'Successful defense recorded. Influence +6; Vera pressure −8.',day:s.day};}
+  advanceBackAlley(s);
+ }else{
+  const publicSupport=s.rival.community>=3||s.rep>=60;action=publicSupport?'price-war':'permit-challenge';
+  const increase=publicSupport?4:12;s.rival.pressure=clamp(s.rival.pressure+increase,0,100);
+  if(action==='price-war'){s.eventBoostFactor=.94;s.eventBoostUntil=s.day+2;}
+  entry={id:'vera-'+action,kind:'rival',emoji:'🏢',title:action==='price-war'?'StrikeCity lowers prices':'Vera contests the permits',text:action==='price-war'?'StrikeCity launches a discount campaign. Your regulars still have your back.':'Vera uses paperwork to slow your expansion. Community allies and legal help can counter her.',effect:`Vera pressure +${increase}. Rally neighbors or seek legal help.`,day:s.day};
+ }
  c.aiStyle=action;c.lastAIMoveDay=s.day;c.nextAIMoveDay=s.day+6+Math.floor(roll(s)*4);c.aiMemory.unshift({day:s.day,action,pressure:s.rival.pressure});c.aiMemory=c.aiMemory.slice(0,30);
- c.history.unshift({day:s.day,who:'Vera AI',text:title});c.history=c.history.slice(0,25);
- s.lastRandomEventDay=s.day;s.eventQueue.push(entry);s.eventHistory.unshift(entry);s.eventHistory=s.eventHistory.slice(0,25);note(s,`${entry.emoji} ${title}: ${text}`,'story');checkCampaignVictory(s);return true;
+ c.history.unshift({day:s.day,who:'Vera Vale',text:entry.title});c.history=c.history.slice(0,25);
+ s.lastRandomEventDay=s.day;s.eventQueue.push(entry);s.eventHistory.unshift(entry);s.eventHistory=s.eventHistory.slice(0,25);
+ note(s,`${entry.emoji} ${entry.title}: ${entry.text}`,'story');checkCampaignVictory(s);return true;
 }
 function freshStory(){return {unlocked:['inheritance'],pending:['inheritance'],charter:false};}
 function freshPatrons(){return Object.fromEntries(PATRON_PROFILES.map(p=>[p.id,{id:p.id,visits:0,loyalty:12,lastVisit:0,lastTalk:0,leagueMember:false,disappointed:0}]));}
@@ -606,7 +672,7 @@ function rollRandomEvent(s){
  return true;
 }
 function newDayStats(day){return {partyIncome:0,partyHeld:false,eventNotes:[],satisfied:0,unhappy:0,happinessDelta:0,loanPayment:0,techServices:0,techPartsBought:0,techExpenses:0,laneHours:0,day,week:calendar(day).week,weekday:calendar(day).weekday,arcadePlays:0,leagueIncome:0,leagueHeld:false,leagueHours:0,arrivals:0,served:0,left:0,waited:0,benchSaves:0,spentOnSnacks:0,snackOrders:0,snackMisses:0,barOrders:0,barMisses:0,walkIns:0,staffPay:0,laneIncome:0,shoeIncome:0,snackIncome:0,barIncome:0,otherIncome:0,marketingSpend:0,capex:0,expenses:0,income:0,net:0,groups:[],feedback:[],events:[]};}
-function newGame(seed=271828){return {version:15,locationName:'Gus’s Town',portfolio:{activeId:'home',snapshots:{},opened:[]},campaignStory:newCampaign(),bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false,teams:false,charity:false,office:false,neighbors:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
+function newGame(seed=271828){return {version:16,locationName:'Gus’s Town',portfolio:{activeId:'home',snapshots:{},opened:[]},campaignStory:newCampaign(),bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false,teams:false,charity:false,office:false,neighbors:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
  built:{roof:true},lanes:[],parts:4,benches:0,construction:[],facilityNotices:[],campaign:null,barStock:0,barPrice:9,barVisits:0,barStockById:Object.fromEntries(DRINKS.map(i=>[i.id,0])),barPrices:Object.fromEntries(DRINKS.map(i=>[i.id,i.price])),arcadeVisits:0,arcadeMachines:{},fixtures:{},wallPaint:'original',league:{active:false,season:0,sessions:0,totalRevenue:0,lastDay:0},nextDayCharges:{capex:0,marketingSpend:0},
  roomPlacements:{},roomTiers:{},roomVisits:{snack:0,bar:0,arcade:0,proshop:0},snackStock:{soda:0,popcorn:0,hotdog:0,pizza:0,nachos:0,pretzel:0,icecream:0,fries:0,burger:0,cheeseburger:0},snackPrices:Object.fromEntries(SNACKS.map(x=>[x.id,x.price])),
  pricing:{lane:18,shoes:3},deliveries:[],lowStockThreshold:3,employees:[],employeeSerial:0,partyCounter:0,queue:[],active:[],sceneGroups:[],
@@ -650,7 +716,7 @@ function finishSingleConstruction(s,j){
  if(j.kind==='lane'){s.lanes.push({id:s.lanes.length+1,condition:96,kits:{},theme:'classic',animationUnlocked:false});s.rep+=1;}
  else if(j.kind==='land'){s.expansionStage=Math.min(5,expansionStage(s)+1);s.landOwned=true;s.rep+=5;note(s,`Property Wing ${s.expansionStage} is OPEN! ${laneCapacity(s)} total lanes and ${roomRows(s)} rows of shops are now available.`,'build');}
  else if(j.kind==='roomExpand'){s.roomTiers[j.id]=2;s.rep+=3;if(j.id==='snack'){s.snackStock.pretzel+=8;s.snackStock.icecream+=8;}if(j.id==='bar'){s.barStockById.cider+=5;s.barStock+=5;}note(s,`${j.title} now offers more variety and room for customers.`,'build');}
- else{s.built[j.id]=true;if(j.id==='snack'){s.snackStock.soda+=8;s.snackStock.popcorn+=6;s.snackStock.fries+=5;}if(j.id==='bar'){s.barStockById.beer+=8;s.barStockById.wine+=6;s.barStock=14;}if(j.id==='arcade')s.arcadeMachines.pinball=true;s.rep+=j.id==='roof'?4:3;}
+ else{s.built[j.id]=true;if(j.id==='snack'){s.snackStock.soda+=8;s.snackStock.popcorn+=6;s.snackStock.fries+=5;}if(j.id==='bar'){s.barStockById.beer+=8;s.barStockById.wine+=6;s.barStock=14;}if(j.id==='arcade'){s.arcadeMachines.pinball=true;advanceBackAlley(s);}s.rep+=j.id==='roof'?4:3;}
  if((j.kind==='upgrade'&&['snack','bar','arcade','proshop'].includes(j.id))||(j.kind==='roomExpand'&&['snack','bar','arcade','proshop'].includes(j.id))){
   s.facilityNotices??=[];s.facilityNotices.push({id:j.id,tier:j.kind==='roomExpand'?2:1,title:j.title,day:s.day});
  }
@@ -792,7 +858,7 @@ function maybeBar(s,p,reason){if(!isBuilt(s,'bar')||activeOutage(s,'bar')||!staf
  const drink=stocked[Math.floor(roll(s)*stocked.length)];s.barStockById[drink.id]--;s.barStock=Math.max(0,s.barStock-1);const price=s.barPrices[drink.id];addIncome(s,'barIncome',price+(s.specialty==='lounge'?2:0)+(s.roomDetails.bar?2:0));s.today.barOrders++;s.barVisits++;s.roomVisits.bar++;if(p.patronId==='rosa')s.patrons.rosa.loyalty=clamp(s.patrons.rosa.loyalty+3,0,100);
  note(s,`${groupText(p)} ordered ${drink.name.toLowerCase()} at the bar (+$${price}).`,'bar',p.id);}
 function maybeArcade(s,p){if(!isBuilt(s,'arcade')||activeOutage(s,'arcade')||roll(s)>.88)return;const owned=MACHINES.filter(i=>s.arcadeMachines[i.id]);if(!owned.length)return;
- const machine=owned[Math.floor(roll(s)*owned.length)];addIncome(s,'otherIncome',machine.fee+(s.roomDetails.arcade?1:0));s.today.arcadePlays++;s.arcadeVisits++;s.roomVisits.arcade++;if(p.patronId==='dex')s.patrons.dex.loyalty=clamp(s.patrons.dex.loyalty+3,0,100);note(s,`${groupText(p)} played ${machine.name} (+$${machine.fee}).`,'arcade',p.id);}
+ const machine=owned[Math.floor(roll(s)*owned.length)];addIncome(s,'otherIncome',machine.fee+(s.roomDetails.arcade?1:0));s.today.arcadePlays++;s.arcadeVisits++;s.roomVisits.arcade++;if(s.campaignStory?.path==='backalley'){const tip=s.hour>=18?Math.max(1,Math.floor(machine.fee*.8)):0;if(tip){addIncome(s,'otherIncome',tip);s.campaignStory.nightOps.nightRevenue+=tip;}advanceBackAlley(s);}if(p.patronId==='dex')s.patrons.dex.loyalty=clamp(s.patrons.dex.loyalty+3,0,100);note(s,`${groupText(p)} played ${s.campaignStory?.path==='backalley'?darkMachineName(machine.id):machine.name} at the ${backAlleyArcadeName(s)} (+$${machine.fee}).`,'arcade',p.id);}
 function serve(s,p,free){
  // Rotate lane assignments so even quieter alleys use lanes 4, 5 and 6.
  const rotation=s.laneRotation||0;const pick=free.findIndex(l=>l.id>rotation);const lane=free.splice(pick>=0?pick:0,1)[0];
@@ -962,14 +1028,15 @@ function developmentScenario(mode='decision'){
  s.story.unlocked=['inheritance','firstlane','offer','established'];s.story.pending=[];
  s.rival.pressure=22;s.rival.community=1;s.ownerXP=310;s.ownerPoints=3;s.loan.balance=780;s.loan.payment=150;s.startupPending=false;
  s.today=newDayStats(s.day);s.lastDay=newDayStats(s.day-1);s.dayReports=[];
- if(mode!=='decision')chooseCampaign(s,mode);
+ if(mode!=='decision'){chooseCampaign(s,mode);if(mode==='backalley'){s.campaignStory.nightOps.entrance=1;s.campaignStory.security=26;advanceBackAlley(s);}}
  return checkState(s)?s:null;
 }
-function checkState(s){return !!(s&&s.version===15&&s.campaignStory&&['undecided','legacy','backalley'].includes(s.campaignStory.path)&&s.portfolio&&['home','riverside'].includes(s.portfolio.activeId)&&Array.isArray(s.portfolio.opened)&&s.portfolio.snapshots&&Object.values(s.portfolio.snapshots).every(v=>v.version===15&&!v.portfolio&&v.campaignStory)&&Array.isArray(s.bookings)&&s.roomDetails&&s.vipGroups&&s.rival&&Number.isInteger(s.hardshipUses)&&s.story&&Array.isArray(s.story.unlocked)&&Array.isArray(s.story.pending)&&typeof s.story.charter==='boolean'&&s.patrons&&PATRON_PROFILES.every(p=>s.patrons[p.id]&&Number.isInteger(s.patrons[p.id].visits)&&s.patrons[p.id].loyalty>=0&&s.patrons[p.id].loyalty<=100)&&Number.isInteger(s.laneRotation)&&s.laneRotation>=0&&Number.isInteger(s.storyCursor)&&typeof s.startupPending==='boolean'&&Number.isFinite(s.happiness)&&s.happiness>=0&&s.happiness<=100&&Array.isArray(s.happinessHistory)&&s.loan&&Number.isFinite(s.loan.balance)&&s.loan.balance>=0&&Array.isArray(s.employees)&&Array.isArray(s.deliveries)&&Array.isArray(s.facilityNotices)&&s.facilityNotices.every(x=>['snack','bar','arcade','proshop'].includes(x.id)&&[1,2].includes(x.tier))&&Number.isInteger(s.lowStockThreshold)&&s.lowStockThreshold>=1&&s.lowStockThreshold<=12&&s.hour>=OPEN&&s.hour<=CLOSE&&s.day>=1&&Number.isFinite(s.cash)&&Number.isFinite(s.rep)&&Number.isInteger(s.parts)&&s.parts>=0&&Number.isInteger(s.benches)&&s.benches>=0&&s.benches<=3&&Number.isInteger(s.barStock)&&s.barStock>=0&&Number.isInteger(s.barPrice)&&s.barPrice>=6&&s.barPrice<=14&&Number.isInteger(s.totalServed)&&s.totalServed>=0&&Number.isInteger(s.minVenueLevel)&&s.minVenueLevel>=1&&s.minVenueLevel<=5&&s.barStockById&&DRINKS.every(i=>Number.isInteger(s.barStockById[i.id])&&s.barStockById[i.id]>=0&&Number.isInteger(s.barPrices[i.id]))&&s.arcadeMachines&&s.fixtures&&PAINTS.some(p=>p.id===s.wallPaint)&&s.league&&Array.isArray(s.construction)&&s.construction.every(j=>j.remaining>0&&j.remaining<=j.total&&['lane','upgrade','roomExpand','land'].includes(j.kind))&&Number.isInteger(s.expansionStage)&&s.expansionStage>=0&&s.expansionStage<=5&&s.outages&&s.partnerships&&Array.isArray(s.eventQueue)&&Array.isArray(s.eventHistory)&&Array.isArray(s.encounters)&&Array.isArray(s.lanes)&&s.lanes.length>=0&&s.lanes.length+pendingLanes(s)<=laneCapacity(s)&&s.lanes.every(l=>Number.isInteger(l.id)&&l.condition>=0&&l.condition<=100&&l.kits&&LANE_KITS.every(k=>typeof l.kits[k.id]==='undefined'||l.kits[k.id]===true)&&SCORE_THEMES.some(t=>t.id===l.theme)&&(l.animationUnlocked===undefined||typeof l.animationUnlocked==='boolean'))&&SNACKS.every(i=>Number.isInteger(s.snackStock[i.id])&&s.snackStock[i.id]>=0)&&s.queue.length<=waitCapacity(s)&&ROOM_IDS.every(id=>(!s.roomPlacements[id]||canPlaceRoom(s,id,s.roomPlacements[id].x,s.roomPlacements[id].y)))&&s.bowlers.every(b=>['aim','spare','power','focus'].every(k=>b[k]>=0&&b[k]<=95)));}
+function checkState(s){return !!(s&&s.version===16&&s.campaignStory&&s.campaignStory.nightOps&&NIGHT_DEFENSES.every(d=>Number.isInteger(s.campaignStory.nightOps[d.id])&&s.campaignStory.nightOps[d.id]>=0&&s.campaignStory.nightOps[d.id]<=3)&&['undecided','legacy','backalley'].includes(s.campaignStory.path)&&s.portfolio&&['home','riverside'].includes(s.portfolio.activeId)&&Array.isArray(s.portfolio.opened)&&s.portfolio.snapshots&&Object.values(s.portfolio.snapshots).every(v=>v.version===16&&!v.portfolio&&v.campaignStory)&&Array.isArray(s.bookings)&&s.roomDetails&&s.vipGroups&&s.rival&&Number.isInteger(s.hardshipUses)&&s.story&&Array.isArray(s.story.unlocked)&&Array.isArray(s.story.pending)&&typeof s.story.charter==='boolean'&&s.patrons&&PATRON_PROFILES.every(p=>s.patrons[p.id]&&Number.isInteger(s.patrons[p.id].visits)&&s.patrons[p.id].loyalty>=0&&s.patrons[p.id].loyalty<=100)&&Number.isInteger(s.laneRotation)&&s.laneRotation>=0&&Number.isInteger(s.storyCursor)&&typeof s.startupPending==='boolean'&&Number.isFinite(s.happiness)&&s.happiness>=0&&s.happiness<=100&&Array.isArray(s.happinessHistory)&&s.loan&&Number.isFinite(s.loan.balance)&&s.loan.balance>=0&&Array.isArray(s.employees)&&Array.isArray(s.deliveries)&&Array.isArray(s.facilityNotices)&&s.facilityNotices.every(x=>['snack','bar','arcade','proshop'].includes(x.id)&&[1,2].includes(x.tier))&&Number.isInteger(s.lowStockThreshold)&&s.lowStockThreshold>=1&&s.lowStockThreshold<=12&&s.hour>=OPEN&&s.hour<=CLOSE&&s.day>=1&&Number.isFinite(s.cash)&&Number.isFinite(s.rep)&&Number.isInteger(s.parts)&&s.parts>=0&&Number.isInteger(s.benches)&&s.benches>=0&&s.benches<=3&&Number.isInteger(s.barStock)&&s.barStock>=0&&Number.isInteger(s.barPrice)&&s.barPrice>=6&&s.barPrice<=14&&Number.isInteger(s.totalServed)&&s.totalServed>=0&&Number.isInteger(s.minVenueLevel)&&s.minVenueLevel>=1&&s.minVenueLevel<=5&&s.barStockById&&DRINKS.every(i=>Number.isInteger(s.barStockById[i.id])&&s.barStockById[i.id]>=0&&Number.isInteger(s.barPrices[i.id]))&&s.arcadeMachines&&s.fixtures&&PAINTS.some(p=>p.id===s.wallPaint)&&s.league&&Array.isArray(s.construction)&&s.construction.every(j=>j.remaining>0&&j.remaining<=j.total&&['lane','upgrade','roomExpand','land'].includes(j.kind))&&Number.isInteger(s.expansionStage)&&s.expansionStage>=0&&s.expansionStage<=5&&s.outages&&s.partnerships&&Array.isArray(s.eventQueue)&&Array.isArray(s.eventHistory)&&Array.isArray(s.encounters)&&Array.isArray(s.lanes)&&s.lanes.length>=0&&s.lanes.length+pendingLanes(s)<=laneCapacity(s)&&s.lanes.every(l=>Number.isInteger(l.id)&&l.condition>=0&&l.condition<=100&&l.kits&&LANE_KITS.every(k=>typeof l.kits[k.id]==='undefined'||l.kits[k.id]===true)&&SCORE_THEMES.some(t=>t.id===l.theme)&&(l.animationUnlocked===undefined||typeof l.animationUnlocked==='boolean'))&&SNACKS.every(i=>Number.isInteger(s.snackStock[i.id])&&s.snackStock[i.id]>=0)&&s.queue.length<=waitCapacity(s)&&ROOM_IDS.every(id=>(!s.roomPlacements[id]||canPlaceRoom(s,id,s.roomPlacements[id].x,s.roomPlacements[id].y)))&&s.bowlers.every(b=>['aim','spare','power','focus'].every(k=>b[k]>=0&&b[k]<=95)));}
 // Preserve v0.3 (and older v0.1/0.2) game progress without editing the old save.
 function migrate(legacy){
- if(legacy?.version===15)return checkState(legacy)?legacy:null;
- if(legacy?.version===14){const s={...structuredCloneSafe(legacy),version:15,locationName:'Gus’s Town',portfolio:{activeId:'home',opened:[],snapshots:{}},campaignStory:newCampaign()};s.log=['v1.00: Two story campaigns are now available. Your previous alley remains undecided until Vera’s offer.',...(s.log||[])].slice(0,60);return checkState(s)?s:null;}
+ if(legacy?.version===16)return checkState(legacy)?legacy:null;
+ if(legacy?.version===15){const s=structuredCloneSafe(legacy);s.version=16;s.campaignStory??=newCampaign();s.campaignStory.nightOps??=newNightOps();for(const sub of Object.values(s.portfolio?.snapshots||{})){sub.version=16;sub.campaignStory??=newCampaign();sub.campaignStory.nightOps??=newNightOps();}return checkState(s)?s:null;}
+ if(legacy?.version===14){const s={...structuredCloneSafe(legacy),version:15,locationName:'Gus’s Town',portfolio:{activeId:'home',opened:[],snapshots:{}},campaignStory:newCampaign()};s.log=['v1.00: Two story campaigns are now available. Your previous alley remains undecided until Vera’s offer.',...(s.log||[])].slice(0,60);return migrate(s);}
  if(legacy?.version===13){const s={...structuredCloneSafe(legacy),version:14,bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},partnerships:{school:!!legacy.partnerships?.school,teams:false,charity:false,office:false,neighbors:false}};s.log=['v0.99: New contracts, VIPs, room details and rivalry added. Old progress kept.',...(s.log||[])].slice(0,60);return checkState(s)?s:null;}
  if(legacy?.version===12){const s={...structuredCloneSafe(legacy),version:13,expansionStage:legacy.landOwned?1:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false}};
   s.today={...newDayStats(s.day),...s.today};s.lastDay={...newDayStats(s.lastDay?.day||0),...s.lastDay};s.dayReports=(s.dayReports||[]).map(r=>({...newDayStats(r.day),...r}));
@@ -1008,5 +1075,5 @@ function migrate(legacy){
  // v0.3 lane2/lane3 were already built; keep all existing lanes immediately usable.
  s.log=['Save upgraded to v0.4. Your existing rooms, lanes and bowlers are ready.',...(legacy.log||[])].slice(0,60);
  return migrate(s);}
-return {CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
+return {NIGHT_DEFENSES,BACK_ALLEY_CHAPTERS,nightProtection,buyNightDefense,emergencyResponse,advanceBackAlley,backAlleyArcadeName,darkMachineName,CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
 });

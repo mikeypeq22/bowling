@@ -1,18 +1,14 @@
-# Research & QA — v1.00
+# Research & QA — v1.01
 
-## Verified in local tests
+This version implements an original fictional game experience, not a claim about real casino or bowling business practices. The Casino Lounge uses ticket-prize arcade games with an evening entertainment fee; no betting or money withdrawal exists.
 
-- Node engine tests cover fresh schema, migration from v14, permanent branch choice, contradictory choice rejection, Back Alley risk/cost choices, adaptive AI action scheduling, prevention of less-than-five-day surprise event spacing, two-town purchases and switching, and separate story locks.
-- 120 additional daily simulations from a developed Back Alley scenario: 14 targeted Vera moves and 19 scheduled major events with no gap under five game days. Counts are seed-dependent.
-- Chromium browser checks at 320px, 390px and 1280px: active story selection, changed color palette, dark management actions, Settings development shortcut, preview/cloud-sync isolation, route reversal on returning to real save, and no observed JavaScript exceptions.
-- Additional Chromium screenshots at 390px and 1280px for path decision, Back Alley screen and Settings preview.
+### Verified by scripts in `tests/`
+- `node tests/engine_smoke.js`
+- `node tests/night_branch.js`
+- `python tests/browser101_full.py` — Requires Chromium and Playwright and a generated standalone HTML file.
 
-## Not verified
+### Results
+Deterministic 90-turn controlled tests (resetting disrupted rooms before each simulated rival turn): 56 hits unprotected, 8 hits with maximum defenses. Six distinct story chapter definitions. Separate locations preserve their route. Existing version-15 saves migrate into version-16 state. Interactive Chromium tests at 390px and 1280px were free of JavaScript page errors in covered flows.
 
-- Real Firebase login, external cloud credentials, public GitHub Pages deployment, iOS/Safari behavior, and payment systems. These require an online environment and real test devices.
-- Full long-run economic balance across all possible combinations of 24 lanes, two towns, major incidents and story choices.
-
-## Safety
-
-- Development preview never triggers a cloud save. Manual cloud writes are rejected while preview is active; preview state uses a different local-storage key.
-- Permanent route choice can be reversed only by resetting or replacing a town through save import / developer testing, not through ordinary gameplay.
+### Outstanding manual tests
+Google sign-in on iPhone; Google/email account linking; actual Firestore saving and cross-device recovery; slow early-game economy; midgame story chapter pacing; whether long-term incident frequency feels fair; accessible dialog focus/contrast on actual phones; and potential app-store rating implications of casino-themed imagery.
