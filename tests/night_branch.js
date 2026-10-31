@@ -1,6 +1,6 @@
 const assert=require('assert');const G=require('../engine.js');
 const make=()=>G.developmentScenario('backalley');
-let s=make();assert(G.checkState(s));assert.strictEqual(s.version,16);assert(s.campaignStory.nightOps.entrance===1);assert(G.BACK_ALLEY_CHAPTERS.length>=6);assert(G.campaignMission(s).includes('door crew'));assert(!G.chooseCampaign(s,'legacy').ok);
+let s=make();assert(G.checkState(s));assert.strictEqual(s.version,17);assert(s.campaignStory.nightOps.entrance===1);assert(G.BACK_ALLEY_CHAPTERS.length>=6);assert(G.campaignMission(s).includes('door crew'));assert(!G.chooseCampaign(s,'legacy').ok);
 s.cash=30000;const start=s.cash;
 assert(G.buyNightDefense(s,'entrance').ok);assert.strictEqual(s.campaignStory.nightOps.entrance,2);
 assert(G.buyNightDefense(s,'cameras').ok);assert(G.buyNightDefense(s,'crew').ok);assert.strictEqual(s.campaignStory.nightOps.cameras,1);assert(s.cash<start);

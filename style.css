@@ -525,3 +525,14 @@ body.noirMode .roomTile[data-open="arcade"]{background:linear-gradient(155deg,#5
 @media(max-width:750px){.defenseTiles{grid-template-columns:minmax(0,1fr)}}
 
 .securityPost{position:absolute;z-index:9;left:1.3%;bottom:49%;max-width:27%;min-width:88px;padding:6px 7px;border-radius:9px;border:2px solid #ce91ad;background:#2e213be8;color:#ffe6ee;display:flex;flex-direction:column;gap:2px;align-items:center;font-size:12px;box-shadow:0 4px 12px #160c1b88}.securityPost small{font-size:9px;color:#ecd7e4}.securityPost b{font-size:10px}.nightBuildPanel{margin:0 0 15px;padding:16px}.nightBuildPanel .defenseTiles{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:720px){.nightBuildPanel .defenseTiles{grid-template-columns:minmax(0,1fr)}.securityPost{bottom:51%;min-width:70px;font-size:10px;padding:4px 2px;max-width:24%}}
+
+/* v1.02: cloud reset, casino stakes and preview visibility */
+.cloudRepairActions{margin-top:12px;padding:10px;border:1px solid rgba(150,120,120,.3);border-radius:12px}
+.cloudActions .dangerButton,.cloudRepairActions .dangerButton{background:#542b38;color:#fff;border-color:#a65a63}
+.casinoPanel{border:1px solid #a76fd1;background:linear-gradient(145deg,rgba(78,35,92,.22),rgba(18,19,30,.16))}
+.casinoWagers{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.casinoWagers button{min-width:100px;flex:1}
+.casinoLast,.nightWarning{padding:9px 12px;border-radius:9px;background:rgba(125,90,159,.12);font-size:.9rem}
+body.noirMode .devPreviewAlert{background:#4d274c;color:#ffe4ff;border:2px solid #d7a9ed}
+
+.casinoBoss{margin-top:12px;padding-top:12px;border-top:1px solid rgba(167,111,209,.5)}

@@ -1,27 +1,27 @@
-# From Gutter to Glory — v1.01: The Night Shift Rebuild
+# From Gutter to Glory v1.02 — No More False Starts
 
-## Main change
-The Back Alley is now a different management route, not simply a cosmetic theme and four pressure buttons.
+## Release focus
+This release responds to deployed v1.01 feedback: incorrect welcome version, development preview confusion, no safe path to replace a broken/unwanted cloud save, and a Back Alley campaign that still felt too tame.
 
-### Features implemented
-- Vera's story-choice screen is narrative only. It no longer mentions game AI, and committing to a campaign remains permanent for that location.
-- Actual physical door security, cameras and staff preparedness upgrades, each with three paid levels and diminishing sabotage risk. The door-security post is visible beside the front entrance and links to the security panel.
-- The Back Alley now has a dedicated **Build → Night Defenses** panel. Upgrades use ordinary in-game cash, not paid currency.
-- When Vera strikes, named lanes and open facilities can shut down. Repairs cost money. Once door security is hired, players can investigate and reopen a sabotaged property for $70; an investigation also reduces rival pressure.
-- Vera's sabotage tactics vary by conditions and player defenses: a disruption to the Casino Lounge, door intimidation with a visitor dip, a staff scare that affects morale, targeted facility damage, and paperwork pressure that reduces traffic and reputation. Successful protection builds influence and crew trust.
-- The arcade is re-presented as **Casino Lounge** in the darker route, with fictional **ticket-prize games** (no wagering, monetary betting or cash-out). Its machines take on noir-style names and it earns an additional entertainment bonus for customer games after 6 PM. Existing arcade equipment and room statistics are preserved when a location switches story routes.
-- Other dark-route identities include **Night Grill** (snacks), **Speakeasy** (bar) and **Backroom Outfitters** (pro shop). Their original base inventory and service mechanics remain compatible.
-- Six Back Alley story chapters with dialogue from Lou, Rosa, Dex, Bea, Nell, and Grandpa Gus. Chapters open through improvements, actual incidents and story completion.
-- The Midnight Accord finale now requires real defenses, two successful defenses, 35 Casino Lounge visits, at least six lanes and manageable rival pressure. Numeric influence buttons are no longer the main path to winning.
-- The community-focused Legacy branch still follows its National Heritage Cup and neighborhood-support goals.
-- Developer Settings preview remains available with separate local testing data and disabled cloud writes. Intro/tutorial overlay is cleared when entering the preview.
-- Legacy v1.00 saves migrate from state version 15 to version 16. Portfolio snapshots gain the new independent night-operation state. The Firebase login and cloud-save integration is preserved without changes to the Firestore document format.
+### Confirmed repairs
+- **Corrected version badges** on the login and welcome screens. v1.01 accidentally still said v1.00 in both places.
+- **Cache-busted assets** (`?v=1.02` on stylesheet and JS) to prevent mixed deployments, especially on mobile.
+- **Developer Preview immediately opens the populated alley scene**, visibly displays its campaign, six lanes and money, suppresses first-use tutorial prompts while testing, and uses a separate v1.02 local save slot. The original account and live cloud sync remain untouched; Exit Preview restores the original game.
+- **Confirmed cloud replacement option**, offered in the login/failed-load gate and from Settings when authenticated. It requires a separate `RESET CLOUD` confirmation. It replaces the player's own Firestore game transactionally using a new empty-building snapshot and increments its revision; it does **not** delete the Auth account or Firestore document. It will not bypass unreadable/unauthorized Firestore access. Where a cloud record was successfully loaded, players can first download an importable backup if valid, or the raw record for inspection if invalid. Existing Firestore security rules remain unchanged.
 
-### Scope and tone
-This is fictional, mildly threatening comic-noir storytelling. No real-money gambling, drug commerce or graphic harm mechanics are implemented. Teen-or-older is a *design target*, not an official app-store age rating. Casino-themed imagery may be evaluated differently by app-store rating questionnaires.
+### Back Alley additions
+- **Casino Lounge wagering**: High Roller Wheel offers $10/$25/$50/$100 stakes from the *fictional alley cash balance*, with losses and gross payouts tracked in both cash and the daily report. There are five spins per game day. Payout odds: 60% lose stake, 28% return double, 10% return triple, 2% return quadruple (94% theoretical return). Not a real-money gambling product: no purchased chips, deposits, withdrawals, payments, or cash-out.
+- **Pit Boss and visitor tables**: Hire a Pit Boss for $420 plus $19/game-day wages to operate patron wagering. Visitor table stakes and payouts affect casino business cash in addition to your direct wheel bets.
+- **Night crew payroll**: Door security, cameras, and training carry daily operating costs. An unpaid crew loses effectiveness until paid. No free automatic protection indefinitely.
+- **Rival warnings and counterplanning**: Visible warnings before Vera's suspected next move, a temporary prep action that affects actual sabotage outcomes, and 21-day repair coverage reducing the direct cost of rival damage.
+- **Expanded mature crime-drama atmosphere**: More profanity, corruption, intimidation and underworld language in Back Alley only. The Legacy campaign retains its family-friendly character. Age rating has *not* been certified.
+- **New story chapters**: The Books Never Lie and Someone Talked, unlocked by casino wagers and preparing for Vera's next attack.
 
-### Test coverage
-- Node engine smoke and expanded Back Alley tests, including save migration, town independence and night-security outcomes.
-- Controlled 90-rival-turn comparison (with damaged venues reset between turns): 56 successful disruptions without security versus 8 with maximum defenses, using one deterministic sample. Not a general probability guarantee.
-- Chromium interactive checks at 390px and 1280px: Development Preview, Story tab, Build defenses, purchasing cameras, casino-themed room labels, zero page errors in tested flows.
-- Live Firebase, iOS Safari and long-form player balancing still need deployment testing. Export a backup of current progress before updating.
+### Preservation
+- Core Bowling/Legacy functionality is preserved.
+- Save state migrated from v1.01 (version 16) to v1.02 (version 17), including other town snapshots.
+- Firebase client setup, email/password/Google login, and revision-checked cloud writes retained.
+- Device-specific live Firebase success, actual iPhone Google login, and production Firestore permissions **have not been verified**.
+
+### Planned, not built (v1.03+)
+Animated casino games, full blackjack strategy, bowling skill games, billiards, laser-tag defense, character-specific underworld story encounters, richer security NPC animations, real native-app testing, and more franchise narrative remain future work. See `V103_MINIGAME_DESIGN.md`.

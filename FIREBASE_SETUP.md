@@ -106,3 +106,10 @@ Test Firebase Security Rules in the official Emulator Suite, use App Check/abuse
 4. Existing Google players should use Settings → Player Profile → **Link password to this player** while already signed in with Google. This keeps the same Firebase UID and Firestore save.
 5. New players may click Create account. Players with existing separate email accounts must not assume saves merge automatically.
 6. Test reset-email delivery and per-user cloud saves. Google popup retry is manual and requires another deliberate tap.
+
+## v1.02 — Replace a broken or unwanted cloud save
+Once **signed in as the account owner**, use either the **Replace cloud save** action on the login/failed-load screen or **Settings → Player Profile → Replace my cloud game**. If the existing record was readable, use **Download old cloud save** first. The confirmation requires typing `RESET CLOUD`.
+
+This operation does not delete a Firestore document or Firebase account. It uses a revision-checked Firestore transaction to replace the game data with a fresh empty-building game. This works with the existing owner-only `firestore.rules`. If you still see `permission-denied`, publish and verify those rules in Firestore Console. A client cannot ethically or technically override the rules, and the reset will fail safely. Other signed-in devices must reload after a reset rather than uploading outdated saves.
+
+Network errors during a transaction may leave the commit status unclear. Reload and check the online state before retrying. The reset flow has not been tested against a live Firebase account in this release.

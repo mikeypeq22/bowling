@@ -1,7 +1,11 @@
-# Development — v1.01
+# Development notes — v1.02
 
-**Architecture:** shared `engine.js` (version 16), campaign-specific state in `campaignStory.nightOps` stored separately per town, `app.js` UI switches by `campaignStory.path`, existing `cloud.js` Firebase unchanged.
+Major technical changes:
+- `engine.js` save schema `17`; migration from 16 includes new persistent casino, security and insurance state; migrate both active location and stored other-town snapshots.
+- `cloud.js` owner-only transactional reset with `RESET CLOUD` confirmation; raw/valid export depending on cloud document integrity. Published Firestore rules intentionally disallow deletion, so reset writes a valid new game over the existing one.
+- `app.js` developer test path now lands in the alley instead of the Goals panel. First-click tutorial prompts suppressed while testing.
+- `index.html` displays v1.02 on both login and welcome and cache-busts CSS/JS.
+- Demo build generated using inline stylesheet and JS with Firebase scripts removed. Keep cloud-enabled GitHub ZIP separate from standalone local demo.
+- Future mini-games need central mini-game engine, frame-based input safe on touchscreens, deterministic state and guardrails against replay/save abuse.
 
-The dark path now depends on actual revenue generating venue operations, security purchases, and successfully handling sabotage. Avoid regressions in existing game-day scheduling, incident cooldown, local storage and Firestore. Long-term options: security staffing costs, animated staff at the entrance, specialized Casino Lounge artwork, consequences across the town, dynamic minor characters, deeper multiweek storylines, and optional campaign difficulty.
-
-**Privacy & purchases:** there are no in-app purchases or real-money gambling; casino-themed machines use ordinary attraction fees and tickets only.
+Do not publish screenshots as game asset sources. Keep optional art filenames in `assets/asset-map.js`.

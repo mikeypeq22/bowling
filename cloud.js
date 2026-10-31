@@ -1,4 +1,4 @@
-/* From Gutter to Glory v0.92 — Google popup retry, email/password fallback, and cloud saves.
+/* From Gutter to Glory v1.02 — Google popup retry, email/password fallback, and cloud saves.
    Firebase web config is public. Never store player passwords or auth tokens in the game state. */
 const app=window.GTGApp;
 const el=id=>document.getElementById(id);
@@ -9,7 +9,7 @@ let queue=Promise.resolve(),signedInGeneration=0,firebaseReady=false,authBusy=fa
 const AUTH_SDK='12.5.0'; // pinned; update only after real-device regression testing
 const setStatus=(msg,isError=false)=>{el('cloudStatus').textContent=msg;el('cloudStatus').classList.toggle('error',isError);};
 const say=(message,head='Who’s rolling in?')=>{el('cloudGateTitle').textContent=head;el('cloudGateText').textContent=message;};
-function actions(...visible){for(const id of ['cloudGoogle','cloudContinue','cloudBrowser','cloudNewGame','cloudLocalDemo','cloudRetry'])hidden(id,!visible.includes(id));}
+function actions(...visible){for(const id of ['cloudGoogle','cloudContinue','cloudBrowser','cloudNewGame','cloudLocalDemo','cloudRetry','cloudResetFresh','cloudDownloadBackup'])hidden(id,!visible.includes(id));}
 function gateShown(shown){gate.classList.toggle('hidden',!shown);}
 const emailPanel=el('cloudEmailPanel'), emailForm=el('cloudEmailForm');
 function showEmailPanel(visible){emailPanel.classList.toggle('hidden',!visible);el('cloudEmailToggle').setAttribute('aria-expanded',String(visible));}
@@ -24,7 +24,7 @@ function diagnostic(err,stage){
  const code=typeof err?.code==='string'&&/^[a-z0-9/-]{1,90}$/i.test(err.code)?err.code:'unknown';
  const msg=String(err?.message||'');
  const hint=/missing initial state/i.test(msg)?'missing-initial-state':/sessionStorage/i.test(msg)?'session-storage':'none';
- const record=`GTG v0.92 | stage=${stage} | code=${code} | hint=${hint} | SDK=${AUTH_SDK} | ${new Date().toISOString()}`;
+ const record=`GTG v1.02 | stage=${stage} | code=${code} | hint=${hint} | SDK=${AUTH_SDK} | ${new Date().toISOString()}`;
  el('cloudDiagnostic').textContent=record;
  hidden('cloudDiagnostics',false);
  // Do not include email, UID, passwords, tokens, or Firebase credentials in diagnostics.
@@ -70,7 +70,7 @@ function profile(){
  el('profileAccount').textContent=user?.email||'Local browser · no online account';
  el('profileAvatar').textContent=name.trim().charAt(0).toUpperCase()||'🎳';
  el('profileNickname').value=nickname;
- for(const id of ['cloudSignOut','cloudRefresh','cloudSaveNow'])hidden(id,!user);
+ for(const id of ['cloudSignOut','cloudRefresh','cloudSaveNow','profileCloudReset'])hidden(id,!user);
  hidden('profileSaveName',!user);
  hidden('profileLinkBox',!user);
  if(user){
@@ -82,9 +82,9 @@ function profile(){
  }
 }
 async function launchDemo(){app.unlockDemo();gateShown(false);profile();setStatus('Local demo mode · browser saves only. Cloud sync is not configured.');}
-function fail(reason){say(reason,'The cloud is having a gutter ball');actions('cloudRetry');hidden('cloudEmailToggle',true);showEmailPanel(false);el('cloudGateNote').textContent='Your browser data was not overwritten. Check Firestore rules or network access, then try again.';}
+function fail(reason){say(reason,'The cloud is having a gutter ball');actions('cloudRetry',...(user&&store?['cloudResetFresh']:[]),...(window.GTGCloudChoice?.cloud?['cloudDownloadBackup']:[]));hidden('cloudEmailToggle',true);showEmailPanel(false);el('cloudGateNote').textContent='Your browser data was not overwritten. Check Firestore rules or network access, then try again.';}
 function showLogin(){
- user=null;store=null;blocked=false;app.lockCloud();gateShown(true);
+ user=null;store=null;blocked=false;window.GTGCloudChoice=null;app.lockCloud();gateShown(true);
  say('Use Google or an email/password account to load your bowling alley.','Ready to roll?');
  el('cloudGateNote').textContent='Cloud saves belong to the account you sign into. Separate accounts do not automatically share progress.';
  availableLogin();profile();setStatus('Not signed in · your game is paused');
@@ -115,13 +115,14 @@ async function boot(){
    signedInGeneration++;
    const generation=signedInGeneration;
    if(!next){showLogin();return;}
-   user=next;blocked=false;revision=0;nickname=next.displayName||'Bowler';
+   user=next;blocked=false;revision=0;nickname=next.displayName||'Bowler';window.GTGCloudChoice=null;
    store=firestore.doc(db,'players',next.uid);
    gateShown(true);say('Looking for your saved bowling alley…');actions();hidden('cloudEmailToggle',true);showEmailPanel(false);
    try{
     const docSnap=await firestore.getDocFromServer(store);
     if(generation!==signedInGeneration)return;
     const cloud=docSnap.exists()?docSnap.data():null;
+    window.GTGCloudChoice={cloud,browser:null}; // Preserve a copy for export even if the save cannot be parsed.
     if(cloud&&!app.validate(cloud.game))throw new Error('Your cloud save could not be validated. No data was replaced.');
     revision=Number(cloud?.revision||0);
     nickname=(cloud?.profile?.nickname||next.displayName||'Bowler').slice(0,28);
@@ -142,11 +143,11 @@ function showSaveChoices(){
  let details='';
  if(cloud)details='☁ Cloud save: '+app.getBrief(cloud.game);
  if(browser)details+=(details?'\n':'')+'📱 Browser: '+app.getBrief(browser)+' ('+browser.source+')';
- el('cloudGateBrief').textContent=details||'No saved alley yet. Time to turn a dusty patch of ground into a bowling empire.';
+ el('cloudGateBrief').textContent=details||'No saved alley yet. Open the empty building and choose how to start.';
  hidden('cloudGateBrief',!details);
- if(cloud){say('Welcome back, '+nickname+'! Choose your game. A newer browser save will not be uploaded automatically.','Your bowling alley awaits');actions('cloudContinue',...(browser?['cloudBrowser']:[]),'cloudNewGame');}
- else if(browser){say('We found an existing browser game. Bring it into this account or start fresh.','Bring your alley along?');actions('cloudBrowser','cloudNewGame');}
- else{say('Your account is ready. Time to make some pins nervous.','First frame!');actions('cloudNewGame');}
+ if(cloud){say('Welcome back, '+nickname+'! Choose your game. A newer browser save will not be uploaded automatically.','Your bowling alley awaits');actions('cloudContinue',...(browser?['cloudBrowser']:[]),'cloudNewGame','cloudResetFresh','cloudDownloadBackup');}
+ else if(browser){say('We found an existing browser game. Bring it into this account or start fresh.','Bring your alley along?');actions('cloudBrowser','cloudNewGame','cloudResetFresh');}
+ else{say('Your account is ready. Time to make some pins nervous.','First frame!');actions('cloudNewGame','cloudResetFresh');}
  hidden('cloudEmailToggle',true);showEmailPanel(false);
  el('cloudGateNote').textContent='Choosing a browser game uploads it to this account. A fresh game replaces an existing cloud save only after confirmation.';
 }
@@ -191,6 +192,51 @@ async function saveNow(reason='manual'){
  await queue;
  return !blocked;
 }
+// Safe reset is a revision-checked REPLACEMENT, never a Firestore delete. This
+// follows the existing owner-only rules which intentionally disallow deletes.
+function downloadExistingCloud(){
+ const cloudRecord=window.GTGCloudChoice?.cloud;
+ if(!cloudRecord){app.notify('No readable cloud record has been loaded. Try Retry connection.',true);return;}
+ const raw=JSON.stringify(app.validate(cloudRecord.game)?{...cloudRecord.game,exportedAt:new Date().toISOString(),source:'cloud-before-reset-v1.02'}:{exportedAt:new Date().toISOString(),source:'RAW-CLOUD-RECORD-not-importable',record:cloudRecord},null,2);
+ const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));
+ const link=document.createElement('a');link.href=url;link.download='from-gutter-to-glory-CLOUD-BACKUP-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function replaceCloudWithFresh(){
+ if(!firebaseReady||!user||!store){app.notify('Sign in to your own account before replacing its cloud game.',true);return;}
+ if(app.isDevelopmentPreview?.()){app.notify('Exit Development Preview before changing a real cloud save.',true);return;}
+ if(!confirm('This will permanently REPLACE your current online game with a new empty building. Other devices with your old game may need to reload. Have you exported a backup?'))return;
+ const answer=prompt('To confirm replacing your cloud game, type RESET CLOUD exactly:');
+ if(answer!=='RESET CLOUD'){app.notify('Cloud reset canceled. Nothing changed.');return;}
+ const targetUid=user.uid,targetStore=store,generation=signedInGeneration;
+ const fresh=app.freshSnapshot();
+ if(!app.validate(fresh)){app.notify('Fresh-game validation failed. Nothing changed.',true);return;}
+ el('cloudResetFresh').disabled=true;el('profileCloudReset').disabled=true;
+ say('Replacing your cloud game… Do not close this tab.','New beginning');
+ gateShown(true);actions();setStatus('Preparing a fresh cloud save…');
+ try{
+  await queue.catch(()=>null); // Drain queued older saves before doing a deliberate overwrite.
+  if(!user||user.uid!==targetUid||store!==targetStore||generation!==signedInGeneration)throw new Error('ACCOUNT_CHANGED');
+  const nextRevision=await lib.firestore.runTransaction(db,async tx=>{
+   const old=await tx.get(targetStore); // Will fail safely if Firestore reads are denied.
+   const current=old.exists()?Number(old.data()?.revision||0):0;
+   if(!Number.isSafeInteger(current)||current<0)throw new Error('INVALID_REMOTE_REVISION');
+   tx.set(targetStore,{schemaVersion:1,revision:current+1,game:fresh,profile:{nickname:nickname.slice(0,28)},serverSavedAt:lib.firestore.serverTimestamp()});
+   return current+1;
+  });
+  if(!user||user.uid!==targetUid||generation!==signedInGeneration)throw new Error('ACCOUNT_CHANGED');
+  revision=nextRevision;blocked=false;window.GTGCloudChoice={cloud:null,browser:null};
+  app.unlockCloud(targetUid,fresh);gateShown(false);profile();
+  setStatus('✅ New cloud game created, revision '+nextRevision+'. Your prior cloud progress was replaced.');
+  app.notify('Fresh cloud alley created. Start with the opening story and loan.');
+ }catch(err){
+  diagnostic(err,'cloud-reset');
+  fail('Could not replace the online game ('+(err.code||err.message)+'). If the network interrupted a transaction, refresh and inspect the save before trying again. If permission-denied, publish the owner-only Firestore rules; a reset cannot bypass them.');
+  setStatus('⚠ Cloud reset NOT confirmed. Refresh and inspect your cloud save before retrying.',true);
+ }finally{el('cloudResetFresh').disabled=false;el('profileCloudReset').disabled=false;}
+}
+el('cloudResetFresh').onclick=()=>void replaceCloudWithFresh();
+el('profileCloudReset').onclick=()=>void replaceCloudWithFresh();
+el('cloudDownloadBackup').onclick=downloadExistingCloud;
 app.registerCloudSave(reason=>{void saveNow(reason);});
 
 // Authentication controls. Popup actions must start directly from a user click.

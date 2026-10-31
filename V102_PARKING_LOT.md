@@ -1,10 +1,19 @@
-# v1.02+ Parking Lot
+# v1.02 parking lot — outcome
 
-- More varied story scenes with Vera, her associates, the staff and regulars; more consequences and branching dialogue that changes future events.
-- Physically animated security NPC, incident-specific overlays and venue art reflecting upgraded facilities.
-- Security payroll and staffing shifts with automatic mitigation; insurance options and recovery workflow.
-- More differentiated business systems: Casino Lounge game rooms and prize redemption (non-wagering), speakeasy performance stage, specialty guests, night-time promotions, and staff loyalties.
-- Better adversary opponent planning: advance warning, multiple step schemes, specific counterplans and finite rival resources.
-- Actual balancing and age-rating review; all content stays teen-oriented without graphic violence.
-- Branch-specific win endings, campaigns beyond a single finale and rival narrative in multiple towns.
-- Android/iOS PWA and Capacitor preparation; iPhone Firebase login QA; cloud-save testing.
+Implemented:
+- [x] More mature Back Alley story dialogue and two further unlockable chapters
+- [x] Fictional-cash Casino Lounge wagering (first simple game, five daily wagers) and a Pit Boss who manages visitor table bets
+- [x] Night security payroll and consequences when unpaid
+- [x] Early warning about Vera and a temporary defensive counterplan
+- [x] Optional nighttime sabotage repair coverage
+- [x] Cloud replacement flow with confirmation and downloadable pre-reset backup when accessible
+- [x] Fixed version labels, mobile developer preview and regression tests
+
+Deferred:
+- [ ] Fully animated security NPC and per-incident scene art
+- [ ] Multiple-step opponent plots with finite rival resources and character-specific counterplans
+- [ ] Interactive branching character scenes beyond the existing story/dialogue controls
+- [ ] Dedicated interactive Casino Lounge games and strategy (v1.03 proposal)
+- [ ] Additional specialty guests, speakeasy stage and staff loyalties
+- [ ] Longer endings for both campaign paths and multi-town connected narrative
+- [ ] Android/iOS packaging, real-device Firebase QA and age/content rating assessment

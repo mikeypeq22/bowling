@@ -1,14 +1,14 @@
-# Research & QA — v1.01
+# v1.02 QA and validation
 
-This version implements an original fictional game experience, not a claim about real casino or bowling business practices. The Casino Lounge uses ticket-prize arcade games with an evening entertainment fee; no betting or money withdrawal exists.
+Local automated regression checks:
+- `node tests/engine_smoke.js` — passes including story routes, second town and long-run event cooldown.
+- `node tests/night_branch.js` — passes with 90 each high/low rival turns; 56 successful disruptions unprotected vs 8 heavily defended under fixed test conditions.
+- `node tests/casino102.js` — passes fictional wagers, Pit Boss visitor table wagers, payouts, 5-bet daily cap, day reset, nightly payroll, temporary preparations, insurance and v1.01 save migration including a second town.
+- `python tests/browser102.py` — passes 320px, 390px and 1280px chromium browser widths: preview loads the developed alley; Casino Lounge bets and Pit Boss hiring work; counterplan button works; Exit Preview restores the original session. Browser test injects the standalone game into its local page; screenshots available.
+- `node --check engine.js app.js cloud.js` — syntax checks pass.
 
-### Verified by scripts in `tests/`
-- `node tests/engine_smoke.js`
-- `node tests/night_branch.js`
-- `python tests/browser101_full.py` — Requires Chromium and Playwright and a generated standalone HTML file.
-
-### Results
-Deterministic 90-turn controlled tests (resetting disrupted rooms before each simulated rival turn): 56 hits unprotected, 8 hits with maximum defenses. Six distinct story chapter definitions. Separate locations preserve their route. Existing version-15 saves migrate into version-16 state. Interactive Chromium tests at 390px and 1280px were free of JavaScript page errors in covered flows.
-
-### Outstanding manual tests
-Google sign-in on iPhone; Google/email account linking; actual Firestore saving and cross-device recovery; slow early-game economy; midgame story chapter pacing; whether long-term incident frequency feels fair; accessible dialog focus/contrast on actual phones; and potential app-store rating implications of casino-themed imagery.
+QA limitations:
+- Live Firestore reset still requires a configured authenticated Firebase account and rules (no live destructive cloud test was performed).
+- iOS Safari, Android device testing, and real hosted-site cache behavior were not verified in this environment.
+- The game is not currently an officially rated or licensed real-money gambling game; the casino uses fictional in-game cash only.
+- Game balance reflects design assumptions. Probabilities and economy should be playtested before monetization.
