@@ -536,3 +536,10 @@ body.noirMode .roomTile[data-open="arcade"]{background:linear-gradient(155deg,#5
 body.noirMode .devPreviewAlert{background:#4d274c;color:#ffe4ff;border:2px solid #d7a9ed}
 
 .casinoBoss{margin-top:12px;padding-top:12px;border-top:1px solid rgba(167,111,209,.5)}
+
+/* v1.03 progression and tactical interface */
+.tacticalActions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.tacticalActions button{flex:1 1 125px;min-height:42px}
+.tacticalBoard{padding:16px;margin-top:14px;border:1px solid var(--line,#a4a0bd);border-radius:14px}
+#firstFramePanel{margin:18px 0}#firstFramePanel .practiceSliders{margin:14px 0}.staffConcernPanel{margin-top:14px}
+.noirMode #tacticsPanel{border-color:#8f698f;background:linear-gradient(135deg,#24202b,#1b1825)}
+@media(max-width:400px){.tacticalActions button{flex:1 1 100%;}#firstFramePanel .practiceSliders{display:grid;gap:9px}}

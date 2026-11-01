@@ -1,12 +1,12 @@
-# v1.03 parking lot
+# v1.03 research parking lot — delivery reconciliation
 
-1. First fully playable bowling mini-game with mobile controls, short tutorials and separate practice/competition scoring.
-2. Upgrade Casino Lounge High Roller Wheel from instant buttons to an animated, interactive game; consider Twenty-One as a strategy mini-game.
-3. Broaden adult Back Alley character stories and Vera's multi-step sabotage plans with distinct countermeasures.
-4. Animated entrance security staff and camera coverage effects, with payroll and loyalty responses.
-5. Add more substantial distinction between Legacy and Back Alley progression in attractions and staffing.
-6. Cloud reset/device QA: test permission errors, invalid remote documents, offline failures, account mismatch, and cross-device save conflicts with real Firebase.
-7. PWA installability and eventual Capacitor preparation, with store content/rating and fictional-casino policy review.
-8. Review economy of casino wagers, security payroll, and repair coverage in long sessions.
+Status key: **DELIVERED / PARTIAL / DEFERRED**. Full detail in `PROGRESSION_MASTER_v3.md`.
 
-See `V103_MINIGAME_DESIGN.md` for candidate mini-game prioritization and detailed implementation architecture.
+1. Bowling mini-game — **PARTIAL / PLAYABLE**: Maya First Frame two-shot angle/spin/power challenge added. Animated pins, full swipe control and separate competition scoring deferred.
+2. Animated Casino High Roller Wheel / Twenty-One — **DEFERRED**. v1.02 instant fictional-cash wheel retained.
+3. Vera multi-step sabotage and adult story — **DEFERRED** beyond existing v1.02 mechanics; Old Town encounter added in v1.03.
+4. Security character animation — **DEFERRED**.
+5. More substantial Legacy vs Back Alley progression — **PARTIAL**: department mastery and careers are shared; Old Town crew/territory tactics are Back Alley-exclusive. Legacy season content remains planned.
+6. Live cloud/device QA — **DEFERRED**; local migration tested, no live iPhone/Firestore validation claimed.
+7. PWA/Capacitor — **DEFERRED**.
+8. Long-run balance — **PARTIAL**: long simulation and migration checks passed; real playtest balancing remains.

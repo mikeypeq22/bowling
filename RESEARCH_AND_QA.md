@@ -1,14 +1,16 @@
-# v1.02 QA and validation
+# v1.03 research and QA record
 
-Local automated regression checks:
-- `node tests/engine_smoke.js` — passes including story routes, second town and long-run event cooldown.
-- `node tests/night_branch.js` — passes with 90 each high/low rival turns; 56 successful disruptions unprotected vs 8 heavily defended under fixed test conditions.
-- `node tests/casino102.js` — passes fictional wagers, Pit Boss visitor table wagers, payouts, 5-bet daily cap, day reset, nightly payroll, temporary preparations, insurance and v1.01 save migration including a second town.
-- `python tests/browser102.py` — passes 320px, 390px and 1280px chromium browser widths: preview loads the developed alley; Casino Lounge bets and Pit Boss hiring work; counterplan button works; Exit Preview restores the original session. Browser test injects the standalone game into its local page; screenshots available.
-- `node --check engine.js app.js cloud.js` — syntax checks pass.
+## Executed verification
+- Node.js syntax checks on `engine.js` and `app.js`.
+- Automated state test for fresh startup → Lane 1 → Maya introduction → completed First Frame → Lane 2 → Leo.
+- Employee career promotion from 1 to 5, wage expectations, department mastery rewards, 25-day game simulation and JSON save roundtrip.
+- Back Alley Old Town tactical mission: recruit willing bowler, entrance security requirement, six-turn cap and territory result.
+- Migration from v1.02 schema 17 to v1.03 schema 18.
+- Two-town switching and v1.02 franchise snapshot migration.
+- In-memory headless Chromium interface at **320px, 390px and 1280px**. Clicked both shots of Maya's First Frame and started/auto-resolved Old Town encounter; no JavaScript page errors seen in those flows.
+- Living Progression Master v3 Word document rendered to 25 page images and reviewed.
 
-QA limitations:
-- Live Firestore reset still requires a configured authenticated Firebase account and rules (no live destructive cloud test was performed).
-- iOS Safari, Android device testing, and real hosted-site cache behavior were not verified in this environment.
-- The game is not currently an officially rated or licensed real-money gambling game; the casino uses fictional in-game cash only.
-- Game balance reflects design assumptions. Probabilities and economy should be playtested before monetization.
+## Limits
+- Live Firebase, Google sign-in and Cloud Firestore authorization were **not** tested.
+- No iPhone/Android device QA, offline synchronization, native app or casino payment integration.
+- Old v1.02 progress is preserved by schema migration; backing up before deployment remains recommended.

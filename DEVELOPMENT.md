@@ -1,11 +1,11 @@
-# Development notes — v1.02
+# Development note — v1.03
 
-Major technical changes:
-- `engine.js` save schema `17`; migration from 16 includes new persistent casino, security and insurance state; migrate both active location and stored other-town snapshots.
-- `cloud.js` owner-only transactional reset with `RESET CLOUD` confirmation; raw/valid export depending on cloud document integrity. Published Firestore rules intentionally disallow deletion, so reset writes a valid new game over the existing one.
-- `app.js` developer test path now lands in the alley instead of the Goals panel. First-click tutorial prompts suppressed while testing.
-- `index.html` displays v1.02 on both login and welcome and cache-busts CSS/JS.
-- Demo build generated using inline stylesheet and JS with Firebase scripts removed. Keep cloud-enabled GitHub ZIP separate from standalone local demo.
-- Future mini-games need central mini-game engine, frame-based input safe on touchscreens, deterministic state and guardrails against replay/save abuse.
+Starting point: v1.02 archive from GitHub Pages release.
 
-Do not publish screenshots as game asset sources. Keep optional art filenames in `assets/asset-map.js`.
+Core module: `engine.js`, game state schema version 18. New keys: `departmentAchievements`, `teamStory`, `staffIssues`, `districts`, `tactical`; extended employees and bowlers. v17 migration supports inactive-town snapshots.
+
+UI: `app.js` adds department reward targets, employee XP/career and issue UI, Maya's first-frame controls in Bowlers, Crew & Territory in Goals → Story. Responsive styles in `style.css`.
+
+No external JS frameworks or cloud database schema changes. `cloud.js` remains v1.02-compatible and uses corrected v1.03 diagnostic label.
+
+New full roadmap: `PROGRESSION_MASTER_v3.md`, with tracked version history and detailed status distinctions.

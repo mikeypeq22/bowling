@@ -1,8 +1,11 @@
-# Decisions through v1.02
+# Decision Log — v1.03
 
-- Both storylines remain permanent per town. A future franchise can have a family-friendly town and a Back Alley town simultaneously.
-- The Back Alley embraces adult crime-drama language and fictional cash wagers, but not real-money transactions, withdrawals, or actual gambling services.
-- Initial casino test game: a capped five-spin fictional wagering wheel. In v1.03, expand into visual and skill-based mini-games rather than relying solely on buttons.
-- Night security has ongoing payroll and repair/insurance management rather than being permanently free after construction.
-- Cloud reset uses an authenticated transaction to replace one player's game. Never weaken Firestore rules or delete an account silently.
-- The current game is still in iterative prototype development; don't mistake the v1.00–v1.02 labels for an app-store production release.
+- Continue the shared browser simulation engine for both campaigns.
+- Make Department Stars give small operating benefits before adding completely new department inventories.
+- Staff XP comes from actual department work. Training/promotion costs money and expected wages rise by career level.
+- Trigger employee concerns from underpayment or low morale; resolve through raise, bonus or listening. Full dismissal/scheduling loop deferred.
+- New games begin with Maya as captain; Leo joins after Maya's First Frame and early business achievements. Old saves retain their existing team.
+- First Frame is a small two-shot interactive story challenge; not the complete bowling physics mini-game.
+- The Back Alley gets a single short Old Town encounter with crew assignment and optional auto-resolve, not the entire planned territory map.
+- Use schema version 18 and explicitly migrate v1.02 (version 17), including snapshots of inactive towns.
+- Convert the Progression Master from one-time proposal into a living version-by-version implementation ledger.
