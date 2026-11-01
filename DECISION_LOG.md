@@ -1,11 +1,9 @@
-# Decision Log — v1.03
+# v1.05 Design decisions
 
-- Continue the shared browser simulation engine for both campaigns.
-- Make Department Stars give small operating benefits before adding completely new department inventories.
-- Staff XP comes from actual department work. Training/promotion costs money and expected wages rise by career level.
-- Trigger employee concerns from underpayment or low morale; resolve through raise, bonus or listening. Full dismissal/scheduling loop deferred.
-- New games begin with Maya as captain; Leo joins after Maya's First Frame and early business achievements. Old saves retain their existing team.
-- First Frame is a small two-shot interactive story challenge; not the complete bowling physics mini-game.
-- The Back Alley gets a single short Old Town encounter with crew assignment and optional auto-resolve, not the entire planned territory map.
-- Use schema version 18 and explicitly migrate v1.02 (version 17), including snapshots of inactive towns.
-- Convert the Progression Master from one-time proposal into a living version-by-version implementation ledger.
+- Same six fictional districts for both story campaigns; influence and prestige are not property ownership.
+- Legacy path wins district leagues then championship finals, without being forced to buy more property.
+- Back Alley territories are unlocked by the player's own wing expansion; need two tactical site wins and prior district control.
+- Preserve legacy tournament brackets and all older save progress rather than replace them wholesale.
+- Story branch permanently locks per location. Week-three threat + seven-day delay to reduce narrative rush.
+- Manual event-booking calendar removed from Compete in response to playtest feedback; prior bookings honored and random offers retained.
+- Document historical planned items truthfully; do not mark the uninvestigated traffic regression fixed.

@@ -1,16 +1,13 @@
-# v1.03 research and QA record
+# v1.05 Local QA report
 
-## Executed verification
-- Node.js syntax checks on `engine.js` and `app.js`.
-- Automated state test for fresh startup → Lane 1 → Maya introduction → completed First Frame → Lane 2 → Leo.
-- Employee career promotion from 1 to 5, wage expectations, department mastery rewards, 25-day game simulation and JSON save roundtrip.
-- Back Alley Old Town tactical mission: recruit willing bowler, entrance security requirement, six-turn cap and territory result.
-- Migration from v1.02 schema 17 to v1.03 schema 18.
-- Two-town switching and v1.02 franchise snapshot migration.
-- In-memory headless Chromium interface at **320px, 390px and 1280px**. Clicked both shots of Maya's First Frame and started/auto-resolved Old Town encounter; no JavaScript page errors seen in those flows.
-- Living Progression Master v3 Word document rendered to 25 page images and reviewed.
+## Verified
+- Core engine parses; test suite: targeted checks for new-game, day-15+ threat, 7-game-day branch delay, district league matches, qualification and finals, territory site ownership, wing gates, migration from v1.04 schema 19 to schema 20, current state validation.
+- Browser: constructed local-only standalone HTML, checked at 320, 390 and 1280 pixel widths. Legacy and Back Alley district interfaces render six district cards with no JavaScript page errors in these flows.
+- Save separation: the existing two-town portfolio structure is preserved and migrated for inactive towns as well.
+- Word: rendered v4.3 master at 35 pages, visually reviewed the appended design and release ledger.
 
-## Limits
-- Live Firebase, Google sign-in and Cloud Firestore authorization were **not** tested.
-- No iPhone/Android device QA, offline synchronization, native app or casino payment integration.
-- Old v1.02 progress is preserved by schema migration; backing up before deployment remains recommended.
+## Unverified
+- Live Firebase and Google/iPhone authentication; in-app account switching and Firestore rules; extended economic rebalancing; full click-path across every game feature; traffic-regression root cause.
+
+## Balance to watch
+- Whether two tactical site fights per district feel repetitive; whether match qualification of two wins in three suits team advancement; whether wing requirements pace district unlocks; whether one optional second alley remains preferable to mandatory ownership in six districts.
