@@ -1,0 +1,216 @@
+/* From Gutter to Glory v1.06 — visual layer.
+ * Loaded after style.css. Look: a 1960s neighbourhood bowling alley — maple lanes, mustard
+ * marquee signage, red pin stripes and teal carpet. Art lives in assets/art (one shared style).
+ * Fonts: Bowlby One (signage) + Barlow (interface), both SIL Open Font License, bundled locally.
+ */
+@font-face{font-family:'Bowlby One';src:url('assets/fonts/bowlby-one-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Barlow';src:url('assets/fonts/barlow-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Barlow';src:url('assets/fonts/barlow-600.woff2') format('woff2');font-weight:500 600;font-display:swap}
+@font-face{font-family:'Barlow';src:url('assets/fonts/barlow-700.woff2') format('woff2');font-weight:700 900;font-display:swap}
+
+:root{
+ --ink:#1E2B2F;
+ --carpet:#12262C;      /* page */
+ --carpet-2:#18323A;    /* panels */
+ --carpet-3:#20414A;    /* cards, buttons */
+ --rail:#3A5F66;        /* borders */
+ --maple:#E6BE82;--maple-d:#C48F55;
+ --pin:#F6EEDC;
+ --stripe:#D8473B;
+ --marquee:#EDB23E;
+ --teal:#2E8C8F;
+ --bg:var(--carpet);--panel:var(--carpet-2);--card:var(--carpet-3);--edge:var(--rail);
+ --txt:var(--pin);--muted:#B5C6C2;--gold:var(--marquee);--green:#9AD8BC;--red:#F09A90;--blue:#A7D3E3;
+ --sign:'Bowlby One','Arial Black',Impact,sans-serif;
+ --ui:'Barlow','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+body{font-family:var(--ui);background:var(--carpet);
+ /* carpet: a quiet two-tone diamond weave instead of a gradient wash */
+ background-image:linear-gradient(45deg,#ffffff05 25%,transparent 25% 75%,#ffffff05 75%),linear-gradient(45deg,#ffffff05 25%,transparent 25% 75%,#ffffff05 75%);
+ background-size:28px 28px;background-position:0 0,14px 14px;letter-spacing:0}
+button,input,select,textarea{font-family:var(--ui)}
+h1,.headline h1,.drawerHead h2,.storyDialog h2,.cutscene h2,.welcomeDialog h2,.cloudGateCard h2,.branchDialog h2,.startupDialog h2,.facilityDialog h2{font-family:var(--sign);font-weight:400;letter-spacing:.01em;line-height:1.05}
+h2{font-weight:700}
+h3{font-weight:700}
+.eyebrow{font-family:var(--ui);font-weight:700;letter-spacing:.08em;font-size:11px;color:var(--marquee)}
+.muted{color:var(--muted)}
+.srOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- art plumbing ---------- */
+.icon-art.has-art>span{display:none}
+.icon-art img{image-rendering:auto}
+
+/* ---------- header: the marquee ---------- */
+.hud{background:var(--ink);border-bottom:0;box-shadow:none;padding-bottom:0}
+.hud:after{content:'';display:block;height:8px;width:100%;margin-top:8px;flex-basis:100%;
+ background:repeating-linear-gradient(90deg,var(--maple) 0 18px,var(--maple-d) 18px 20px);
+ border-top:2px solid var(--ink);box-shadow:inset 0 -2px #0002}
+.brandmark{width:44px;height:44px;background:none!important;border:0!important;transform:none!important;border-radius:0;padding:0;display:block!important}
+.brandmark .icon-art{width:44px!important;height:44px!important;font-size:30px}
+#venueName{font-family:var(--sign);font-weight:400;color:var(--marquee);font-size:22px;letter-spacing:.01em;line-height:1.05}
+#levelLabel{font-weight:600;letter-spacing:.04em;color:#B5C6C2;font-size:11px}
+.hudstats>span{background:var(--carpet-2);border:1px solid var(--rail);border-radius:6px;padding:5px 10px;font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hudstats b{color:var(--pin);font-weight:700;font-size:14px}
+.hudstats .moneyPill b{color:var(--marquee);font-variant-numeric:tabular-nums}
+.moodDot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#9AD8BC;box-shadow:0 0 0 2px #0003}
+.mood-mid .moodDot{background:var(--marquee)}.mood-low .moodDot{background:var(--stripe)}
+.hudButtons{display:flex;gap:8px}
+.helpButton{background:var(--carpet-2)!important;border:1px solid var(--rail)!important;color:var(--pin)!important;border-radius:50%!important}
+
+/* ---------- navigation: the original separate rounded buttons and emoji icons (style.css) ---------- */
+.nav{margin-top:10px}
+
+/* ---------- panels & buttons ---------- */
+.panel{background:var(--carpet-2)!important;border:1px solid var(--rail)!important;border-radius:8px!important;box-shadow:none!important}
+button{background:var(--carpet-3);border:1px solid var(--rail);border-radius:6px;font-weight:600;color:var(--pin)}
+button:hover:not(:disabled){background:#28505A}
+button.primary,.primary{background:var(--marquee)!important;color:var(--ink)!important;border:2px solid var(--ink)!important;box-shadow:0 3px 0 var(--ink)!important;font-weight:700!important}
+button.primary:hover:not(:disabled){background:#F4C25A!important}
+button.primary:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--ink)!important}
+button.dangerButton{background:#4a2421;border-color:var(--stripe)}
+:focus-visible{outline:3px solid var(--marquee)!important;outline-offset:2px}
+.badge{border-radius:4px!important;font-weight:600}
+.headline{border-bottom:2px solid var(--rail)!important}
+.headline h1{color:var(--pin);font-size:clamp(24px,3.2vw,34px)}
+.sectionhead h2{font-size:18px}
+
+/* ---------- the alley scene ---------- */
+.scene{border:3px solid var(--ink)!important;border-radius:8px!important;box-shadow:none!important;
+ background:#20414A!important;background-image:linear-gradient(45deg,#ffffff07 25%,transparent 25% 75%,#ffffff07 75%),linear-gradient(45deg,#ffffff07 25%,transparent 25% 75%,#ffffff07 75%)!important;background-size:22px 22px!important;background-position:0 0,11px 11px!important}
+.sceneCurtain{display:none}
+.hotspot{background:var(--pin)!important;color:var(--ink)!important;border:2px solid var(--ink)!important;border-bottom-width:4px!important;border-radius:6px!important;box-shadow:none!important}
+.hotspot b{color:var(--ink)}.hotspot small{color:#4F5F60!important}
+.hotspot .icon-art{width:34px!important;height:34px!important}
+.entrance{filter:none}
+.roomTile{background:var(--carpet-3)!important;border:2px solid var(--ink)!important;border-bottom:4px solid var(--maple-d)!important;border-radius:5px!important;box-shadow:none!important}
+.roomTile .icon-art{width:30px!important;height:30px!important}
+.roomTile.roomEmpty{background:#ffffff08!important;border:1px dashed #f6eedc33!important;border-bottom-width:1px!important}
+.roomTile .tileLow{position:static!important;margin-top:2px;font-size:9px;font-weight:700;background:var(--stripe);color:#fff;border-radius:3px;padding:1px 4px;transform:none!important}
+/* lanes: maple boards and gutters in CSS, pin deck and target arrows from the art set */
+.laneScene{background:repeating-linear-gradient(90deg,#E6BE82 0 7px,#DDB277 7px 8px,#EDCB93 8px 15px,#D9AE73 15px 16px)!important;
+ border:2px solid var(--ink)!important;border-radius:3px!important;box-shadow:inset 7px 0 #3c4446,inset -7px 0 #3c4446!important}
+.laneScene:before{content:''!important;position:absolute;left:14%;right:14%;top:56%;height:18px;background:url('assets/art/lane-arrows.svg') center/contain no-repeat;opacity:.9;text-shadow:none}
+.laneScene .lane-image{opacity:1!important;position:absolute;top:0;left:7px;width:calc(100% - 14px)!important;height:auto!important;max-height:46%;object-fit:contain;object-position:top;right:auto;bottom:auto}
+.laneScene.laneHardwood{background:repeating-linear-gradient(90deg,#C99A62 0 7px,#BB8C55 7px 8px,#D3A66C 8px 15px,#B78550 15px 16px)!important}
+.laneScene.laneDigital .laneNumber{background:var(--teal)!important}
+.laneScene .laneNumber{top:auto!important;bottom:34px;background:var(--ink)!important;border:0!important;color:var(--pin);font-weight:700}
+.laneScene .laneStatus{background:var(--ink)!important;color:var(--pin)!important;border-radius:3px!important;font-weight:600}
+.laneScene .laneDamage{background:var(--stripe)}.laneScene .laneDamage>div{background:#9AD8BC}
+.laneGhost{border-radius:3px!important;border:2px dashed #f6eedc40!important;background:#ffffff06!important}
+.laneGhost.nextLane{border-color:var(--marquee)!important}
+.sceneLegend{background:var(--ink)!important;border-radius:4px!important}
+.sceneStyle{background:var(--pin)!important;color:var(--ink)!important;border:2px solid var(--ink)!important;border-radius:5px!important}
+.sceneStyle span,.sceneStyle small{color:#4F5F60!important}
+
+/* ---------- portraits ---------- */
+.icon-art.portrait{border-radius:50%}
+.rosterChoice .icon-art,.athleteBanner .icon-art{border:0!important;background:none!important}
+.patronPortrait,.incidentPortrait,.storyStamp{background:none!important;border:0!important;box-shadow:none!important}
+.patronPortrait .icon-art,.incidentPortrait .icon-art,.storyStamp .icon-art,.storyArt{width:88px!important;height:88px!important;font-size:56px!important}
+.ownerAvatar.hasArt .avatarShape,.ownerAvatar.hasArt .avatarGlow{display:none}
+.ownerAvatar.hasArt .ownerArt img{width:150px;height:150px;position:static}
+
+/* ---------- dialogs ---------- */
+.storyDialog,.welcomeDialog,.cloudGateCard,.startupDialog,.branchDialog,.facilityDialog,.incidentDialog,.patronDialog,.tutorialDialog,.daySummary,.cutscene{border-radius:10px!important;box-shadow:0 0 0 3px var(--ink),0 18px 40px #0008!important}
+.storyDialog{background:var(--pin)!important;color:var(--ink)!important;border:0!important}
+.storyDialog h2{color:var(--ink)!important;font-size:30px}
+.storyDialog .storyHint{background:#fff!important;border:2px solid var(--maple-d)!important;border-radius:6px!important}
+.welcomeLogo .icon-art,.cloudHero .icon-art{width:72px!important;height:72px!important;font-size:48px}
+.welcomeLogo,.cloudHero{background:none!important;border:0!important;box-shadow:none!important}
+.startupMascot .icon-art{width:72px!important;height:72px!important}
+.startupMascot{background:none!important;border:0!important}
+.branchHero .icon-art{width:80px!important;height:80px!important}
+.branchHero{background:none!important;border:0!important}
+.branchOption>.icon-art{width:56px!important;height:56px!important;margin:0 auto 6px}
+.cutsceneArt{border:3px solid var(--ink)!important;border-radius:6px!important}
+.cutsceneArt.hasArt{background:var(--cutscene-image) center/cover no-repeat!important}
+.cutsceneArt.hasArt>*{display:none!important}
+
+/* ---------- facility showcases (drawers & grand opening) ---------- */
+.facilityShowcase{border:3px solid var(--ink)!important;border-radius:6px!important;box-shadow:none!important}
+.facilityDecorTop{font-weight:700;letter-spacing:.02em;text-transform:none!important}
+.facilityDecorTop span{font-family:var(--sign);font-weight:400}
+.facilitySign{font-family:var(--sign)!important;font-weight:400!important;letter-spacing:.04em}
+.facilityShelf{display:flex;gap:10px;align-items:flex-end}
+.facilityShelf .icon-art{width:46px!important;height:46px!important;font-size:34px}
+.facilityLamp .icon-art,.facilityTV .icon-art{width:34px!important;height:34px!important}
+.facilityRegister{width:26px;height:18px;background:var(--ink);border-radius:3px;box-shadow:inset 0 -6px #3a4448}
+
+/* ---------- department stars (v1.06 parking-lot item) ---------- */
+.starRow{display:inline-flex;gap:2px;vertical-align:middle}
+.starRow i{width:16px;height:16px;display:inline-block;background:var(--marquee);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.starRow i.off{background:#f6eedc30}
+.starRow.big i{width:22px;height:22px}
+
+/* ---------- Vera pressure gauge (v1.06 parking-lot item) ---------- */
+.pressureGauge{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--muted)}
+.pressureGauge .track{flex:1;height:8px;border-radius:4px;background:#ffffff14;overflow:hidden;min-width:60px}
+.pressureGauge .fill{height:100%;background:linear-gradient(90deg,#B9739F,var(--stripe))}
+.hudstats .pressurePill{border-color:#7B3F6E}
+.hudstats .pressurePill .track{width:54px;height:6px;border-radius:3px;background:#ffffff1c;overflow:hidden;display:inline-block}
+.hudstats .pressurePill .fill{display:block;height:100%;background:linear-gradient(90deg,#B9739F,var(--stripe))}
+
+/* ---------- Back Alley (noir) variant ---------- */
+body.noirMode{--carpet:#1A1520;--carpet-2:#221B2A;--carpet-3:#2E2438;--rail:#4E3D5C;--marquee:#F2A0B4}
+body.noirMode .hud:after{background:repeating-linear-gradient(90deg,#3a2b46 0 18px,#2a1f33 18px 20px)}
+body.noirMode .scene{background-color:#241C2C!important}
+body.noirMode .storyDialog{background:#2A2133!important;color:var(--pin)!important}
+body.noirMode .storyDialog h2{color:#F2A0B4!important}
+
+/* ---------- phones ---------- */
+@media(max-width:700px){
+ .hud{padding:8px 8px 0!important}
+ .hudMain{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'mark name buttons' 'stats stats stats';align-items:center;column-gap:8px;row-gap:6px}
+ .brand{display:contents!important}
+ .brandmark{grid-area:mark;width:36px;height:36px}
+ .brandmark .icon-art{width:36px!important;height:36px!important}
+ .brandText{grid-area:name;min-width:0}
+ #venueName{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+ #levelLabel{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+ .hudRight{display:contents!important}
+ .hudRight .helpButton{width:34px!important;height:34px!important;min-height:0!important;padding:0!important;font-size:17px!important}
+ .hudButtons{grid-area:buttons;display:flex;gap:5px}
+ .hudstats{grid-area:stats;display:flex!important;flex-direction:row!important;align-items:stretch!important;flex-wrap:nowrap!important;gap:5px!important;width:100%}
+ .hudstats>span{flex:1 1 auto;justify-content:center;padding:4px 6px;font-size:12px}
+ .hudstats b{font-size:12.5px}
+ .hotspot .icon-art{width:24px!important;height:24px!important}
+ .roomTile .icon-art{width:22px!important;height:22px!important}
+}
+@media(prefers-reduced-motion:reduce){button.primary:active{transform:none}}
+
+/* ---------- v1.06 additions ---------- */
+.deptStarBar{display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:8px 12px;background:var(--ink);border-radius:6px;color:var(--muted);font-size:13px}
+.deptStarBar b{color:var(--pin)}
+.ratingTile>div:first-child{display:flex;align-items:center;gap:8px}
+.ratingTile>div:first-child .icon-art{width:32px!important;height:32px!important}
+.hudstats .pressurePill{display:inline-flex;align-items:center;gap:6px;background:#2a1f33;border:1px solid #7B3F6E;border-radius:6px;padding:5px 9px;color:#F2A0B4;font-size:12px;font-weight:700;min-height:0;box-shadow:none}
+.hudstats .pressurePill b{color:#fff}
+/* Door security sits on the entrance door itself, so it never covers the waiting area */
+.securityPost{left:1.5%!important;bottom:9%!important;width:20%!important;height:24%!important;max-width:none!important;min-width:0!important;padding:3px!important;
+ background:transparent!important;border:2px dashed #F2A0B4!important;border-radius:6px!important;box-shadow:none!important;justify-content:flex-end!important;gap:1px!important}
+.securityPost b,.securityPost small{background:#2a1f33;border-radius:3px;padding:1px 5px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.securityPost b{font-size:10px;color:#fff}.securityPost small{font-size:9px;color:#F2A0B4}
+@media(max-width:690px){.securityPost{left:1%!important;bottom:11%!important;width:21%!important;height:23%!important}.securityPost b{font-size:8px}.securityPost small{display:none}
+ .hudstats .pressurePill{padding:4px 6px}.hudstats .pressurePill .track{width:34px}.hudstats .pressurePill>span:first-child{display:none}}
+.storyCard>.icon-art.chapterArt{width:52px!important;height:52px!important;font-size:34px;flex:none}
+.lockedMark{width:52px;height:52px;flex:none;border-radius:50%;border:2px dashed #f6eedc40;display:block}
+/* stock warning on a room tile: a compact corner flag instead of a label that covers the art */
+.roomTile{position:relative}
+.roomTile .tileLow{position:absolute!important;top:2px!important;right:2px!important;left:auto!important;bottom:auto!important;margin:0!important;font-size:9px!important;line-height:1.2;padding:1px 4px!important;z-index:2}
+@media(max-width:690px){.roomTile .tileLow{font-size:7.5px!important;padding:0 3px!important}}
+/* with door security installed, the button label replaces the "Entrance" caption */
+.scene:has(#sceneSecurity:not(.hidden)) .entrance>span{visibility:hidden}
+.laneScene .laneAvatar .icon-art{width:26px!important;height:26px!important}
+.staffRoleHead{display:flex;align-items:center;gap:10px}
+.staffRoleHead .icon-art{width:48px!important;height:48px!important;font-size:30px}
+.employeePortrait .icon-art{width:56px!important;height:56px!important}
+/* all seven buttons fit on the narrowest phones (v1.05 pushed Staff and Goals off-screen at 320 px) */
+@media(max-width:400px){
+ .nav{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:3px!important;overflow:visible!important}
+ .nav button{min-width:0!important;width:auto!important;font-size:9px!important;letter-spacing:0;padding:4px 0!important}
+}
+/* fixtures and decor share one strip above Shops & Activities */
+.sceneFloorAmenities{display:none!important}
+.scene .sceneWallDecor{top:34px!important;right:12%;max-width:none!important;flex-wrap:nowrap;gap:6px;overflow:visible}
+@media(max-width:700px){.scene .sceneWallDecor{top:30px!important;right:23%;gap:3px}}
+@media(max-width:400px){.scene .sceneWallDecor{gap:2px}.scene .sceneWallDecor .worldAmenity{min-width:21px;min-height:21px;padding:1px}}

@@ -1,27 +1,34 @@
-# From Gutter to Glory v1.05 — Shared City & District Leagues
+# From Gutter to Glory v1.06 — Performance & Visual Refresh
 
-This builds on **v1.04** without altering the old version. Browser entry point: `index.html`; standalone local-save test: `PLAYABLE_DEMO.html` (not for deployment as a GitHub Pages index).
+Builds on **v1.05** without changing gameplay: a matched 60-day simulation of both routes produces identical cash, reputation and calendar in v1.05 and v1.06. Save schema stays **20**; v1.05 saves load as-is.
 
-## Playable additions
+## Faster
+- **Only the visible screen renders.** v1.05 rebuilt all seven tabs on every game hour and every tap. v1.06 renders the header plus the visible tab and rebuilds other tabs when you open them. In a headless test the alley screen's DOM dropped from ~2,000 to ~930 elements.
+- **Saves are coalesced.** Bursts of taps produce one write (~0.9 s later). Saves are still written immediately at day close, when the page is hidden or closed, and before switching save slots (cloud sign-in/out, dev preview, import, reset). Switching tabs no longer re-serialises the whole alley.
+- **Smaller saves.** The hour-by-hour visitor log is kept for the last 7 days (totals and comments for all 21). A simulated 200-day save shrinks from ~243 KB to ~124 KB, keeping cloud saves far from Firestore's 1 MiB document limit. Older saves are compacted when loaded.
+- **No more broken-image requests.** v1.05 pointed every icon at a PNG that didn't exist and re-requested it on every render (100+ failed requests in a short session). v1.06 ships the art and remembers any missing file instead of asking again.
+- **Clock pauses in the background.** The game no longer advances while the browser tab or phone app is hidden.
 
-- **Legacy district leagues:** six neighborhoods, each with three match days; win at least two games to qualify, then play a simulated three-round district final. Scores depend on actual bowler skill, coaching and pro-shop quality, league experience, and chance. District champions unlock the next neighborhood. Earlier four tournament brackets remain available.
-- **Back Alley wing-gated territories:** Old Town is initially accessible. Subsequent districts unlock with each corresponding property wing, subject to controlling the prior district. Each neighborhood requires two successful tactical site encounters before it counts as secured.
-- **Shared city identity:** same six districts with campaign-specific objectives and bounded fictional cash, reputation, spare-parts or trust rewards. Owning a bowling center in every district is **not** required. The optional second town retains its own campaign.
-- **Story corrections:** Vera's first formal threat requires an operating lane and day >= 15. The permanent branch choice unlocks seven game days after the initial threat. A Back Alley version of “The Missing Page” explains Vera's six-neighborhood network; the Legacy explanation remains.
-- **Events UI:** Removed the self-service booking calendar from Compete. Incoming party/event offers remain available; existing bookings continue to be paid and honored.
-- **Save migration:** schema 19 → 20 migrates existing v1.04 games, their second location, established championship wins and previously secured districts (now 2/2 sites).
+## New look
+- **One drawn art set** (`assets/art/`, 91 SVG files, ~115 KB): navigation, all rooms and facilities, every snack, drink, arcade machine, fixture and attraction, pro-shop goods, lane pin decks, 19 character portraits (Gus, Vera, the six regulars, staff roles, bowlers, you), and building scenes for each level-up.
+- **Type:** Bowlby One for signage and headings, Barlow for the interface — both bundled (no Google Fonts call).
+- **Header** reads like an alley marquee over a maple lane strip and now simply says **The Back Alley** (the home alley's new name; saves still called "Gus’s Town" are renamed on load, Riverside keeps its name). The story route moved to the small line underneath.
+- **Menu** keeps the original separate rounded buttons and emoji icons; all seven now fit on 320 px phones. (Drawn `nav-*` icons remain in `assets/art/` if you ever want to map them.)
+- **Fixtures and decor** you buy (restrooms, lockers, ball racks, TV, wall art, neon) now sit together in one row above Shops & Activities instead of down the left side of the lanes.
+- **Venue map zoom bar removed**; the map always shows at 100%.
+- Decorative emoji removed from headings and buttons; facility panels, story letters, patron chats and story cards now show the matching artwork.
+- Back Alley route keeps its own plum/neon palette.
 
-## Verification performed locally
+## Playtest items closed
+- **Department stars** drawn as filled/empty stars on Ratings and Goals, and prominently in the Snacks and Bar panels.
+- **Vera's pressure** gauge in the header once she's active (always on the Back Alley route). Tap it to jump to Goals.
+- **Door security** now sits on the entrance door and no longer covers the Waiting Area on phones.
 
-- JS syntax checks for `engine.js`, `app.js`, `cloud.js`.
-- Targeted deterministic state assertions for first threat, decision delay, Legacy season/qualifier/final, site fights, expansion gates, save migration and schema validity.
-- Standalone bundle rendered in Chromium at **320px, 390px, 1280px**; both district screens display six cards with no JS exceptions during the checked flows.
-- Word Progression Master v4.3 rendered and visually inspected.
+## Fixes
+- Phone header: venue name no longer overlaps the date and cash.
+- All seven menu buttons now fit at 320 px (Staff and Goals used to be off-screen).
+- Loading a Development Testing scenario while the startup dialog was open left the clock stuck.
+- Stock warnings on room tiles no longer cover the room picture.
 
-## Still planned / not verified
-
-- Reported dark-route traffic regression: root cause not yet identified by a matched real-play trace.
-- Leo recruitment pacing, explicit Maya training onboarding, prominent department star icons, always-visible Vera pressure bar, entrance-security placement, richer phone-call narratives.
-- District submaps, defensive counterattacks, full weekly league schedule, distinct characters for each district, live Firebase read/write and iOS testing.
-
-**Deployment:** Export a backup of existing saved game. Upload the *contents* of the GitHub Pages ZIP to your existing repository root. Verify v1.05 in the title/welcome screens. Do not publish `PLAYABLE_DEMO.html` as `index.html`, because it is local save only.
+## Deployment
+Export your current save from Settings first. Upload the **contents** of this ZIP to the repository root, including the new `theme.css`, `assets/art/` and `assets/fonts/` folders. Hard-refresh and confirm "v1.06" on the opening screen. `PLAYABLE_DEMO.html` stays local-save-only and should not replace `index.html`. `tools/` is optional (art and demo build scripts) and harmless to deploy.
