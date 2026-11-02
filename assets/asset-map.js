@@ -1,135 +1,127 @@
-/* FROM GUTTER TO GLORY — IMAGE SWITCHBOARD (v0.7)
- * Drop an image into this assets folder, then change the filename below.
- * Or use the suggested filename and change NOTHING.
- * You do not need to edit index.html, engine.js, or game logic.
- * PNG, JPG, WebP, GIF and SVG work; transparent PNG/WebP are ideal for icons.
- * Missing images safely fall back to the built-in graphics / emoji.
+/* FROM GUTTER TO GLORY — IMAGE SWITCHBOARD (v1.06)
+ * Every key below points at the built-in v1.06 art set in assets/art/ (SVG, one shared style).
+ * To use your own picture instead, drop a PNG/WebP/SVG into assets/ and change the right-hand side,
+ * e.g. 'nav.employees': 'assets/my-staff-icon.webp'. Missing files fall back to the emoji glyph.
+ * Optional keys with no built-in art (add them if you make your own):
+ *   scene.empty / scene.neighborhood / scene.league / scene.regional  (1280×720 venue backdrop)
+ *   facility.snack.tier1 … facility.proshop.tier2  (3:2 room picture that replaces the drawn counter)
+ *   world.visitor, world.empty
  */
 window.BOWLING_ASSETS = {
-  // v0.94: These are optional override images. Missing files use drawn fallback artwork.
-  'scene.empty': 'assets/venue-empty.png',
-  'cutscene.empty': 'assets/cutscene-empty.png',
-  'facility.snack.tier1': 'assets/facility-snack-tier1.png',
-  'facility.snack.tier2': 'assets/facility-snack-tier2.png',
-  'facility.bar.tier1': 'assets/facility-bar-tier1.png',
-  'facility.bar.tier2': 'assets/facility-bar-tier2.png',
-  'facility.arcade.tier1': 'assets/facility-arcade-tier1.png',
-  'facility.arcade.tier2': 'assets/facility-arcade-tier2.png',
-  'facility.proshop.tier1': 'assets/facility-proshop-tier1.png',
-  'facility.proshop.tier2': 'assets/facility-proshop-tier2.png',
-  'snack.fries': 'assets/snack-fries.png',
-  'snack.burger': 'assets/snack-burger.png',
-  'snack.cheeseburger': 'assets/snack-cheeseburger.png',
-  // Scenes: a background behind the animated customers and lane overlays.
-  'scene.backyard':      'assets/venue-backyard.png',
-  'scene.neighborhood':  'assets/venue-neighborhood.png',
-  'scene.league':        'assets/venue-league.png',
-  'scene.regional':      'assets/venue-regional.png',
-
-  // In-world objects. Replace each with one transparent image if you like.
-  'world.lane':          'assets/lane.png',
-  'world.desk':          'assets/front-desk.png',
-  'world.snack':         'assets/snack-counter.png',
-  'world.arcade':        'assets/arcade.png',
-  'world.proshop':       'assets/pro-shop.png',
-  'world.visitor':       'assets/customer.png',
-  'world.bar':           'assets/bar.png',
-  'world.benches':       'assets/benches.png',
-  'world.ads':           'assets/advertising.png',
-  'world.empty':         'assets/floor-tile.png', // optional artwork for empty grid squares
-
-  // Main navigation icons: all are easy to swap.
-  'nav.alley':           'assets/nav-alley.png',
-  'nav.manage':          'assets/nav-manage.png',
-  'nav.bowlers':         'assets/nav-bowlers.png',
-  'nav.tournaments':     'assets/nav-tournaments.png',
-  'nav.you':             'assets/nav-you.png',
-  'nav.employees':       'assets/nav-employees.png',
-  'nav.goals':           'assets/nav-goals.png',
-
-  // Local regulars — optional portraits for conversational encounters.
-  'patron.lou': 'assets/patron-lou.png',
-  'patron.bea': 'assets/patron-bea.png',
-  'patron.dex': 'assets/patron-dex.png',
-  'patron.rosa': 'assets/patron-rosa.png',
-  'patron.nell': 'assets/patron-nell.png',
-  'patron.milo': 'assets/patron-milo.png',
-
-  // Staff portraits/icons — one per role.
-  'employee.snack':     'assets/employee-snack.png',
-  'employee.bar':       'assets/employee-bar.png',
-  'employee.proshop':   'assets/employee-proshop.png',
-  'employee.stocker':   'assets/employee-stocker.png',
-
-  // Bowler portraits: works for current roster and future hires.
-  'bowler.maya':         'assets/bowler-maya.png',
-  'bowler.leo':          'assets/bowler-leo.png',
-  'bowler.recruit2':     'assets/bowler-jules.png',
-  'bowler.recruit3':     'assets/bowler-sam.png',
-
-  // New expansion attractions.
-  'world.billiards': 'assets/room-billiards.png',
-  'upgrade.billiards': 'assets/upgrade-billiards.png',
-  'world.partyroom': 'assets/room-partyroom.png',
-  'upgrade.partyroom': 'assets/upgrade-partyroom.png',
-  'world.karaoke': 'assets/room-karaoke.png',
-  'upgrade.karaoke': 'assets/upgrade-karaoke.png',
-  'world.minigolf': 'assets/room-minigolf.png',
-  'upgrade.minigolf': 'assets/upgrade-minigolf.png',
-  'world.lasertag': 'assets/room-lasertag.png',
-  'upgrade.lasertag': 'assets/upgrade-lasertag.png',
-  'world.banquet': 'assets/room-banquet.png',
-  'upgrade.banquet': 'assets/upgrade-banquet.png',
-
-  // Supplies and facilities.
-  'supply.parts':        'assets/parts.png',
-  'upgrade.roof':        'assets/upgrade-roof.png',
-  'upgrade.snack':       'assets/upgrade-snack.png',
-  'upgrade.bar':         'assets/upgrade-bar.png',
-  'upgrade.arcade':      'assets/upgrade-arcade.png',
-  'upgrade.staff':       'assets/upgrade-staff.png',
-  'upgrade.proshop':     'assets/upgrade-proshop.png',
-  'upgrade.coaching':    'assets/upgrade-coaching.png',
-  'upgrade.lights':      'assets/upgrade-lights.png',
-  'upgrade.automation':  'assets/upgrade-automation.png',
-  // Per-item food artwork: show in the clickable snack menu.
-  'snack.soda':          'assets/snack-soda.png',
-  'snack.popcorn':       'assets/snack-popcorn.png',
-  'snack.hotdog':        'assets/snack-hotdog.png',
-  'snack.pizza':         'assets/snack-pizza.png',
-  'snack.nachos':        'assets/snack-nachos.png',
-  'snack.pretzel':       'assets/snack-pretzel.png',
-  'snack.icecream':      'assets/snack-icecream.png',
-
-  // v0.6 — individual drinks for the bar menu.
-  'drink.beer':          'assets/drink-beer.png',
-  'drink.wine':          'assets/drink-wine.png',
-  'drink.cider':         'assets/drink-cider.png',
-  'drink.margarita':     'assets/drink-margarita.png',
-  'drink.mocktail':      'assets/drink-mocktail.png',
-  'drink.oldfashioned':  'assets/drink-oldfashioned.png',
-
-  // v0.6 — arcade cabinet and game images.
-  'machine.pinball':     'assets/machine-pinball.png',
-  'machine.crane':       'assets/machine-crane.png',
-  'machine.invaders':    'assets/machine-invaders.png',
-  'machine.hockey':      'assets/machine-hockey.png',
-  'machine.racer':       'assets/machine-racer.png',
-
-  // v0.6 — furnishings/functional guest amenities.
-  'fixture.restrooms':   'assets/fixture-restrooms.png',
-  'fixture.lockers':     'assets/fixture-lockers.png',
-  'fixture.ballracks':   'assets/fixture-ballracks.png',
-  'fixture.tv':          'assets/fixture-tv.png',
-  'fixture.wallart':     'assets/fixture-wallart.png',
-  'fixture.neon':        'assets/fixture-neon.png',
-
-  // Animated upgrade sequences: optional backgrounds under the built-in cutscene.
-  'cutscene.dirt':       'assets/cutscene-dirt.png',
-  'cutscene.level2':     'assets/cutscene-level2.png',
-  'cutscene.level3':     'assets/cutscene-level3.png',
-  'cutscene.level4':     'assets/cutscene-level4.png',
-  'cutscene.level5':     'assets/cutscene-level5.png',
-  'misc.trophy':         'assets/trophy.png',
-  'misc.owner':          'assets/owner.png'
+  // world
+  'world.desk': 'assets/art/front-desk.svg',
+  'world.snack': 'assets/art/snack-counter.svg',
+  'world.bar': 'assets/art/bar.svg',
+  'world.arcade': 'assets/art/arcade.svg',
+  'world.proshop': 'assets/art/pro-shop.svg',
+  'world.benches': 'assets/art/benches.svg',
+  'world.ads': 'assets/art/advertising.svg',
+  'world.lane': 'assets/art/lane-deck.svg',
+  'world.billiards': 'assets/art/upgrade-billiards.svg',
+  'world.partyroom': 'assets/art/upgrade-partyroom.svg',
+  'world.karaoke': 'assets/art/upgrade-karaoke.svg',
+  'world.minigolf': 'assets/art/upgrade-minigolf.svg',
+  'world.lasertag': 'assets/art/upgrade-lasertag.svg',
+  'world.banquet': 'assets/art/upgrade-banquet.svg',
+  'world.bocce': 'assets/art/upgrade-bocce.svg',
+  'world.stage': 'assets/art/upgrade-stage.svg',
+  'world.restaurant': 'assets/art/upgrade-restaurant.svg',
+  // upgrade
+  'upgrade.roof': 'assets/art/upgrade-roof.svg',
+  'upgrade.snack': 'assets/art/snack-counter.svg',
+  'upgrade.bar': 'assets/art/bar.svg',
+  'upgrade.arcade': 'assets/art/arcade.svg',
+  'upgrade.staff': 'assets/art/upgrade-staff.svg',
+  'upgrade.proshop': 'assets/art/pro-shop.svg',
+  'upgrade.coaching': 'assets/art/upgrade-coaching.svg',
+  'upgrade.lights': 'assets/art/upgrade-lights.svg',
+  'upgrade.automation': 'assets/art/upgrade-automation.svg',
+  'upgrade.billiards': 'assets/art/upgrade-billiards.svg',
+  'upgrade.partyroom': 'assets/art/upgrade-partyroom.svg',
+  'upgrade.karaoke': 'assets/art/upgrade-karaoke.svg',
+  'upgrade.minigolf': 'assets/art/upgrade-minigolf.svg',
+  'upgrade.lasertag': 'assets/art/upgrade-lasertag.svg',
+  'upgrade.banquet': 'assets/art/upgrade-banquet.svg',
+  'upgrade.bocce': 'assets/art/upgrade-bocce.svg',
+  'upgrade.stage': 'assets/art/upgrade-stage.svg',
+  'upgrade.restaurant': 'assets/art/upgrade-restaurant.svg',
+  // snack
+  'snack.soda': 'assets/art/snack-soda.svg',
+  'snack.popcorn': 'assets/art/snack-counter.svg',
+  'snack.hotdog': 'assets/art/snack-hotdog.svg',
+  'snack.pizza': 'assets/art/snack-pizza.svg',
+  'snack.nachos': 'assets/art/snack-nachos.svg',
+  'snack.pretzel': 'assets/art/snack-pretzel.svg',
+  'snack.icecream': 'assets/art/snack-icecream.svg',
+  'snack.fries': 'assets/art/snack-fries.svg',
+  'snack.burger': 'assets/art/snack-burger.svg',
+  'snack.cheeseburger': 'assets/art/snack-cheeseburger.svg',
+  // drink
+  'drink.beer': 'assets/art/bar.svg',
+  'drink.wine': 'assets/art/drink-wine.svg',
+  'drink.cider': 'assets/art/drink-cider.svg',
+  'drink.margarita': 'assets/art/drink-margarita.svg',
+  'drink.mocktail': 'assets/art/drink-mocktail.svg',
+  'drink.oldfashioned': 'assets/art/drink-oldfashioned.svg',
+  // machine
+  'machine.pinball': 'assets/art/machine-pinball.svg',
+  'machine.crane': 'assets/art/machine-crane.svg',
+  'machine.invaders': 'assets/art/machine-invaders.svg',
+  'machine.hockey': 'assets/art/machine-hockey.svg',
+  'machine.racer': 'assets/art/machine-racer.svg',
+  // fixture
+  'fixture.restrooms': 'assets/art/fixture-restrooms.svg',
+  'fixture.lockers': 'assets/art/fixture-lockers.svg',
+  'fixture.ballracks': 'assets/art/fixture-ballracks.svg',
+  'fixture.tv': 'assets/art/fixture-tv.svg',
+  'fixture.wallart': 'assets/art/fixture-wallart.svg',
+  'fixture.neon': 'assets/art/fixture-neon.svg',
+  // patron
+  'patron.lou': 'assets/art/patron-lou.svg',
+  'patron.bea': 'assets/art/patron-bea.svg',
+  'patron.dex': 'assets/art/patron-dex.svg',
+  'patron.rosa': 'assets/art/patron-rosa.svg',
+  'patron.nell': 'assets/art/patron-nell.svg',
+  'patron.milo': 'assets/art/patron-milo.svg',
+  'patron.default': 'assets/art/patron-default.svg',
+  // employee
+  'employee.mechanic': 'assets/art/employee-mechanic.svg',
+  'employee.snack': 'assets/art/employee-snack.svg',
+  'employee.bar': 'assets/art/employee-bar.svg',
+  'employee.proshop': 'assets/art/employee-proshop.svg',
+  'employee.stocker': 'assets/art/employee-stocker.svg',
+  // bowler
+  'bowler.maya': 'assets/art/bowler-maya.svg',
+  'bowler.leo': 'assets/art/bowler-leo.svg',
+  'bowler.recruit2': 'assets/art/bowler-jules.svg',
+  'bowler.recruit3': 'assets/art/bowler-sam.svg',
+  // shop
+  'shop.ball': 'assets/art/shop-ball.svg',
+  'shop.shoes': 'assets/art/nav-bowlers.svg',
+  'shop.bag': 'assets/art/shop-bag.svg',
+  'shop.towel': 'assets/art/shop-towel.svg',
+  'shop.spray': 'assets/art/shop-spray.svg',
+  'shop.tape': 'assets/art/shop-tape.svg',
+  // supply
+  'supply.parts': 'assets/art/parts.svg',
+  // misc
+  'misc.trophy': 'assets/art/nav-tournaments.svg',
+  'misc.owner': 'assets/art/owner.svg',
+  // story
+  'story.letter': 'assets/art/story-letter.svg',
+  'story.offer': 'assets/art/story-offer.svg',
+  'story.gus': 'assets/art/gus.svg',
+  'story.vera': 'assets/art/vera.svg',
+  // path
+  'path.legacy': 'assets/art/path-legacy.svg',
+  'path.backalley': 'assets/art/path-backalley.svg',
+  // brand
+  'brand': 'assets/art/brand.svg',
+  // cutscene
+  'cutscene.empty': 'assets/art/cutscene-empty.svg',
+  'cutscene.dirt': 'assets/art/cutscene-dirt.svg',
+  'cutscene.level2': 'assets/art/cutscene-level2.svg',
+  'cutscene.level3': 'assets/art/cutscene-level3.svg',
+  'cutscene.level4': 'assets/art/cutscene-level4.svg',
+  'cutscene.level5': 'assets/art/cutscene-level5.svg'
 };

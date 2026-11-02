@@ -1,33 +1,19 @@
-# Replace the artwork — v0.7
+# Artwork — v1.06
 
-This is the art folder for the editable project. All artwork remains optional, and built-in CSS/emoji keep the game playable with no PNGs installed.
+The game ships with its own art set in `assets/art/` (SVG, one shared style). `asset-map.js` maps every game key to a file there.
 
-To replace an icon, drop an image here and use the suggested filename from `asset-map.js`. Alternatively, keep your own filename and change only the right side of the corresponding entry.
+**To use your own picture:** drop a PNG, WebP, JPG or SVG into `assets/` and change only the right-hand side of the matching line in `asset-map.js`, e.g. `'employee.bar': 'assets/my-bartender.png'`. If a file is missing, the game shows the emoji fallback once and stops asking for it.
 
-Example: `'nav.employees': 'assets/my-staff-icon.webp'` replaces the Staff navigation icon. `'employee.bar': 'assets/bartender-portrait.png'` replaces the bartender role portrait.
+**To change the built-in style:** edit `tools/art.py` (palette and shapes live at the top) and run `python3 tools/art.py assets/art`, then rebuild the demo with `python3 tools/build_demo.py .`.
 
-Other keys include scene backgrounds, lane art, customer sprites, room icons, drinks, snacks, arcade machines, decorative fixtures and cutscene backgrounds. See `asset-map.js` for the full list.
+Suggested sizes for replacements: square icons ≥256 px, portraits 512 px square, level-up scenes 16:9 (1280×720). Transparent backgrounds work best for icons.
 
-Formats: PNG, WebP, SVG, JPG, GIF. Suggested sizes: 256px square icons, 512px square portraits, 1280×720 backgrounds. Transparency is recommended for character art. **Use the full ZIP** for this workflow. The standalone HTML contains fallback graphics and does not reference an adjacent assets folder reliably.
+Optional keys with no built-in art (add them to `asset-map.js` if you make your own):
 
-## v0.93 extras
-Snack asset keys added automatically: `snack.fries`, `snack.burger`, and `snack.cheeseburger`. Map these to `assets/snack-fries.png`, `assets/snack-burger.png`, and `assets/snack-cheeseburger.png` in `asset-map.js` to replace their emoji placeholders. Starter décor uses the existing wall-paint and fixture renderers.
-
-
-## v0.95 facility illustrations
-
-The snack, bar, arcade and pro-shop menus have colorful built-in illustrated fallbacks. Override any one of them by putting a PNG, WebP or JPG under the corresponding filename below; no code edits needed.
-
-| Asset key | Example filename |
+| Key | What it replaces |
 |---|---|
-| `scene.empty` | `assets/venue-empty.png` |
-| `cutscene.empty` | `assets/cutscene-empty.png` |
-| `facility.snack.tier1` / `.tier2` | `assets/facility-snack-tier1.png`, `assets/facility-snack-tier2.png` |
-| `facility.bar.tier1` / `.tier2` | `assets/facility-bar-tier1.png`, `assets/facility-bar-tier2.png` |
-| `facility.arcade.tier1` / `.tier2` | `assets/facility-arcade-tier1.png`, `assets/facility-arcade-tier2.png` |
-| `facility.proshop.tier1` / `.tier2` | `assets/facility-proshop-tier1.png`, `assets/facility-proshop-tier2.png` |
+| `scene.empty`, `scene.neighborhood`, `scene.league`, `scene.regional` | Backdrop of the venue map |
+| `facility.snack.tier1` … `facility.proshop.tier2` | The drawn counter scene in each room panel (3:2) |
+| `world.visitor`, `world.empty` | Guest sprite and empty floor squares |
 
-Suggested aspect ratio: 3:2 or 16:9; the image fills the preview and crops if necessary. If a file is missing, the default drawn scene remains visible. Future room-specific decorations can be drawn into these fallback scenes or supplied as additional layers.
-
-
-**v0.95 note:** The three lane upgrade kits and scoring themes currently use native CSS/emoji indicators; the core lane image (`world.lane`) remains replaceable.
+`fonts/` holds Bowlby One and Barlow under the SIL Open Font License (see the OFL files).
