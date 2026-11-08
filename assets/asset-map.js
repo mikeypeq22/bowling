@@ -112,6 +112,13 @@ window.BOWLING_ASSETS = {
   'story.offer': 'assets/art/story-offer.svg',
   'story.gus': 'assets/art/gus.svg',
   'story.vera': 'assets/art/vera.svg',
+  'foe.lookout': 'assets/art/foe-lookout.svg',
+  'foe.bruiser': 'assets/art/foe-bruiser.svg',
+  'foe.fixer': 'assets/art/foe-fixer.svg',
+  'foe.knox': 'assets/art/foe-knox.svg',
+  'foe.vera': 'assets/art/vera.svg',
+  'ally.doorman': 'assets/art/ally-doorman.svg',
+  'nav.turf': 'assets/art/nav-turf.svg',
   // path
   'path.legacy': 'assets/art/path-legacy.svg',
   'path.backalley': 'assets/art/path-backalley.svg',
