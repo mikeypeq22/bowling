@@ -1,4 +1,4 @@
-/* From Gutter to Glory v1.07 — deterministic simulation; no UI dependencies. */
+/* From Gutter to Glory v1.08 — deterministic simulation; no UI dependencies. */
 (function(root,factory){const core=factory();if(typeof module==='object'&&module.exports)module.exports=core;root.BowlingCore=core;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const OPEN=14,CLOSE=22;
@@ -612,6 +612,206 @@ function queueEncounter(s,p){
  const profile=PATRON_PROFILES.find(x=>x.id===p.patronId);if(!profile||roll(s)>.6)return;
  s.lastEncounterDay=s.day;s.encounters.push({id:profile.id,day:s.day});
 }
+// v1.08: each regular has a personality and a set of scenes (see PATRON_SCENES below).
+// v1.08 regulars' encounters. Each regular has a personality; three answers per scene all sound
+// reasonable, and which one lands depends on who is asking. d = loyalty change (hidden from players).
+// tier: 0 any time, 1 loyalty >= 35, 2 loyalty >= 60. need: room that must be built. flag: requires an
+// earlier answer. set: remembers this answer for a later scene. route: story route only.
+const PATRON_SCENES={
+ lou:[
+  {id:'lou-photo',tier:0,prompt:'Found Gus’s old league photo in my garage. Frame’s cracked. Probably junk.',options:[
+   {id:'a',text:'Bring it in. We’ll hang it by the front desk.',d:5,reply:'Hm. Maybe. He’d hate the fuss, though.'},
+   {id:'b',text:'Keep it. Sounds like it means more to you than to a wall.',d:13,reply:'…Yeah. Yeah, it does. You’re more like him than you know.',set:'louPhotoKept'},
+   {id:'c',text:'Get it reframed first so it looks right.',d:-5,reply:'Now it’s a project. Never mind.'}]},
+  {id:'lou-oil',tier:0,prompt:'Lane two’s running a little dry on the left. Not that anyone asked me.',options:[
+   {id:'a',text:'I’m asking. What would you change?',d:12,reply:'Finally. Less oil past the arrows, more up front. Gus knew.'},
+   {id:'b',text:'Thanks, Lou. I’ll have someone look at it.',d:4,reply:'Sure. Someone.'},
+   {id:'c',text:'Seems fine to me, but I appreciate it.',d:-6,reply:'Seemed fine to the last manager too.'}]},
+  {id:'lou-music',tier:0,prompt:'Who picked this music? Sounds like a phone falling down the stairs.',options:[
+   {id:'a',text:'The younger crowd likes it. We’ll find a balance.',d:10,reply:'Fair. Just not before seven. Deal?'},
+   {id:'b',text:'I’ll switch it to the oldies for you right now.',d:-4,reply:'Don’t do that for me. I’m not a museum.'},
+   {id:'c',text:'You should’ve heard yesterday’s playlist.',d:5,reply:'Worse? Impossible.'}]},
+  {id:'lou-knees',tier:1,prompt:'Doc says I should quit bowling. Bad knees. Says it like it’s easy.',options:[
+   {id:'a',text:'Then don’t quit. We’ll find you a lighter ball.',d:6,reply:'You and the doc should fight it out.'},
+   {id:'b',text:'Bowl slower. You’ve got nothing to prove here.',d:13,reply:'Nothing to prove. Ha. Tell that to Rosa.'},
+   {id:'c',text:'Your health comes first, Lou. Take a break.',d:-3,reply:'Sounds like the doc. Didn’t ask for a second one.'}]},
+  {id:'lou-prices',tier:1,prompt:'Heard you raised prices. Gus kept a lane at two bucks for forty years.',options:[
+   {id:'a',text:'Gus also nearly lost the building. I’m keeping it open.',d:11,reply:'…Hard to argue with that. Hard to like it, too.'},
+   {id:'b',text:'For you, Lou, the old price stands.',d:-5,reply:'I don’t need charity. I need this place to survive.'},
+   {id:'c',text:'Nothing’s final. What do you think is fair?',d:7,reply:'Lanes cost money. Just don’t nickel-and-dime the shoes.'}]},
+  {id:'lou-fire',tier:2,prompt:'Did Gus ever tell you about the night the pinsetter caught fire?',options:[
+   {id:'a',text:'No. Tell me everything.',d:8,reply:'Grab a chair. It’s a long one, and half of it’s even true.'},
+   {id:'b',text:'Only about a hundred times.',d:14,reply:'Ha! Then you know he lied about the fire extinguisher.'},
+   {id:'c',text:'I’d rather hear about you, actually.',d:3,reply:'Me? Not much to tell. …Okay, maybe one thing.'}]},
+  {id:'lou-mantel',tier:1,flag:'louPhotoKept',prompt:'Put Gus’s photo on my mantel. My wife says it watches her cook.',options:[
+   {id:'a',text:'Smart wife.',d:9,reply:'Smartest thing in the house. Don’t tell her I said so.'},
+   {id:'b',text:'Bring it in someday. When you’re ready.',d:12,reply:'Someday. …Maybe Thursday.'},
+   {id:'c',text:'Honestly, it would look better here.',d:-4,reply:'Better? It’s fine where it is.'}]},
+  {id:'lou-vera',tier:1,route:'backalley',prompt:'People say Vera’s money is in this place now. True?',options:[
+   {id:'a',text:'Some of it. I won’t hide that from you.',d:12,reply:'Then I’ll keep my eyes open. For you, not her.'},
+   {id:'b',text:'People say a lot of things, Lou.',d:-3,reply:'That’s what Gus’s partner said in ’89.'},
+   {id:'c',text:'Would it change how you feel about the place?',d:4,reply:'…Ask me again in a month.'}]}
+ ],
+ bea:[
+  {id:'bea-cheese',tier:0,prompt:'Your nacho cheese is from a can. I can tell. Everybody can tell.',options:[
+   {id:'a',text:'Guilty. Got a better idea?',d:12,reply:'My cousin has a cheese guy. Leave it with me.',set:'beaCheese'},
+   {id:'b',text:'It’s what the budget allows for now.',d:4,reply:'Budgets. Hmph. Fair.'},
+   {id:'c',text:'Customers haven’t complained.',d:-7,reply:'They complain to ME, sweetheart.'}]},
+  {id:'bea-special',tier:0,prompt:'The league wants a Thursday snack special. Should I tell them yes?',options:[
+   {id:'a',text:'Yes. Whatever they want.',d:3,reply:'Whatever they want? You haven’t met them.'},
+   {id:'b',text:'Let’s try it for a month and see.',d:11,reply:'Sensible. I’ll keep the list.'},
+   {id:'c',text:'Not until the counter can handle the rush.',d:6,reply:'Smart. Don’t promise what you can’t cook.'}]},
+  {id:'bea-granddaughter',tier:0,prompt:'My granddaughter wants a summer job here. She’s fifteen and thinks she’s forty.',options:[
+   {id:'a',text:'Send her over. I’ll find her something.',d:7,reply:'Don’t go easy on her. She’ll walk all over you.'},
+   {id:'b',text:'Too young for the counter, but she can help at parties.',d:13,reply:'Ooh, a straight answer. I like you more every week.'},
+   {id:'c',text:'Have her apply like everyone else.',d:2,reply:'Fair, I suppose. Cold, but fair.'}]},
+  {id:'bea-gossip',tier:1,prompt:'Did you hear about Milo and the girl from the shoe counter? No? Good. Neither did I.',options:[
+   {id:'a',text:'My lips are sealed.',d:6,reply:'Good. Mine never are, so somebody has to.'},
+   {id:'b',text:'Bea. Tell me everything.',d:12,reply:'Ha! Sit down. Get me a soda first.'},
+   {id:'c',text:'I’d rather stay out of it.',d:-2,reply:'Suit yourself. Boring, but suit yourself.'}]},
+  {id:'bea-tired',tier:1,prompt:'Long week. My feet hurt, my team lost, and the coffee here is a crime.',options:[
+   {id:'a',text:'Coffee’s on me tonight.',d:5,reply:'Bribery. It’s working, a little.'},
+   {id:'b',text:'Sit. I’ll bring you something that isn’t coffee.',d:12,reply:'You’re a good egg. Bad at coffee, but a good egg.'},
+   {id:'c',text:'Want me to talk to the league about the schedule?',d:-3,reply:'Don’t you dare. I handle my own team.'}]},
+  {id:'bea-napkins',tier:2,prompt:'I’ve folded your napkins for a month. I’m not asking for anything. Just noting it.',options:[
+   {id:'a',text:'I noticed. Thank you, Bea.',d:9,reply:'Well. Somebody did.'},
+   {id:'b',text:'Then your league fees are on the house this month.',d:3,reply:'I said I wasn’t asking. Now I feel like I was.'},
+   {id:'c',text:'Want to run the snack special nights? Officially?',d:14,reply:'Officially? With a name tag? Oh, I’d love a name tag.'}]},
+  {id:'bea-cheese-guy',tier:0,flag:'beaCheese',prompt:'My cousin’s cheese guy came through. Want to try a sample?',options:[
+   {id:'a',text:'Bring it on.',d:10,reply:'Ha! You’ll never go back to the can.'},
+   {id:'b',text:'Only if the price works.',d:7,reply:'Smart. It’s a little more. Worth it.'},
+   {id:'c',text:'Maybe later. We’re slammed tonight.',d:-6,reply:'He drove forty minutes, but sure. Later.'}]}
+ ],
+ dex:[
+  {id:'dex-board',tier:0,prompt:'I just got the high score on Pinball. Will you put my name on a chalkboard?',options:[
+   {id:'a',text:'Beat it twice and it goes up.',d:12,reply:'A challenge. Okay. OKAY. Watch me.',set:'dexBoard'},
+   {id:'b',text:'Done. Right by the door.',d:5,reply:'Cool, cool. …Little too easy, though.'},
+   {id:'c',text:'We don’t really do that here.',d:-7,reply:'Wow. Okay.'}]},
+  {id:'dex-tilt',tier:0,need:'arcade',prompt:'Machine three tilts if you breathe on it. Lost a whole run to it.',options:[
+   {id:'a',text:'I’ll get it fixed, and your next game’s free.',d:5,reply:'The game’s nice. The fix matters more.'},
+   {id:'b',text:'Show me what happened.',d:12,reply:'Finally, someone who wants the replay.'},
+   {id:'c',text:'Tilting is part of pinball, Dex.',d:-4,reply:'Not like THIS it isn’t.'}]},
+  {id:'dex-rival',tier:0,prompt:'Some kid’s been gunning for my score. He’s… actually good.',options:[
+   {id:'a',text:'Want me to tell him to back off?',d:-6,reply:'What? No. That’s the whole point.'},
+   {id:'b',text:'Good. You were getting lazy.',d:13,reply:'Lazy?! …Okay, a little lazy.'},
+   {id:'c',text:'Let’s set up a head-to-head night.',d:8,reply:'Like, with people watching? …Yeah.'}]},
+  {id:'dex-mom',tier:1,prompt:'My mom says I spend too much time here. She might be right. Don’t tell her.',options:[
+   {id:'a',text:'Your secret’s safe. Same time tomorrow?',d:5,reply:'Ha. Probably.'},
+   {id:'b',text:'Want a few paid shifts in the arcade? Then she can’t say much.',d:12,reply:'Wait, paid? …I’m telling her it was my idea.'},
+   {id:'c',text:'Maybe listen to her a little.',d:-2,reply:'Great. Two moms.'}]},
+  {id:'dex-crane',tier:1,prompt:'There’s a trick to the crane machine. I could tell you, but then you’d have to fix it.',options:[
+   {id:'a',text:'Tell me, and I’ll fix it.',d:11,reply:'Respect. Most owners pretend they don’t know.'},
+   {id:'b',text:'Keep it to yourself, okay?',d:2,reply:'Sure. …It’s still kind of rigged, though.'},
+   {id:'c',text:'Is it costing me money?',d:6,reply:'Not much. It’s costing kids their dignity.'}]},
+  {id:'dex-tourney',tier:2,prompt:'What if this place ran an arcade tournament? Like, an actual one.',options:[
+   {id:'a',text:'Plan it and I’ll back you.',d:14,reply:'Me? Plan it? …I need a clipboard.'},
+   {id:'b',text:'Too much hassle right now.',d:-5,reply:'Everything’s hassle until it’s fun.'},
+   {id:'c',text:'Only if you promise not to enter.',d:8,reply:'That’s cold. It’s fair. It’s cold.'}]},
+  {id:'dex-erased',tier:0,flag:'dexBoard',prompt:'Someone erased my name off the board. Twice. Was it you?',options:[
+   {id:'a',text:'Maybe. Beat your score again and find out.',d:12,reply:'Okay. Now it’s personal.'},
+   {id:'b',text:'No! I’ll find out who did it.',d:4,reply:'Don’t. Then I’ll never know if I’d have caught them.'},
+   {id:'c',text:'Write it in marker this time.',d:7,reply:'…That’s vandalism. I like it.'}]}
+ ],
+ rosa:[
+  {id:'rosa-night',tier:0,prompt:'How about a little community night at the bar? Thursday, maybe?',options:[
+   {id:'a',text:'Plan it with me. What do people actually want?',d:8,reply:'Music, cheap fries, and nobody checking the time.'},
+   {id:'b',text:'Bring your friends. I’ll handle the rest.',d:12,reply:'Look at you! Okay, I’m bringing everybody.'},
+   {id:'c',text:'Let’s wait until the bar has a few good weeks.',d:-5,reply:'Waiting is how nothing ever happens.'}]},
+  {id:'rosa-cutoff',tier:0,prompt:'Your bartender cut me off last night. ME.',options:[
+   {id:'a',text:'Then you probably needed cutting off.',d:12,reply:'…Rude. Correct, but rude. Tell her I’m sorry.'},
+   {id:'b',text:'I’ll have a word with her.',d:-6,reply:'Don’t you dare. She was right and we both know it.'},
+   {id:'c',text:'Want your next drink on the house?',d:3,reply:'That’s sweet. Doesn’t fix my pride, though.'}]},
+  {id:'rosa-dance',tier:0,prompt:'If the jukebox plays one more slow song, I’m dancing on lane four.',options:[
+   {id:'a',text:'Lane four was just oiled. Use lane five.',d:13,reply:'Ha! Lane five it is.'},
+   {id:'b',text:'Please don’t. Insurance.',d:3,reply:'Fine. You’re no fun. Sometimes you’re fun.'},
+   {id:'c',text:'Pick the next three songs.',d:8,reply:'Power. Finally.'}]},
+  {id:'rosa-sister',tier:1,prompt:'My sister’s in town. She thinks bowling is for old men. Help me prove her wrong.',options:[
+   {id:'a',text:'Bring her Saturday. First game’s on me.',d:6,reply:'She’ll still complain. But she’ll come.'},
+   {id:'b',text:'Bowling IS for old men. Old men are having a great time.',d:12,reply:'Ha! I’m telling her you said that.'},
+   {id:'c',text:'Maybe she’d like the arcade more?',d:2,reply:'Maybe. She’d like being right more.'}]},
+  {id:'rosa-quiet',tier:1,prompt:'Don’t make a fuss. I’m fine. Just pour me a soda.',options:[
+   {id:'a',text:'One soda. I’ll sit here, quietly.',d:14,reply:'…Thank you. Quiet is good tonight.'},
+   {id:'b',text:'You sure? You can talk to me.',d:4,reply:'I said I’m fine.'},
+   {id:'c',text:'Bad week? I’ll get some music going.',d:-5,reply:'Not tonight. Please.'}]},
+  {id:'rosa-toast',tier:2,prompt:'I want to give a toast at league night. About you. Don’t argue.',options:[
+   {id:'a',text:'Okay. I won’t argue.',d:9,reply:'Good. It’s mostly embarrassing stories.'},
+   {id:'b',text:'Make it about Gus instead.',d:12,reply:'…He’d have liked that. I’ll do both.'},
+   {id:'c',text:'Please don’t.',d:-3,reply:'Too late. I wrote it on a napkin.'}]},
+  {id:'rosa-suits',tier:1,route:'backalley',prompt:'Men in suits at the back booth again. They tip well. Should I worry?',options:[
+   {id:'a',text:'Yes. Stay away from that booth.',d:11,reply:'Okay. Thank you for being straight with me.'},
+   {id:'b',text:'They’re business partners. You’re fine.',d:-4,reply:'Business. Sure.'},
+   {id:'c',text:'Tips are tips.',d:2,reply:'That’s what my uncle said. Before.'}]}
+ ],
+ nell:[
+  {id:'nell-clean',tier:0,prompt:'These house balls need a proper cleaning. Mind if I do a few?',options:[
+   {id:'a',text:'Please. I’d like to learn how you do it.',d:12,reply:'Bring a towel. And patience.'},
+   {id:'b',text:'That’s kind, but it’s our job, not yours.',d:6,reply:'Fair. Then do it properly. I’ll check.'},
+   {id:'c',text:'Go ahead! You’re the best.',d:2,reply:'“The best” isn’t a cleaning method.'}]},
+  {id:'nell-span',tier:0,prompt:'Your pro shop drilled my span a quarter inch too wide.',options:[
+   {id:'a',text:'We’ll redrill it for free, today.',d:7,reply:'Today is good. Correct is better.'},
+   {id:'b',text:'Show me. I want to understand what went wrong.',d:13,reply:'Okay. Look at the thumb pitch. See?'},
+   {id:'c',text:'A quarter inch? Can you really feel that?',d:-8,reply:'Can you feel a stone in your shoe?'}]},
+  {id:'nell-lane3',tier:0,prompt:'Lane three is the best lane in the county. Don’t change anything.',options:[
+   {id:'a',text:'Noted. What makes it the best?',d:12,reply:'The pin deck is level. Nobody believes me.'},
+   {id:'b',text:'We’re resurfacing it next month, actually.',d:2,reply:'…Why would you do that?'},
+   {id:'c',text:'That means a lot, coming from you.',d:5,reply:'It’s not a compliment. It’s a measurement.'}]},
+  {id:'nell-illegal',tier:1,prompt:'Someone in the league is using an illegal ball. I won’t say who.',options:[
+   {id:'a',text:'Then there’s not much I can do, is there?',d:5,reply:'…Fair. Watch the third lane on Thursdays.'},
+   {id:'b',text:'I’ll check every ball next week. Everyone’s.',d:12,reply:'Good. No favorites. That’s how it should be.'},
+   {id:'c',text:'Is it really that big a deal?',d:-7,reply:'The rules are the whole game.'}]},
+  {id:'nell-shoulder',tier:1,prompt:'Your bowlers drop their shoulder on the release. All of them.',options:[
+   {id:'a',text:'Could you show them?',d:11,reply:'Fifteen minutes. And they listen, or I leave.'},
+   {id:'b',text:'Their coach says the form’s fine.',d:-3,reply:'Then their coach is wrong.'},
+   {id:'c',text:'Huh. Even Maya?',d:6,reply:'Especially Maya. She’s good enough to fix it.'}]},
+  {id:'nell-collection',tier:2,prompt:'Thinking of selling my old ball collection. Thirty-one balls.',options:[
+   {id:'a',text:'Sell them in our pro shop. Keep every dollar.',d:9,reply:'No cut for you? Bad business. …Thank you.'},
+   {id:'b',text:'Don’t sell. Lend them to the youth league.',d:14,reply:'…I hadn’t thought of that. Kids should learn on real equipment.'},
+   {id:'c',text:'I’d buy the lot for the shop.',d:3,reply:'They’re not inventory. But thank you.'}]}
+ ],
+ milo:[
+  {id:'milo-discount',tier:0,prompt:'My friends asked if we could get a group discount someday.',options:[
+   {id:'a',text:'How many friends are we talking?',d:11,reply:'Eleven. Twelve if Gary shows up. Gary never shows up.'},
+   {id:'b',text:'Sure. Ten percent off for your crew.',d:3,reply:'Nice! …They’ll still complain.'},
+   {id:'c',text:'Bring them first. Then we’ll talk.',d:7,reply:'Ha! A negotiator. I respect it.'}]},
+  {id:'milo-shoes',tier:0,prompt:'Do these rental shoes come with a personality upgrade?',options:[
+   {id:'a',text:'No, but they come with someone else’s foot smell.',d:12,reply:'HA. Okay, you’re funny. Didn’t expect that.'},
+   {id:'b',text:'They’re cleaned after every use, I promise.',d:-3,reply:'Oh… okay. Cool. Cool cool.'},
+   {id:'c',text:'Personality’s extra. Two dollars.',d:9,reply:'Worth it. Add two.'}]},
+  {id:'milo-gary',tier:0,prompt:'It’s Gary’s birthday. Gary isn’t here. Can we sing anyway?',options:[
+   {id:'a',text:'Absolutely. Loudly.',d:12,reply:'Everyone! For Gary!'},
+   {id:'b',text:'Maybe keep it down for the other lanes?',d:-5,reply:'Gary would’ve wanted it loud.'},
+   {id:'c',text:'Only if you record it for him.',d:8,reply:'Genius. He’s going to hate this.'}]},
+  {id:'milo-alone',tier:1,prompt:'Friends cancelled. Again. Mind if I just bowl alone for a bit?',options:[
+   {id:'a',text:'Want company? I’ve got ten minutes.',d:13,reply:'…Yeah. Yeah, I’d like that.'},
+   {id:'b',text:'Of course. The lane’s yours.',d:5,reply:'Thanks.'},
+   {id:'c',text:'Want me to pair you with another group?',d:1,reply:'Nah. Strangers. Not tonight.'}]},
+  {id:'milo-costumes',tier:1,prompt:'Idea: glow-in-the-dark bowling, but everyone wears a costume.',options:[
+   {id:'a',text:'That’s ridiculous. I love it.',d:12,reply:'THANK you. Everyone else said ridiculous and stopped.'},
+   {id:'b',text:'Costumes might slow down the lanes.',d:-4,reply:'Logistics. The enemy of fun.'},
+   {id:'c',text:'Write it up and I’ll think about it.',d:3,reply:'Homework. Great.'}]},
+  {id:'milo-moving',tier:2,prompt:'I might be moving for a job. Two hours away. Kinda scary.',options:[
+   {id:'a',text:'Two hours is nothing. Your lane will be waiting.',d:12,reply:'…Promise? Okay. That helps.'},
+   {id:'b',text:'That’s huge! Congratulations!',d:5,reply:'Thanks. Yeah. It is huge.'},
+   {id:'c',text:'Do you want to go?',d:9,reply:'Honestly? I don’t know yet.'}]}
+ ]
+};
+
+// Scene choice uses a hash of day/patron/history instead of the game RNG, so conversations never
+// change the economy simulation. Answers are shown in a hashed order with no "right" styling.
+function sceneHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function sceneTier(p){return p.loyalty>=60?2:p.loyalty>=35?1:0;}
+function sceneAvailable(s,p,sc){const route=s.campaignStory?.path;return sc.tier<=sceneTier(p)&&(!sc.need||isBuilt(s,sc.need))&&(!sc.flag||p.flags?.[sc.flag])&&(!sc.route||sc.route===route);}
+function encounterScene(s,e){const p=s.patrons?.[e?.id],list=PATRON_SCENES[e?.id];if(!p||!list)return null;
+ if(e.scene){const known=list.find(x=>x.id===e.scene);if(known)return known;}
+ p.seen=Array.isArray(p.seen)?p.seen:[];
+ let pool=list.filter(sc=>sceneAvailable(s,p,sc)&&!p.seen.includes(sc.id));
+ if(!pool.length){p.seen=p.seen.filter(id=>!list.some(sc=>sc.id===id&&sceneAvailable(s,p,sc)));pool=list.filter(sc=>sceneAvailable(s,p,sc)&&sc.id!==p.lastScene);}
+ if(!pool.length)pool=list.filter(sc=>sceneAvailable(s,p,sc));
+ const follow=pool.filter(sc=>sc.flag);if(follow.length)pool=follow; // callbacks to earlier answers come first
+ const pick=pool[sceneHash(e.id+':'+s.day+':'+p.seen.length)%pool.length];e.scene=pick.id;return pick;}
+function encounterOptions(s,e){const sc=encounterScene(s,e);if(!sc)return [];const h=sceneHash(sc.id+':'+s.day);
+ const order=[...sc.options].sort((x,y)=>sceneHash(x.id+':'+h)-sceneHash(y.id+':'+h));return order.map(o=>({id:o.id,text:o.text}));}
+// Legacy single prompts kept for older references.
 const PATRON_DIALOGUES={
  lou:{prompt:'I knew Gus before the first perfect game. Should we hang up his old team photo?',yes:'Hang it up. Gus deserves a wall.',no:'Not until we renovate the place.'},
  bea:{prompt:'The league members want a snack special. Should I spread the word?',yes:'Absolutely! Make it a tradition.',no:'Tell them we are too busy.'},
@@ -621,10 +821,17 @@ const PATRON_DIALOGUES={
  milo:{prompt:'My friends asked if we could get a group discount someday.',yes:'Tell them they are always welcome.',no:'No discounts. Ever.'}
 };
 function respondEncounter(s,id,answer){const e=s.encounters[0],p=s.patrons[id];if(!e||e.id!==id||!p)return {ok:false,reason:'That conversation is not available'};
- const profile=PATRON_PROFILES.find(x=>x.id===id),good=answer==='yes';if(!['yes','no','listen'].includes(answer))return {ok:false,reason:'Choose one of the answers'};
- const delta=answer==='listen'?(isBuilt(s,profile.wish)?7:3):good?12:-8;p.loyalty=clamp(p.loyalty+delta,0,100);p.lastTalk=s.day;s.encounters.shift();
- note(s,`${profile.name}: “${good?'You made my day!':answer==='listen'?'Thanks for hearing me out.':'Well, I suppose that is your call.'}” (${delta>0?'+':''}${delta} loyalty)`,'feedback');
- return {ok:true,delta};
+ const profile=PATRON_PROFILES.find(x=>x.id===id),sc=encounterScene(s,e);if(!sc)return {ok:false,reason:'That conversation is not available'};
+ const opt=sc.options.find(o=>o.id===answer);if(!opt)return {ok:false,reason:'Choose one of the answers'};
+ // A small bonus when the alley already has what this regular loves, only if the answer landed.
+ const delta=opt.d+(opt.d>0&&profile.wish&&profile.wish!=='comfort'&&isBuilt(s,profile.wish)?2:0);
+ p.loyalty=clamp(p.loyalty+delta,0,100);p.lastTalk=s.day;p.talks=(p.talks||0)+1;p.lastScene=sc.id;p.lastReply=opt.reply;
+ p.seen=Array.isArray(p.seen)?p.seen:[];if(!p.seen.includes(sc.id))p.seen.push(sc.id);if(p.seen.length>30)p.seen=p.seen.slice(-30);
+ if(opt.set){p.flags=p.flags||{};p.flags[opt.set]=true;}
+ s.encounters.shift();
+ const mood=delta>=9?'warmer':delta>=1?'same':'cooler';
+ note(s,`${profile.name}: “${opt.reply}” (${mood==='warmer'?'friendship grew':mood==='cooler'?'a little cooler':'friendly'})`,'feedback');
+ return {ok:true,delta,reply:opt.reply,mood};
 }
 function repairCost(s,id){return s.outages?.[String(id)]?.cost||0;}
 function repairOutage(s,id){const broken=s.outages?.[String(id)];if(!broken)return {ok:false,reason:'Nothing is broken here'};
@@ -1337,5 +1544,5 @@ function migrate(legacy){
  // v0.3 lane2/lane3 were already built; keep all existing lanes immediately usable.
  s.log=['Save upgraded to v0.4. Your existing rooms, lanes and bowlers are ready.',...(legacy.log||[])].slice(0,60);
  return migrate(s);}
-return {CITY_DISTRICTS,legacyDistrictReady,legacyLeague,legacyDistrictFinal,districtStatus,DEPARTMENT_EQUIPMENT,equipmentFor,buyDepartmentEquipment,fireEmployee,LEAGUE_CIRCUIT,runLeagueCircuit,districtUnlocked,DEPARTMENT_REWARDS,departmentBenefit,syncDepartmentRewards,expectedWage,staffTrainingCost,STAFF_XP,STAFF_CAREERS,specializeEmployee,resolveStaffConcern,firstFrame,maybeRecruitLeo,DISTRICTS,crewMembers,startTactical,tacticalTurn,tacticalAuto,recruitCrew,hirePitBoss,casinoPatronRound,casinoBet,nightPayroll,nightShift,rivalWarning,prepareForRival,buyNightInsurance,NIGHT_DEFENSES,BACK_ALLEY_CHAPTERS,nightProtection,buyNightDefense,emergencyResponse,advanceBackAlley,backAlleyArcadeName,darkMachineName,CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,FIXED_SPOTS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
+return {CITY_DISTRICTS,legacyDistrictReady,legacyLeague,legacyDistrictFinal,districtStatus,DEPARTMENT_EQUIPMENT,equipmentFor,buyDepartmentEquipment,fireEmployee,LEAGUE_CIRCUIT,runLeagueCircuit,districtUnlocked,DEPARTMENT_REWARDS,departmentBenefit,syncDepartmentRewards,expectedWage,staffTrainingCost,STAFF_XP,STAFF_CAREERS,specializeEmployee,resolveStaffConcern,firstFrame,maybeRecruitLeo,DISTRICTS,crewMembers,startTactical,tacticalTurn,tacticalAuto,recruitCrew,hirePitBoss,casinoPatronRound,casinoBet,nightPayroll,nightShift,rivalWarning,prepareForRival,buyNightInsurance,NIGHT_DEFENSES,BACK_ALLEY_CHAPTERS,nightProtection,buyNightDefense,emergencyResponse,advanceBackAlley,backAlleyArcadeName,darkMachineName,CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,PATRON_SCENES,encounterScene,encounterOptions,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,FIXED_SPOTS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
 });

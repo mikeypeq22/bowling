@@ -27,8 +27,8 @@ amap = re.sub(r"'(assets/art/[^']+\.svg)'", art_uri, rd('assets/asset-map.js'))
 script_safe = lambda js: js.replace('</script', '<\\/script')
 
 html = re.sub(r'<link href="assets/fonts/[^"]+" rel="preload"[^>]*/>', '', html)
-html = html.replace('<link href="style.css?v=1.07.2" rel="stylesheet"/>', '<style>' + rd('style.css') + '</style>')
-html = html.replace('<link href="theme.css?v=1.07.2" rel="stylesheet"/>', '<style>' + theme + '</style>')
+html = html.replace('<link href="style.css?v=1.08" rel="stylesheet"/>', '<style>' + rd('style.css') + '</style>')
+html = html.replace('<link href="theme.css?v=1.08" rel="stylesheet"/>', '<style>' + theme + '</style>')
 tail = ('<script>' + script_safe(amap) + '</script><script>' + script_safe(rd('engine.js')) + '</script><script>'
         + script_safe(rd('app.js')) + '</script>\n<script>window.GTGApp.unlockDemo();document.getElementById("cloudGate").classList.add("hidden");</script></body></html>')
 start = html.index('<script src="assets/asset-map.js')

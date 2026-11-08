@@ -1,3 +1,31 @@
+# From Gutter to Glory v1.08 — Closing Report, Staff Room & Regulars
+
+Economy unchanged (60-day matched simulations of both routes are identical to v1.07). Save schema stays 20; v1.07 saves load as-is, including a conversation that was waiting.
+
+## Regulars: real conversations
+- **41 scenes** across the six regulars (Lou, Bea, Dex, Rosa, Nell, Milo) instead of one fixed question each. Each regular has a personality, and the answer that lands depends on who's asking: Lou wants honesty without fuss, Nell distrusts flattery, Dex wants a challenge rather than special treatment, Rosa sometimes just wants quiet. The obviously "nice" answer is often not the best one.
+- **Three answers that all sound reasonable**, shown in a shuffled order with no highlighted "right" button. In testing, the best answer is equally likely to appear first, second or third.
+- **They answer back.** After you choose, the regular replies and the dialog tells you how it landed ("Dex warms up to you", "Lou goes a little quiet"). No numbers shown.
+- **Scenes deepen with friendship:** new topics unlock as loyalty passes 35 and 60. Some answers are remembered and lead to a later follow-up (Gus's photo, Dex's chalkboard, Bea's cheese guy). Two scenes are unique to the Back Alley route.
+- No scene repeats until a regular has used up their available ones. Picking scenes never uses the game's random numbers, so the economy is unaffected.
+- **Goals → Regulars** cards now show each regular's portrait, their last reply to you and how many conversations you've had.
+
+## Closing report, rebuilt
+- A short **register tape**: today's take (with money in and out), guest mood, then three compact lines for Guests, Sales and Costs. No more grid of big boxes.
+- **Overheard tonight:** guest comments as speech-bubble quotes with a small guest figure and where it was said ("a guest on the lanes"), instead of icon rows.
+- **For tomorrow:** problems (snacks sold out, bar empty, walk-outs, lanes needing service) are listed with a button that goes straight to the fix (Restock snacks, Add benches, ...).
+
+## Staff room, condensed
+- **Roles** are one compact row each (portrait, status like 1/1, Hire button) and sit beside **Your team** on wide screens. Each employee is a compact row with a morale bar, pay stepper, Promote and Fire.
+- The "wants to talk" panel only appears when someone actually wants to talk. Emergency contract and Stockroom sit side by side below.
+- The phone page is about half as long as before; on desktop the whole staff room fits on one screen.
+
+## Fixes
+- **Wide screens (1000 px and up):** the alley floor stayed visible above every other tab since v1.07. Fixed.
+- Tutorial and Build-tab tips no longer mention moving rooms.
+
+---
+
 # From Gutter to Glory v1.07.2 — Lobby moves up, ads move into the Front Desk
 
 - **Lobby above the shops:** Entrance, Front Desk and Waiting Area now sit in one row directly above the Pro Shop, Snack Counter and the other shops (below the lanes and fixtures).

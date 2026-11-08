@@ -1,3 +1,13 @@
+# v1.08 Local QA report
+
+- 60-day matched simulations (Legacy, Back Alley): identical cash and reputation to v1.07; 200-day runs valid.
+- Conversation balance: across 360 test encounters the best answer appeared in position 1/2/3 in 123/124/113 cases. Best answers by letter: a 23, b 17, c 1 before shuffling.
+- A v1.07 save with a queued conversation migrates; the conversation can be answered and the state validates.
+- Firebase client validator accepts both a fresh reset save and a save after conversations.
+- Browser at 390 and 1280 px: closing report, conversation (question → reply → Continue), staff room and Goals → Regulars reviewed by screenshot; smoke test, wing test: no page errors. Only one tab is visible at a time at 1280 px.
+
+---
+
 # v1.07 Local QA report
 
 ## Verified

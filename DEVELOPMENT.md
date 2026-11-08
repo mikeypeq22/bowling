@@ -1,3 +1,11 @@
+# v1.08 Development Notes
+
+**engine.js** — `PATRON_SCENES` (41 scenes; fields: tier, need, flag, set, route; option `d` = hidden loyalty change, `reply`). `encounterScene(s,e)` picks and pins a scene on the queued encounter using an FNV hash of patron/day/history (no game RNG). `encounterOptions` returns options in hashed order without deltas. `respondEncounter(s,id,optionId)` applies the change (+2 if the regular's favourite room is built and the answer landed), records `seen`, `flags`, `talks`, `lastScene`, `lastReply`, and returns `{delta,reply,mood}`. `PATRON_DIALOGUES` is kept but unused.
+
+**app.js** — `showPatronEncounter` renders shuffled answers; choosing shows the reply and mood, then Continue (`data-encounter-done`). `openSummary` rebuilt (`splitFeedback`, `guestAvatar`), with `data-summary-open`/`data-summary-tab` buttons that close the report and go to the fix. `renderEmployees` renders `.rosterRow` and `.teamRow`; concern panel hidden when empty.
+
+**theme.css** — "v1.08" section; desktop `#alley` grid now applies only to `#alley.active`.
+
 # v1.07 Development Notes
 
 **engine.js** — `FIXED_SPOTS` (exported) gives each of the 13 room ids a permanent grid spot; `findRoomPlacement` returns it; `fixRoomSpots(s)` (in `migrate()`, also for the inactive town) moves existing placements onto it; `moveRoom` now refuses; `expandRoom` no longer needs a free neighbouring square. Simulations are identical to v1.06.
