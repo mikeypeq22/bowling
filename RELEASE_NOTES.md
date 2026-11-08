@@ -1,3 +1,59 @@
+# From Gutter to Glory v1.10 — Turf War (The Back Alley)
+
+The Back Alley's "Take Back the City" was hidden in Goals, moved only every 6–9 days and fought as a text-only HP duel. v1.10 rebuilds it around one idea: **Vera is always pushing, and you can see it.** Save schema stays 20; v1.09 saves load as-is. **The Legacy route is untouched**: 90-day matched simulations of Legacy, the undecided path and a new game are identical to v1.09.
+
+## How you get to it
+- On the Back Alley route the **Compete** button becomes **🌃 Turf** (a red counter appears on it when Vera has an operation coming). Leagues and tournaments are still on that page, underneath.
+- The Vera gauge in the header now shows her **threat level by name** (Watching → Circling → Squeezing → Closing In → All-Out), turns red as it climbs, and opens the Turf.
+- On the alley floor: a striped red banner announces her next operation (tap it to meet them), a **lookout in a camel coat** loiters by your entrance (tap him to send your doorman), and her plum **"V" gets sprayed on your rooms** (paint over it from the room panel for $25). The whole floor takes on a plum, then red glow as her grip tightens.
+- The closing report has a **"Vera tonight"** strip: her grip before/after and what she tried.
+
+## Vera's grip moves every night
+- She leans on you **every night** (+1), harder for each of her districts next to you (up to +3) and when police suspicion is high. Districts you hold, solid defenses and a loyal neighborhood push back. The Turf shows the exact breakdown under "Why her grip moves every night".
+- **Most nights her people try something small**, no 5-day cooldown: a lookout on your corner, paint on your walls, a supplier "handling fee", fake reviews, a sedan following your staff home, an envelope of cash for your least loyal bowler, the corner store paying her "neighborhood fee", cut pinsetter wires at high pressure. Each is stopped by something you built: the doorman, cameras, contacts (influence), staff drills, owning Warehouse Row or Old Town, or a bowler's loyalty.
+- **Threat levels have teeth**: fewer guests (down to ×0.78), staff morale draining each night, less warning before operations, and at All-Out, full sieges every few nights. A siege that lands wrecks more than one room, then police flood the block and she eases back to Closing In.
+- She has a **floor**: while she holds territory she never drops below 4 per district + 6. Choosing the Back Alley puts her straight into Circling.
+
+## Operations: warned, then met
+- Every few nights (sooner as her grip rises) she **announces an operation with a countdown**: a hit on a room or lane, a counterattack on a district you hold, or a siege. You get a message from Vera with **Meet them →** and **Trust my defenses**.
+- Your defenses hold on their own only some of the time (the Turf shows the odds); your crew can stop it outright.
+- Take a district and she **retaliates within two nights**.
+
+## Showdowns: the turn-based fight, now visual
+- Full-screen fight on an alley-brick stage: Vera's crew on top, yours below, portraits, health bars, and **telegraphed moves above every enemy** (👊 swing at Maya, 🥊 haymaker at Leo, 😠 threaten, 📣 rally, 📢 call backup). Hits lunge and shake, damage numbers float, knocked-out fighters grey out, "Vera's crew moves" banner between turns.
+- Each of your fighters picks **Strike**, their **signature skill**, or **Guard** (take 60% less and cover the weakest teammate). Tap an enemy to target it. **Auto-finish** and **Back off** are always there.
+- Before the fight: pick up to three fighters, see their numbers against the enemy's, an odds bar (Long odds → You're favored), and which defenses join you.
+- Five enemy types with new portraits: **Lookout, Bruiser, the Fixer, Knox (Vera's lieutenant) and Vera herself** at the Docks. Each district site has its own lineup, and each district's sites have names (the loading dock, Depot 9, the Velvet Room, Pier 4…).
+
+## Your bowlers' training is your crew
+| Lane stat | On the street |
+|---|---|
+| **Spare** (+ confidence) | Grit: health |
+| **Power** (+ fitted ball) | Damage per hit |
+| **Aim** | Accuracy and critical hits |
+| **Focus** | Nerve: shrugging off threats, plus armor |
+| **Loyalty 80+** | Won't go down: survives one knockout blow per fight |
+
+- Each bowler's **best stat gives a signature skill**: Bowl Them Over (Power, hits everyone), Pick Off (Aim, never misses and stuns), Stare Down (Focus, cancels a move and weakens the enemy), Pick Up the Spare (Spare, heals or gets a teammate back up).
+- **Any bowler** can join the crew once their loyalty reaches 55 (Maya and Leo volunteer when you choose the route). On this route, every training session also adds +2 loyalty. The Bowlers tab shows each bowler's street numbers.
+- Fighters rest until the next day after a showdown, so attacking a district can leave you without a crew for tonight's operation. Knocked-out fighters are hurt for a day or two; once you hold Old Town, Doc Ramos patches them up for $60.
+- **Defenses fight too**: at your door the doorman joins as an ally, cameras hit the enemy before they arrive, and staff drills add grit. Influence from your contacts gives an opening ambush when you attack.
+
+## The Turf tab
+Vera's portrait and a line from her that changes with her mood, the threat gauge and its effects, her next operation (or how long the quiet will last), a **city map** of the six districts around the alley (hatched plum = hers, stripes = contested, teal = yours, red pin = her next target, fogged = opens with the next wing), the selected district's sites and enemies, your crew cards, **Night Moves** (the four big decisions, every two nights, now visible again), **Vera's Ledger** (everything she tried and what you did about it) and how the story ends.
+
+## Endings
+- **The City Is Yours**: hold all six districts and Vera leaves town. This is the Back Alley finale.
+- **The Midnight Accord** is now a milestone on the way: with strong defenses, 4 repelled attacks, 3 districts, the Casino Lounge and her grip at 40 or below, she stops hitting your building. Her squeeze and her counterattacks on districts continue. Saves that had already earned the Accord keep it as this milestone and can now finish the city.
+
+## Balance (simulated, 100–150 days from the Back Alley preview)
+- **Ignore her**: Squeezing within about 10 days, Closing In by ~15, sieges by ~20.
+- **Only defend**: stopping every operation still lets her climb as new wings reveal more of her districts.
+- **Push back**: taking districts and meeting operations keeps her at Watching/Circling.
+- Starter crew (Maya + Leo) wins Old Town; Warehouse Row needs some training; Neon Strip and West End want a third fighter; Vera at the Docks needs a well-trained crew of three.
+
+---
+
 # From Gutter to Glory v1.09 — Shop Panels & Relationships
 
 Save schema stays 20; v1.08 saves load as-is. With prices left at their defaults, the economy is identical to v1.08 (90-day matched simulations of both routes).

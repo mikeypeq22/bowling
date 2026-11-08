@@ -1,46 +1,15 @@
-# v1.09 Local QA report
+# v1.10 Local QA report
 
-- 90-day matched simulations (Legacy, Back Alley) at default prices: identical cash and reputation to v1.08; 200-day runs valid.
-- v1.08 save migrates (price fields added, valid). Price setters respect their ranges.
-- Firebase client validator accepts fresh and played saves.
-- Browser 390 and 1280 px, Legacy and Back Alley previews: all 16 panels and all 21 inner tabs open with content and no page errors; new game smoke test (lane from the floor sign, four days, all seven tabs, reload) passes; only one tab visible at a time; tutorial walks all five steps; Advertising bought from Front Desk → Advertising; Staff → Lane Technician deep-links to Lanes → Upgrades.
-
----
-
-# v1.08 Local QA report
-
-- 60-day matched simulations (Legacy, Back Alley): identical cash and reputation to v1.07; 200-day runs valid.
-- Conversation balance: across 360 test encounters the best answer appeared in position 1/2/3 in 123/124/113 cases. Best answers by letter: a 23, b 17, c 1 before shuffling.
-- A v1.07 save with a queued conversation migrates; the conversation can be answered and the state validates.
-- Firebase client validator accepts both a fresh reset save and a save after conversations.
-- Browser at 390 and 1280 px: closing report, conversation (question → reply → Continue), staff room and Goals → Regulars reviewed by screenshot; smoke test, wing test: no page errors. Only one tab is visible at a time at 1280 px.
-
----
-
-# v1.07 Local QA report
-
-## Verified
-- `node --check` on all scripts. 60-day matched simulations of both routes: identical cash and reputation to v1.06; 200-day runs stay valid.
-- All 13 rooms fit their fixed spots at once with every base room at level 2 (`checkState` passes). Each attraction's spot becomes buildable exactly when its wing is owned.
-- A v1.06 save with rooms moved to non-standard squares migrates to the fixed spots and validates.
-- Browser (Chromium, standalone demo) at 320, 390 and 1280 px: new game shows six grey lanes with "Open Lane 1 $160", faded shop spots with prices and locked Wing 1 spots. Legacy preview: Open Wing 1 → construction → Wing 1 finishes → four new lane spots and Billiards/Party Room become buildable; building Billiards from its sign shows the construction state; Back Alley preview renders in the dark palette. Smoke test (every tab, every drawer, reload) passes with no page errors.
+- **Legacy untouched:** 90-day matched simulations (Legacy, undecided, new game) give identical cash, reputation, RNG seed and Vera pressure to v1.09.
+- **Back Alley balance:** 100–150-day policy runs (ignore / defend only / push back) behave as designed (see Release Notes); battle win-rate tables by district, site and crew strength (starter crew → +60 training, two vs. three fighters) give the intended difficulty ramp; Docks site 2 (Vera) is the hardest fight.
+- **Saves:** a v1.09 Back Alley save with an unfinished old territory fight migrates (fight cleared, Turf created, valid); an old Midnight Accord victory becomes the milestone; Legacy saves gain no Turf data. 200-day runs valid (Back Alley 108 KB, Legacy 124 KB). A save reloaded in the middle of a Showdown resumes on the right fighter.
+- **Firebase client validator** accepts fresh, 30-day Back Alley, mid-Showdown and finished-Showdown saves (no undefined fields).
+- **Browser, 390 and 1280 px:** Back Alley preview → Vera's message for an operation → Meet them → lineup → fight (Strike, skill, Guard, target switching) → result → Turf; Turf tab, map, crew cards, Night Moves, Ledger; alley banner, lookout (tap dismisses), wall tag and paint-over banner; closing report "Vera tonight"; Bowlers street line. No page errors.
+- **Regression:** new-game smoke test (all tabs, all 16 panels and 15 inner tabs, reload) passes at both widths; panel sweeps for Legacy and Back Alley previews pass with no empty panels; Legacy Compete page unchanged.
 
 ## Unverified
-- Live Firebase and real devices (unchanged from v1.06).
+- Real devices (iPhone Safari, Android Chrome), live Firebase sign-in and cloud saves.
+- Long-term feel of the difficulty curve with a human player; the policy bots fight perfectly and buy defenses on a fixed rule.
 
 ---
 
-# v1.06 Local QA report
-
-## Verified
-- `node --check` on `engine.js`, `app.js`, `cloud.js`.
-- **Gameplay unchanged:** v1.05 and v1.06 engines run 60 days from both development scenarios with identical cash, reputation and day.
-- **Long run:** 200 simulated days (new game, Legacy, Back Alley) stay valid under `checkState`; Legacy save ~243 KB → ~124 KB; worst hour tick under 5 ms in Node.
-- **Migration:** a 40-day v1.05 Back Alley save (269 KB) loads in v1.06 as valid schema 20 (118 KB, 21 reports, 7 with hourly logs).
-- **Browser (Chromium, standalone demo):** new game → loan → first lane → four days → every tab → all 12 facility drawers → reload restores the save; no page or console errors at 320, 390 and 1280 px. Screenshots reviewed for alley, drawers, bowlers, staff, goals, story, startup, branch and cutscene.
-- **Performance probe (390 px, Legacy preview, 24 manual hours):** median render 7.3 → 5.4 ms; alley DOM ~1,990 → ~930 elements; failing image requests 116 → 0.
-- Hosted `index.html` loads the art and shows the cloud gate without page errors (Firebase itself is unreachable from the test sandbox).
-
-## Unverified
-- Live Firebase sign-in, Firestore saves and rules; real iPhone/Android devices (font rendering, `pagehide` flushing in Safari, background pause); long real-time play sessions.
-- The dark-route traffic regression reported after v1.05 (not investigated in this release).

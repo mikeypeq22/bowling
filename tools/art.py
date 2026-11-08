@@ -88,7 +88,7 @@ def ball(cx, cy, r, f=NAVY, holes=True, rot=0):
 
 
 # ---------------------------------------------------------------- portraits
-def portrait(skin, hair, hair_color, shirt, bg, extras=(), collar=None):
+def portrait(skin, hair, hair_color, shirt, bg, extras=(), collar=None, mouth='smile'):
     hc = HAIR.get(hair_color, hair_color)
     s = SKIN[skin] if isinstance(skin, int) else skin
     out = f'<defs><clipPath id="c"><circle cx="32" cy="32" r="30"/></clipPath></defs>'
@@ -111,7 +111,12 @@ def portrait(skin, hair, hair_color, shirt, bg, extras=(), collar=None):
     g += E(32, 28, 11.5, 13, s)
     # face
     g += C(27.5, 29, 1.5, INK, 'stroke="none"') + C(36.5, 29, 1.5, INK, 'stroke="none"')
-    g += '<path d="M28.5 35.5Q32 38.5 35.5 35.5" fill="none" stroke-width="2.2"/>'
+    if mouth == 'smirk':
+        g += '<path d="M28.5 36.5Q32 37 35.8 34.6" fill="none" stroke-width="2.2"/>'
+    elif mouth == 'flat':
+        g += '<path d="M28.8 36.2H35.2" fill="none" stroke-width="2.2"/>'
+    else:
+        g += '<path d="M28.5 35.5Q32 38.5 35.5 35.5" fill="none" stroke-width="2.2"/>'
     g += C(25, 33.5, 2, '#E9897A', 'stroke="none" opacity=".35"') + C(39, 33.5, 2, '#E9897A', 'stroke="none" opacity=".35"')
     # front hair
     if hair == 'short':
@@ -153,6 +158,16 @@ EXTRAS = {
     'pearls': ''.join(C(25 + i * 2.8, 48 + abs(i - 2.5) * -.6, 1.4, PAPER, 'stroke-width="1.2"') for i in range(6)),
     'hood': P('M14 66C12 52 18 44 24 44L32 52L40 44C46 44 52 52 50 66Z', 'none'),
     'apron': P('M24 50H40V66H24Z', PAPER) + L(24, 50, 28, 46, 'stroke-width="2"') + L(40, 50, 36, 46, 'stroke-width="2"'),
+    'fedora': P('M15 24C15 22 49 22 49 24C49 26 15 26 15 24Z', '#3A3340') + P('M21 23C21 12 43 12 43 23Z', '#3A3340') + R(21, 19.5, 22, 3.2, PLUM_L, 0, 'stroke="none"'),
+    'scar': P('M37 24L41 33', 'none', 'stroke="#A8322B" stroke-width="1.6"'),
+    'toothpick': L(35, 36.5, 42, 39, f'stroke="{MAPLE_D}" stroke-width="1.6"'),
+    'leather': P('M8 66C8 52 18 46 32 46C46 46 56 52 56 66Z', '#3A3340') + P('M26 46L32 60L38 46', 'none', f'stroke="{GREY_D}" stroke-width="2"') + P('M22 48L28 56', 'none', 'stroke-width="2"') + P('M42 48L36 56', 'none', 'stroke-width="2"'),
+    'chain': P('M24 48Q32 56 40 48', 'none', f'stroke="{MUSTARD}" stroke-width="2.4"'),
+    'earpiece': C(43.5, 31, 1.8, INK) + P('M44 33Q47 40 42 46', 'none', 'stroke-width="1.4"'),
+    'beard': P('M21 31C21 44 43 44 43 31C40 39 24 39 21 31Z', HAIR['black']),
+    'beanie_dark': P('M20 26C19 12 45 12 44 26Z', '#3A3340') + R(19, 23, 26, 5, '#26222B', 2),
+    'collar_up': P('M20 46L26 40L32 50L38 40L44 46L40 54H24Z', '#C9A46A'),
+    'tee_security': R(22, 54, 20, 5, PAPER, 1, 'stroke="none"') ,
     'vest': P('M14 66C14 54 20 48 26 47L32 58L38 47C44 48 50 54 50 66Z', INK, 'opacity=".85"'),
 }
 
@@ -179,6 +194,12 @@ PEOPLE = {
     'owner': dict(skin=1, hair='short', hair_color='brown', shirt=TEAL_D, bg=MUSTARD, extras=('stripe', 'pinlogo'), collar=CREAM),
     'gus': dict(skin=0, hair='side', hair_color='white', shirt=MAPLE_D, bg=MAPLE_L, extras=('glasses', 'mustache', 'bowtie')),
     'vera': dict(skin=0, hair='bob', hair_color='black', shirt=PLUM, bg=GREY_L, extras=('shades', 'pearls')),
+    # v1.10 street foes and allies
+    'foe-lookout': dict(skin=1, hair='short', hair_color='brown', shirt='#C9A46A', bg='#4A3550', extras=('collar_up', 'fedora', 'toothpick'), mouth='smirk'),
+    'foe-bruiser': dict(skin=2, hair='buzz', hair_color='black', shirt='#3A3340', bg=RED_D, extras=('leather', 'scar', 'beard', 'chain'), mouth='flat'),
+    'foe-fixer': dict(skin=0, hair='short', hair_color='auburn', shirt=PLUM, bg=MUSTARD_D, extras=('vest', 'shades', 'bowtie'), mouth='smirk'),
+    'foe-knox': dict(skin=3, hair='side', hair_color='black', shirt='#26222B', bg=PLUM_L, extras=('leather', 'shades', 'earpiece', 'scar'), mouth='flat'),
+    'ally-doorman': dict(skin=2, hair='buzz', hair_color='black', shirt=INK, bg=TEAL_L, extras=('beanie_dark', 'earpiece', 'tee_security'), mouth='flat'),
     'patron-default': dict(skin=1, hair='short', hair_color='brown', shirt=GREY, bg=GREY_L),
 }
 
@@ -231,6 +252,9 @@ ICONS['advertising'] = (shadow() + P('M10 28H20L44 14V50L20 38H10Z', RED) + R(8,
     + P('M50 24C54 28 54 36 50 40M54 18C61 26 61 38 54 46', 'none', 'stroke-width="2.6"'))
 ICONS['parts'] = (shadow() + P('M32 12L36 12L37.6 17.2L42.4 19.2L47.2 16.6L50 19.4L47.4 24.2L49.4 29L54.6 30.6V34.6L49.4 36.2L47.4 41L50 45.8L47.2 48.6L42.4 46L37.6 48L36 53.2H32L30.4 48L25.6 46L20.8 48.6L18 45.8L20.6 41L18.6 36.2L13.4 34.6V30.6L18.6 29L20.6 24.2L18 19.4L20.8 16.6L25.6 19.2L30.4 17.2Z', GREY_L)
     + C(34, 32.6, 7, MUSTARD) + C(34, 32.6, 2.5, INK, 'stroke="none"'))
+ICONS['nav-turf'] = (shadow() + R(8, 30, 12, 26, '#4A3550') + R(22, 20, 12, 36, PLUM) + R(36, 26, 10, 30, '#4A3550') + R(48, 34, 8, 22, PLUM)
+    + ''.join(R(x, y, 3, 3, MUSTARD, 0, 'stroke="none"') for x, y in ((11, 35), (11, 43), (25, 25), (29, 33), (25, 41), (39, 31), (39, 41), (50, 39)))
+    + C(48, 14, 6, PAPER) + C(51, 12, 5, CREAM, 'stroke="none"'))
 ICONS['trophy'] = ICONS['nav-tournaments']
 ICONS['brand'] = (R(4, 4, 56, 56, MUSTARD, 12) + ball(24, 38, 13, TEAL_D, rot=10) + pin(42, 9, 40, RED))
 

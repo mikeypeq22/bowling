@@ -1,25 +1,12 @@
-# v1.07 Design decisions
+# v1.10 Design decisions
 
-- Layout follows the reference screenshot of an idle bowling tycoon (lanes on top, counters on the floor, faded unbought areas with price signs) without adopting idle mechanics.
-- Rooms have fixed spots; free placement and moving removed (player request). Fixed spots also remove the "needs an empty square to expand" rule.
-- "Upgrade of the alley" that unlocks spots = the existing Property Wing purchase, so no economy changes were needed. Only the next wing's spots are shown locked; later wings are summarized in one line to keep the phone screen short.
-- Buying from the floor asks for confirmation (rooms and wings are big purchases); lanes keep one-tap ordering as before.
+- The fight lives where the Legacy route's circuit lives (Compete → Turf) rather than in a new eighth nav button: the phone nav already holds seven buttons.
+- Pressure drifts every night instead of jumping every 6–9 days, and small plays ignore the 5-day random-event cooldown, because the request was for something happening all the time. Big operations are telegraphed with a countdown so the fear comes with a decision, not a surprise bill.
+- Every small play has a counter the player can build (doorman, cameras, drills, contacts, districts, loyalty), so the squeeze also explains what the defenses are for.
+- One stat set: lane stats map directly to street stats instead of a second set (Grit/Reflex/Nerve/Savvy as in the master plan), so training for tournaments and for the street is the same investment. Loyalty gates who will fight.
+- Turn-based with telegraphed enemy intents rather than a tile grid: readable on a phone, quick to play, and Guard/Stun/kill-first decisions matter. Auto-finish uses the same rules.
+- Fighters rest a day after a fight, so attacking and defending compete for the same crew. Nobody is permanently lost; injuries last 1–2 days.
+- The Midnight Accord became a milestone (Vera stops hitting the building) so there is one clear finale (all six districts). Old Accord saves keep the milestone.
+- Sieges at All-Out end with police on the block and her grip reset to 72, so a bad stretch is a storm to survive, not a permanent lock.
+- Legacy untouched; all new randomness is behind the Back Alley check.
 
-# v1.06 Design decisions
-
-- No gameplay or balance changes in this release; optimizations and art only, verified by matched simulations against v1.05.
-- Render the visible tab only; mark the rest stale. Chosen over a full virtual-DOM rewrite to keep the code familiar and the change small.
-- Debounce saves but always flush at day close, page hide and before save-slot switches, so a crash or sign-out can lose at most ~1 second of taps.
-- Keep 21 day reports but only 7 days of hour-by-hour logs, to protect the Firestore 1 MiB document limit as saves age.
-- Art direction: one generated SVG style (single ink outline, flat fills from a mid-century bowling palette) instead of mixed emoji and AI-rendered images, so every icon looks drawn by the same hand and stays crisp at any size. SVG also suits the later Android/iPhone wrap.
-- Fonts bundled locally rather than loaded from Google Fonts, for offline/mobile packaging and privacy.
-- Header gauge for Vera appears only when she's a factor, to avoid alarming new players.
-
-# v1.05 Design decisions (unchanged)
-
-- Same six fictional districts for both story campaigns; influence and prestige are not property ownership.
-- Legacy path wins district leagues then championship finals, without being forced to buy more property.
-- Back Alley territories are unlocked by the player's own wing expansion; need two tactical site wins and prior district control.
-- Preserve legacy tournament brackets and all older save progress rather than replace them wholesale.
-- Story branch permanently locks per location. Week-three threat + seven-day delay to reduce narrative rush.
-- Manual event-booking calendar removed from Compete in response to playtest feedback; prior bookings honored and random offers retained.

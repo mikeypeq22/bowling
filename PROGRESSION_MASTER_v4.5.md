@@ -668,3 +668,18 @@ These are **illustrative target fields**, not current v1.02 keys. Do not replace
 | Wing 5 | 24 | Banquet Hall, Full-Service Restaurant |
 
 Rooms can no longer be moved. Base rooms upgrade to level 2 in place.
+
+## v1.10 — Turf War (November 8, 2026)
+
+**STATUS: IMPLEMENTED IN THE LOCAL v1.10 BUILD.** Save schema 20. Legacy unchanged. Delivers §6.3–6.5 in a phone-friendly form.
+
+| Plan (§6) | v1.10 |
+|---|---|
+| Crew & Territory screen | 🌃 Turf tab (replaces Compete on this route): grip gauge, operation dossier, city map, crew, Night Moves, Vera's Ledger |
+| Turn-based confrontation, max 4–6 rounds, auto-resolve with same rules | Showdown: up to 3 bowlers + doorman ally vs. 2–4 enemies with telegraphed moves; Strike / signature skill / Guard; up to 12 rounds; Auto-finish |
+| Two stat sets | One: Spare → health, Power → damage, Aim → accuracy/crits, Focus → nerve/armor, Loyalty 80+ → survives one KO |
+| Bowlers may refuse | Crew requires loyalty 55; training adds +2 loyalty on this route |
+| Vera telegraphs intent, bounded resources | Nightly drift with visible breakdown and a floor; small plays most nights; operations announced 1–2 nights ahead |
+| Counterattacks | Retake operations; retaliation within 2 nights of taking a district |
+| No softlock | Injuries last 1–2 days; sieges end with police on the block (grip reset to 72) |
+| Final: the Midnight Accord | Accord = milestone (no more raids on the building); finale = The City Is Yours (all six districts) |

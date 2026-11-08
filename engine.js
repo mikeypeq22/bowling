@@ -1,4 +1,4 @@
-/* From Gutter to Glory v1.09 — deterministic simulation; no UI dependencies. */
+/* From Gutter to Glory v1.10 — deterministic simulation; no UI dependencies. */
 (function(root,factory){const core=factory();if(typeof module==='object'&&module.exports)module.exports=core;root.BowlingCore=core;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
 const OPEN=14,CLOSE=22;
@@ -426,7 +426,7 @@ function newNightOps(){return {entrance:0,cameras:0,crew:0,defended:0,incidents:
 function nightProtection(s){const n=s.campaignStory?.nightOps||newNightOps();const base=NIGHT_DEFENSES.reduce((total,d)=>total+d.power[n[d.id]||0],0);return Math.max(0,Math.floor(base*(n.unpaidUntil>=s.day?.35:1))+(n.preparedUntil>=s.day?27:0));}
 function nightPayroll(s){const n=s.campaignStory?.nightOps;return s.campaignStory?.path==='backalley'&&n?((n.entrance||0)*9+(n.cameras||0)*5+(n.crew||0)*6+(n.pitBoss?19:0)):0;}
 function nightShift(s){if(s.campaignStory?.path!=='backalley')return;const cost=nightPayroll(s);if(!cost)return;const n=s.campaignStory.nightOps;if(s.cash>=cost){s.cash=money(s.cash-cost);s.today.staffPay=money(s.today.staffPay+cost);s.today.expenses=money(s.today.expenses+cost);n.unpaidUntil=0;}else{n.unpaidUntil=s.day+1;note(s,'⚠ Night crew missed payroll. Security effectiveness is reduced until they are paid.','story');}}
-function rivalWarning(s){const c=s.campaignStory;if(c?.path!=='backalley')return '';const due=c.nextAIMoveDay-s.day;if(due<=0)return 'Vera has an operation underway. Check your cameras and review your defenses.';if(due<=2)return `⚠ A credible tip: Vera may move within ${due} game day${due===1?'':'s'}.`;return `Vera is gathering resources. Next suspected strike window: ${due} days.`;}
+function rivalWarning(s){const c=s.campaignStory;if(c?.path!=='backalley')return '';const op=activeOp(s);if(op){const n=op.launch-s.day;return `🚨 ${op.name}: ${n<=0?'tonight':n===1?'tomorrow night':'in '+n+' nights'}. Your defenses hold about ${Math.round(opRepelChance(s,op)*100)}% of the time; your crew can meet them on the Turf.`;}if(c.turf?.accord)return 'The Midnight Accord holds: Vera keeps away from the building. She still wants her districts back.';const t=c.turf;if(t){const due=(t.nextOpDay||s.day)-s.day;return due<=1?'⚠ A credible tip: Vera’s next operation is close.':`Vera is planning something. Expect a move within about ${due+1} nights.`;}const due=c.nextAIMoveDay-s.day;if(due<=0)return 'Vera has an operation underway. Check your cameras and review your defenses.';if(due<=2)return `⚠ A credible tip: Vera may move within ${due} game day${due===1?'':'s'}.`;return `Vera is gathering resources. Next suspected strike window: ${due} days.`;}
 function prepareForRival(s){if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Back Alley campaign only'};if(s.campaignStory.nightOps.preparedUntil>=s.day)return {ok:false,reason:'Your crew is already prepared'};if(!spend(s,220))return {ok:false,reason:'Need $220'};s.campaignStory.nightOps.preparedUntil=s.day+3;recordCharge(s,'marketingSpend',220);advanceBackAlley(s);return {ok:true};}
 function buyNightInsurance(s){if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Back Alley campaign only'};if(s.campaignStory.nightOps.insuranceUntil>=s.day)return {ok:false,reason:'Coverage already active'};if(!spend(s,340))return {ok:false,reason:'Need $340'};s.campaignStory.nightOps.insuranceUntil=s.day+21;recordCharge(s,'marketingSpend',340);advanceBackAlley(s);return {ok:true};}
 function hirePitBoss(s){if(s.campaignStory?.path!=='backalley'||!isBuilt(s,'arcade'))return {ok:false,reason:'Open the Back Alley Casino Lounge first'};const n=s.campaignStory.nightOps;if(n.pitBoss)return {ok:false,reason:'Pit Boss already hired'};if(!spend(s,420))return {ok:false,reason:'Need $420 to hire your Pit Boss'};n.pitBoss=true;recordCharge(s,'capex',420);note(s,'🎰 Hired the Pit Boss to operate fictional-cash table games for visitors. Daily wages $19.','build');return {ok:true};}
@@ -482,13 +482,13 @@ function chooseCampaign(s,id){
  s.campaignStory={...s.campaignStory,path:id,chosenDay:s.day,aiStyle:id==='backalley'?'intimidation':'public-relations',nextAIMoveDay:s.day+6};
  s.story.pending=s.story.pending.filter(x=>x!=='offer');
  s.rival.pressure=Math.max(12,s.rival.pressure);
- if(id==='backalley')advanceBackAlley(s);
+ if(id==='backalley'){advanceBackAlley(s);const t=turfOf(s);for(const b of s.bowlers)if((b.id==='maya'||b.id==='leo')&&(b.loyalty||0)>=CREW_LOYALTY)b.crewReady=true;s.rival.pressure=Math.max(s.rival.pressure,veraFloor(s));t.nextOpDay=s.day+3;s.campaignStory.nextAIMoveDay=0;turfLedger(s,'🌒','You turned Vera down. She took it personally.','threat');s.eventQueue.push({id:'turf-intro',kind:'noir',emoji:'🌃',title:'Vera’s grip',text:'“You had your chance to sell.” From tonight Vera leans on the alley every single night: lookouts on the corner, paint on your walls, envelopes for your bowlers. Every few days her crew comes for something bigger, and you get a warning first.',effect:'Maya (and Leo, if he has joined) volunteer for your night crew. Open the new 🌃 Turf tab: watch her grip, meet her crews with your bowlers, and take the city back one district at a time.',day:s.day});}
  const msg=id==='backalley'?'🌒 The Back Alley begins. Vera is no longer just a business problem. Protect your crew, choose your contacts carefully, and decide what you are willing to risk.':'🌟 The Legacy begins. Build a landmark strong enough to outlast StrikeCity and rally the town.';
  log(s,msg);note(s,msg,'story');advanceStory(s);return {ok:true,path:id};
 }
 function campaignMission(s){
  const c=s.campaignStory;
- if(c.path==='backalley')return `Midnight Accord: door crew Lv ${c.nightOps.entrance}/2 · cameras Lv ${c.nightOps.cameras}/2 · crew Lv ${c.nightOps.crew}/1 · defended ${c.nightOps.defended}/2 · casino visits ${s.roomVisits.arcade||0}/35 · Vera pressure ${s.rival.pressure}/40 maximum`;
+ if(c.path==='backalley')return `Take the city (${DISTRICTS.filter(d=>districtStatus(s,d.id).owner==='player').length}/6 districts) — or win the Midnight Accord: door crew Lv ${c.nightOps.entrance}/2 · cameras Lv ${c.nightOps.cameras}/2 · crew Lv ${c.nightOps.crew}/1 · defended ${c.nightOps.defended}/2 · casino visits ${s.roomVisits.arcade||0}/35 · Vera pressure ${s.rival.pressure}/40 maximum`;
  if(c.path==='legacy')return `Heritage Charter: ${s.tournamentWins.national||0} national victories · ${s.rival.community}/4 neighborhood allies · ${alleyStars(s)}/4 alley stars`;
  return 'Continue until Vera sends her first buyout offer.';
 }
@@ -514,9 +514,10 @@ function campaignAction(s,id){
  note(s,`🌒 ${action.name}: ${action.description}`,'story');checkCampaignVictory(s);
  return {ok:true};
 }
+function accordReady(s){const c=s.campaignStory,n=c.nightOps;return n.entrance>=2&&n.cameras>=2&&n.crew>=1&&n.defended>=4&&DISTRICTS.filter(d=>districtStatus(s,d.id).owner==='player').length>=3&&s.built.arcade&&(s.roomVisits.arcade||0)>=35&&lanes(s)>=6&&s.rival.pressure<=40;}
 function checkCampaignVictory(s){const c=s.campaignStory;if(c.victory)return false;
- if(c.path==='backalley'&&c.nightOps.entrance>=2&&c.nightOps.cameras>=2&&c.nightOps.crew>=1&&c.nightOps.defended>=2&&s.built.arcade&&(s.roomVisits.arcade||0)>=35&&lanes(s)>=6&&s.rival.pressure<=40){
-  c.victory=true;advanceBackAlley(s);s.rep=money(s.rep+12);const msg='🌒 Midnight Accord: Vera backs down after your neighborhood network and security team hold the line. You kept the lanes open—but the city will remember every compromise.';c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'noir-finale',emoji:'🌒',title:'The Midnight Accord',kind:'noir',text:msg,effect:'Campaign complete. Your bowling center continues to operate.'});log(s,msg);return true;
+ if(c.path==='backalley'&&!c.turf?.accord&&accordReady(s)){
+  const t=turfOf(s);t.accord=true;advanceBackAlley(s);s.rep=money(s.rep+12);shiftPressure(s,-10);const msg='🌒 The Midnight Accord: Vera sends a single white rose and a note. Her crews will stay away from your building. The streets are another matter.';c.history.unshift({day:s.day,who:'Story',text:msg});turfLedger(s,'🌹','The Midnight Accord: Vera stops hitting the building itself. She still wants the city.','win');s.eventQueue.push({id:'noir-accord',emoji:'🌒',title:'The Midnight Accord',kind:'noir',text:msg,effect:'Milestone: no more raids on your rooms and lanes. Vera still squeezes and still tries to retake districts. Take all six to finish her.'});log(s,msg);return false;
  }
  if(c.path==='legacy'&&(s.tournamentWins.national||0)>0&&s.rival.community>=4&&alleyStars(s)>=4){
   c.victory=true;const msg='🌟 Community Charter: Your National Heritage Cup victory and neighbors safeguard the alley as a beloved landmark.';c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'legacy-finale',emoji:'🌟',title:'Community Charter',kind:'good',text:msg,effect:'Campaign complete. Continue improving your bowling center.'});log(s,msg);return true;
@@ -526,7 +527,8 @@ function checkCampaignVictory(s){const c=s.campaignStory;if(c.victory)return fal
 // Deterministic opponent: Vera observes current defenses, pressure, popularity,
 // partnerships and heat rather than drawing a purely unrelated event.
 function rivalAIMove(s){
- const c=s.campaignStory;if(c.path==='undecided'||c.victory||s.startupPending||s.day<c.nextAIMoveDay)return false;
+ const c=s.campaignStory;if(c.path==='backalley')return veraNight(s);
+ if(c.path==='undecided'||c.victory||s.startupPending||s.day<c.nextAIMoveDay)return false;
  if(s.day-(s.lastRandomEventDay??-100)<5)return false;
  const dark=c.path==='backalley',n=c.nightOps||newNightOps(),protection=nightProtection(s);
  let action='permit-challenge',entry;
@@ -906,7 +908,7 @@ function rollRandomEvent(s){
   if(arc.id==='students'){s.eventBoostFactor=1.6;s.eventBoostUntil=s.day+2;}else if(arc.id==='retro')s.cash=money(s.cash+145);else{s.rep=money(s.rep+3);if(arc.id==='charity')for(const p of Object.values(s.patrons||{}))p.loyalty=clamp(p.loyalty+3,0,100);}
   note(s,`${arc.emoji} ${arc.name}: ${arc.text}`,'story');return true;}
  if(roll(s)>.20)return false;
- const eligible=EVENT_CATALOG.filter(e=>e.kind==='good'||e.kind==='rival'||e.id==='lane'&&s.lanes.length>0||e.id==='restrooms'&&s.fixtures.restrooms||s.built[e.id]);
+ const eligible=EVENT_CATALOG.filter(e=>e.kind==='good'||e.kind==='rival'&&s.campaignStory?.path!=='backalley'||e.id==='lane'&&s.lanes.length>0||e.id==='restrooms'&&s.fixtures.restrooms||s.built[e.id]);
  if(!eligible.length)return false;
  // Party invitations are also random events, and share the five-day cooldown.
  if(s.day>=9&&s.lanes.length>=2&&!s.pendingPartyRequest&&!s.partyBooking&&s.day-s.lastPartyRequestDay>=10&&roll(s)<.27){
@@ -939,7 +941,7 @@ function rollRandomEvent(s){
  return true;
 }
 function newDayStats(day){return {partyIncome:0,partyHeld:false,eventNotes:[],satisfied:0,unhappy:0,happinessDelta:0,loanPayment:0,techServices:0,techPartsBought:0,techExpenses:0,laneHours:0,day,week:calendar(day).week,weekday:calendar(day).weekday,arcadePlays:0,leagueIncome:0,leagueHeld:false,leagueHours:0,arrivals:0,served:0,left:0,waited:0,benchSaves:0,spentOnSnacks:0,snackOrders:0,snackMisses:0,barOrders:0,barMisses:0,walkIns:0,staffPay:0,laneIncome:0,shoeIncome:0,snackIncome:0,barIncome:0,otherIncome:0,marketingSpend:0,capex:0,expenses:0,income:0,net:0,groups:[],feedback:[],events:[]};}
-function newGame(seed=271828){return {version:20,arcadePrices:{},attractionFees:{},shopPrice:12,cityLeagues:{},departmentEquipment:{},seasonHistory:[],circuitWins:{},staffDepartures:[],departmentAchievements:{},staffIssues:[],lastStaffIssueDay:-100,teamStory:{mayaIntroduced:false,leoJoined:false,firstFrame:{status:"locked",shots:[],lastResult:""}},districts:{oldtown:{owner:"vera",victories:0}},tactical:null,locationName:'The Back Alley',portfolio:{activeId:'home',snapshots:{},opened:[]},campaignStory:newCampaign(),bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false,teams:false,charity:false,office:false,neighbors:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
+function newGame(seed=271828){return {version:20,arcadePrices:{},attractionFees:{},shopPrice:12,cityLeagues:{},departmentEquipment:{},seasonHistory:[],circuitWins:{},staffDepartures:[],departmentAchievements:{},staffIssues:[],lastStaffIssueDay:-100,teamStory:{mayaIntroduced:false,leoJoined:false,firstFrame:{status:"locked",shots:[],lastResult:""}},districts:{oldtown:{owner:"vera",victories:0}},tactical:null,battle:null,locationName:'The Back Alley',portfolio:{activeId:'home',snapshots:{},opened:[]},campaignStory:newCampaign(),bookings:[],bookingSerial:0,roomDetails:{},vipGroups:Object.fromEntries(VIP_GROUPS.map(g=>[g.id,{visits:0,lastDay:0}])),hardshipUses:0,emergencyCoverageUntil:0,rival:{pressure:0,community:0,protectionUntil:0,lastResponseDay:0},story:freshStory(),patrons:freshPatrons(),seed:seed>>>0,laneRotation:0,storyCursor:0,day:1,hour:OPEN,cash:600,startupPending:true,startupFinance:null,starterStyle:null,loan:{balance:0,payment:0,initial:0,lastPaymentDay:0},happiness:65,happinessHistory:[],specialty:null,landOwned:false,expansionStage:0,outages:{},lastRandomEventDay:-100,eventBoostUntil:0,eventBoostFactor:1,eventQueue:[],eventHistory:[],lastPartyRequestDay:-100,pendingPartyRequest:null,partyBooking:null,lastEncounterDay:0,encounters:[],partnerships:{school:false,teams:false,charity:false,office:false,neighbors:false},earned:0,rep:0,totalServed:0,minVenueLevel:1,
  built:{roof:true},lanes:[],parts:4,benches:0,construction:[],facilityNotices:[],campaign:null,barStock:0,barPrice:9,barVisits:0,barStockById:Object.fromEntries(DRINKS.map(i=>[i.id,0])),barPrices:Object.fromEntries(DRINKS.map(i=>[i.id,i.price])),arcadeVisits:0,arcadeMachines:{},fixtures:{},wallPaint:'original',league:{active:false,season:0,sessions:0,totalRevenue:0,lastDay:0},nextDayCharges:{capex:0,marketingSpend:0},
  roomPlacements:{},roomTiers:{},roomVisits:{snack:0,bar:0,arcade:0,proshop:0},snackStock:{soda:0,popcorn:0,hotdog:0,pizza:0,nachos:0,pretzel:0,icecream:0,fries:0,burger:0,cheeseburger:0},snackPrices:Object.fromEntries(SNACKS.map(x=>[x.id,x.price])),
  pricing:{lane:18,shoes:3},deliveries:[],lowStockThreshold:3,employees:[],employeeSerial:0,partyCounter:0,queue:[],active:[],sceneGroups:[],
@@ -1157,7 +1159,7 @@ function trafficMultiplier(s){
  const dow=calendar(s.day).dayIndex, dayFactor=[.70,.78,.85,.96,1.24,1.42,1.20][dow];
  const clockFactor= s.hour<16?.48:s.hour<18?.74:s.hour<20?1.17:1.37;
  const partnerFactor=PARTNERSHIP_CATALOG.reduce((n,p)=>n*(s.partnerships?.[p.id]&&(p.id!=='school'||dow<=4)?1+p.boost:1),1);
- const rivalFactor=s.rival?.protectionUntil>=s.day?1:Math.max(.83,1-(s.rival?.pressure||0)*.002);
+ const rivalFactor=s.campaignStory?.path==='backalley'?threatTier(s).traffic*((s.campaignStory.turf?.lookoutUntil||0)>=s.day?.95:1):s.rival?.protectionUntil>=s.day?1:Math.max(.83,1-(s.rival?.pressure||0)*.002);
  const eventFactor=(s.eventBoostUntil>=s.day?(s.eventBoostFactor||1):1)*partnerFactor*rivalFactor;
  return dayFactor*clockFactor*eventFactor;
 }
@@ -1401,40 +1403,314 @@ const DISTRICTS=[
 ];
 function districtUnlocked(s,id){const i=DISTRICTS.findIndex(x=>x.id===id);if(i<0)return false;const d=DISTRICTS[i];return expansionStage(s)>=i&&(!d.requires||s.districts?.[d.requires]?.owner==='player');}
 function districtStatus(s,id){return s.districts?.[id]||{owner:'vera',victories:0,sites:0};}
-function crewMembers(s){return (s.bowlers||[]).filter(b=>b.crewReady).map(b=>({id:b.id,name:b.name,grit:Math.max(1,Math.round((b.power||20)/12)),nerve:Math.max(1,Math.round((b.focus||20)/13))}));}
-function startTactical(s,districtId='oldtown'){const d=DISTRICTS.find(x=>x.id===districtId);
- if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Territory encounters belong to The Back Alley'};
- if(!d)return {ok:false,reason:'Unknown district'};
- if(!districtUnlocked(s,d.id))return {ok:false,reason:'Expand the matching property wing and secure the preceding district first'};
- if(s.tactical?.status==='active')return {ok:false,reason:'Finish the ongoing encounter first'};
- if(s.districts?.[d.id]?.owner==='player')return {ok:false,reason:'District already secured'};
- if((s.campaignStory.nightOps?.entrance||0)<1)return {ok:false,reason:'Install Door Security first'};
- if(!crewMembers(s).length)return {ok:false,reason:'Invite at least one willing bowler to your crew'};
- const site=Math.min(2,(districtStatus(s,d.id).sites||0)+1);s.tactical={status:'active',district:d.id,site,round:1,maxRounds:8,crewHP:24+Math.min(5,s.campaignStory.nightOps.entrance)*3+crewMembers(s).length*2,enemyHP:d.enemy+(site-1)*5,guard:0,lastAction:`Vera’s crew is guarding ${site===1?'the supply access':'the district headquarters'} in ${d.name}. Secure both locations to hold the district.`};
- return {ok:true,district:d.id};}
-function tacticalTurn(s,action){const t=s.tactical;if(!t||t.status!=='active')return {ok:false,reason:'No active confrontation'};
- if(!['confront','defend','assist'].includes(action))return {ok:false,reason:'Choose a tactical action'};
- const crew=crewMembers(s);let damage=0;if(action==='confront'){damage=Math.max(2,3+Math.floor(roll(s)*5)+Math.floor(crew.reduce((n,b)=>n+b.grit,0)/5));t.enemyHP=Math.max(0,t.enemyHP-damage);}
- if(action==='defend')t.guard=5;
- if(action==='assist'){t.crewHP=Math.min(25,t.crewHP+3);t.guard=2;}
- if(t.enemyHP<=0){const district=DISTRICTS.find(d=>d.id===t.district)||DISTRICTS[0];t.status='won';const sites=Math.min(2,(districtStatus(s,district.id).sites||0)+1);const secured=sites===2;s.districts[district.id]={owner:secured?'player':'vera',victories:(s.districts?.[district.id]?.victories||0)+1,sites,securedDay:secured?s.day:null};
- s.campaignStory.trust=clamp(s.campaignStory.trust+5,0,100);s.rep=money(s.rep+(district.id==='westend'?6:3));s.campaignStory.defenseWins++;s.rival.pressure=clamp((s.rival.pressure||0)-(district.id==='civic'?15:8),0,100);
- if(secured&&district.id==='warehouse')s.parts+=5;if(secured&&district.id==='neon')s.cash=money(s.cash+240);t.lastAction=secured?`${district.name} is secured. Vera’s crew withdrew; a new district is now within reach.`:`You captured the first site in ${district.name}. One more crew mission will secure the district.`;
- note(s,secured?`🌃 ${district.name} secured. ${district.reward}. The next territory mission is now available.`:`⚔️ ${district.name}: first of two sites secured. Complete one more mission to hold this district.`,'story');return {ok:true,status:t.status,district:district.id};}
- const incoming=Math.max(0,3+Math.floor(roll(s)*5)-t.guard-Math.floor((s.campaignStory.nightOps.entrance||0)/2));t.guard=0;t.crewHP=Math.max(0,t.crewHP-incoming);
- t.lastAction=action==='confront'?`You pushed Vera’s crew back for ${damage} pressure; they retaliated for ${incoming}.`:action==='defend'?`Your crew held the entrance; the attackers dealt ${incoming}.`:`Your crew regrouped; the attackers dealt ${incoming}.`;
- if(t.crewHP<=0||t.round>=t.maxRounds){t.status='lost';s.campaignStory.heat=clamp(s.campaignStory.heat+6,0,100);s.rival.pressure=clamp((s.rival.pressure||0)+5,0,100);t.lastAction+=' Your crew withdraws. You can try again later.';}else t.round++;
- return {ok:true,status:t.status};}
-function tacticalAuto(s){const t=s.tactical;if(!t||t.status!=='active')return {ok:false,reason:'No active encounter'};
- for(let n=0;n<6&&t.status==='active';n++)tacticalTurn(s,t.crewHP<7?'defend':'confront');return {ok:true,status:t.status};}
+// ───────────────────────── v1.10 TURF WAR (The Back Alley only) ─────────────────────────
+// Vera's grip (s.rival.pressure) now moves every night: she leans on the alley by default and
+// only the districts you hold, your defenses and your crew push her back. Small "plays" land most
+// nights, bigger "operations" are announced with a countdown and can be met head-on in a Showdown.
+// Every roll here happens only on the Back Alley route, so Legacy games stay byte-identical.
+const THREAT_TIERS=[
+ {id:'watching',name:'Watching',min:0,traffic:1,morale:0,lead:2,line:'Vera is watching. For now that is all she is doing.'},
+ {id:'circling',name:'Circling',min:25,traffic:.96,morale:0,lead:2,line:'Her people have started showing up where your customers can see them.'},
+ {id:'squeezing',name:'Squeezing',min:50,traffic:.9,morale:1,lead:2,line:'Suppliers whisper, staff look over their shoulders, regulars stay home.'},
+ {id:'closing',name:'Closing In',min:75,traffic:.84,morale:2,lead:1,line:'Vera smells weakness. Her crews move faster and hit harder.'},
+ {id:'allout',name:'All-Out',min:90,traffic:.78,morale:2,lead:1,line:'Vera is coming for the building itself. Push her back now.'}
+];
+function threatTier(s){const p=s.rival?.pressure||0;let t=THREAT_TIERS[0];for(const x of THREAT_TIERS)if(p>=x.min)t=x;return t;}
+function threatIndex(s){return THREAT_TIERS.indexOf(threatTier(s));}
+function newTurf(){return {ops:[],ledger:[],injured:{},tired:{},tags:{},lookoutUntil:0,lookoutFaced:0,fightsWon:0,fightsLost:0,opsStopped:0,opsLanded:0,playsFoiled:0,playsLanded:0,opSerial:0,nextOpDay:0,lastDrift:0,introSeen:false,accord:false,cityVictory:false};}
+function turfOf(s){const c=s?.campaignStory;if(!c||c.path!=='backalley')return null;if(!c.turf||typeof c.turf!=='object')c.turf=newTurf();else{const d=newTurf();for(const k of Object.keys(d))if(c.turf[k]===undefined||c.turf[k]===null&&d[k]!==null)c.turf[k]=d[k];}return c.turf;}
+function turfLedger(s,icon,text,tone='threat'){const t=turfOf(s);if(!t)return;t.ledger.unshift({day:s.day,icon,text,tone});t.ledger=t.ledger.slice(0,24);}
+function shiftPressure(s,n){s.rival.pressure=clamp(Math.round((s.rival.pressure||0)+n),0,100);return s.rival.pressure;}
+const VERA_TAUNTS=[
+ ['Nice little place. Be a shame if people stopped finding it.','I am patient. Your suppliers are not.'],
+ ['Every night you stay open costs you something. I can wait.','Your doorman is brave. Bravery is expensive.'],
+ ['Your staff go home tired. Lately they go home nervous too.','I bought this block once. I will buy it again.'],
+ ['Sign the papers and nobody else gets hurt. Figuratively, of course.','You cannot guard every door, every night.'],
+ ['Tonight the lights go out. Tomorrow, so do you.','Look out the window. Those are my people now.']
+];
+function veraTaunt(s){const i=threatIndex(s),pair=VERA_TAUNTS[i];return pair[(s.day+i)%2];}
+// Why the gauge moves: every component is shown to the player on the Turf screen.
+function veraFloor(s){const n=DISTRICTS.filter(d=>districtStatus(s,d.id).owner!=='player').length;return n?4*n+6:0;}
+function veraDrift(s){
+ const c=s.campaignStory,stage=expansionStage(s),parts=[];
+ parts.push({label:'Vera leans on you every night',value:1});
+ const veraVisible=DISTRICTS.filter((d,i)=>i<=stage&&districtStatus(s,d.id).owner!=='player').length;
+ if(veraVisible)parts.push({label:`Her turf next door (${veraVisible} district${veraVisible===1?'':'s'})`,value:Math.min(3,veraVisible)});
+ if((c.heat||0)>=50)parts.push({label:'Police suspicion makes you an easy mark',value:1});
+ const held=DISTRICTS.filter(d=>districtStatus(s,d.id).owner==='player').length;
+ if(held)parts.push({label:`Districts you hold (${held})`,value:-Math.floor((held+1)/2)});
+ if(nightProtection(s)>=60)parts.push({label:'Solid night defenses',value:-1});
+ if((c.trust||0)>=70)parts.push({label:'The neighborhood has your back',value:-1});
+ const raw=parts.reduce((n,p)=>n+p.value,0);return {total:clamp(raw,-4,6),parts};
+}
+const VERA_PLAYS=[
+ {id:'lookout',icon:'🕶️',name:'A lookout on your corner',ok:()=>true,foil:s=>.15+(s.campaignStory.nightOps.entrance||0)*.22,
+  hit:s=>{turfOf(s).lookoutUntil=s.day+2;return {p:2,text:'A man in a camel coat leaned on the lamppost across the street all night, counting your customers out loud.'};},
+  miss:()=>'Your doorman walked across the street and asked the man in the camel coat if he was lost. He was.'},
+ {id:'tag',icon:'🎨',name:'Vera’s mark on your wall',ok:s=>['snack','bar','arcade','proshop'].some(id=>s.built[id]),foil:s=>.12+(s.campaignStory.nightOps.cameras||0)*.22,
+  hit:s=>{const rooms=['snack','bar','arcade','proshop'].filter(id=>s.built[id]);const id=rooms[Math.floor(roll(s)*rooms.length)];turfOf(s).tags[id]=s.day+3;s.rep=Math.max(0,money(s.rep-1));return {p:2,text:`Somebody sprayed Vera’s plum “V” across the ${backAlleyRoomName(id)} overnight. Guests noticed.`};},
+  miss:()=>'Your cameras caught a teenager with a spray can. One call to his aunt and he scrubbed the wall himself.'},
+ {id:'supplier',icon:'🚚',name:'Supplier shakedown',ok:()=>true,foil:s=>districtStatus(s,'warehouse').owner==='player'?1:.08+(s.campaignStory.influence||0)/220,
+  hit:s=>{const fee=35+Math.min(90,Math.floor(s.day/3));s.cash=money(s.cash-fee);s.today.expenses=money((s.today.expenses||0)+fee);return {p:2,text:`Your delivery driver was “advised” to add a $${fee} handling fee. You paid it. This time.`};},
+  miss:s=>districtStatus(s,'warehouse').owner==='player'?'Vera’s people tried to lean on your driver. Warehouse Row is yours now; he laughed at them.':'A friend from your contacts warned the driver first. The surcharge never happened.'},
+ {id:'reviews',icon:'⭐',name:'A wave of fake reviews',ok:()=>true,foil:s=>.1+(s.campaignStory.influence||0)/120,
+  hit:s=>{s.rep=Math.max(0,money(s.rep-2));return {p:1,text:'Twelve one-star reviews appeared overnight, all praising StrikeCity’s “clean, safe lanes.”'};},
+  miss:()=>'Your contacts traced the fake reviews to one account. They were gone by breakfast.'},
+ {id:'followed',icon:'👣',name:'Staff followed home',ok:s=>(s.employees||[]).length>0,foil:s=>.1+(s.campaignStory.nightOps.crew||0)*.25,
+  hit:s=>{const e=s.employees[Math.floor(roll(s)*s.employees.length)];e.morale=clamp((e.morale??70)-8,0,100);return {p:2,text:`A dark sedan followed ${e.name} home after close. ${e.name} showed up shaken. Morale −8.`};},
+  miss:()=>'Your staff walk out in pairs now, like you drilled. The sedan idled, then gave up.'},
+ {id:'poach',icon:'💵',name:'An envelope for your bowler',ok:s=>(s.bowlers||[]).length>0,foil:s=>{const b=[...s.bowlers].sort((a,b)=>(a.loyalty||0)-(b.loyalty||0))[0];return clamp((b.loyalty||50)/115,.1,.9);},
+  hit:s=>{const b=[...s.bowlers].sort((a,b)=>(a.loyalty||0)-(b.loyalty||0))[0];b.loyalty=clamp((b.loyalty||50)-6,0,100);b.confidence=clamp((b.confidence||50)-2,0,100);return {p:1,text:`Vera’s driver handed ${b.name} a thick envelope and a StrikeCity jersey. ${b.name} hasn’t said no yet. Loyalty −6.`};},
+  miss:s=>{const b=[...s.bowlers].sort((a,b)=>(a.loyalty||0)-(b.loyalty||0))[0];b.loyalty=clamp((b.loyalty||50)+2,0,100);return `Vera’s driver offered ${b.name} an envelope. ${b.name} handed it back unopened, in front of everyone. Loyalty +2.`;}},
+ {id:'neighbor',icon:'🏪',name:'The corner store pays up',ok:()=>true,foil:s=>districtStatus(s,'oldtown').owner==='player'?.8:.1,
+  hit:s=>{s.campaignStory.trust=clamp(s.campaignStory.trust-3,0,100);return {p:2,text:'Mrs. Ortiz at the corner store started paying Vera’s “neighborhood fee.” Old Town notices who protects whom.'};},
+  miss:()=>'Vera’s collector came to Old Town and found your people already sitting in Mrs. Ortiz’s shop.'},
+ {id:'wires',icon:'✂️',name:'Cut wires',ok:s=>(s.rival.pressure||0)>=50&&!s.campaignStory.turf?.accord&&s.lanes.some(l=>!activeOutage(s,'lane'+l.id)),foil:s=>.1+nightProtection(s)/150,
+  hit:s=>{const open=s.lanes.filter(l=>!activeOutage(s,'lane'+l.id)),l=open[Math.floor(roll(s)*open.length)],cost=60+Math.floor(roll(s)*50);s.outages['lane'+l.id]={name:'Lane '+l.id,cost,day:s.day,rival:true};s.campaignStory.nightOps.incidents++;return {p:3,text:`Lane ${l.id}’s pinsetter wires were cut clean through. It stays dark until you repair it ($${cost}).`};},
+  miss:()=>'Your night crew found a stranger in the machine room with wire cutters. He ran.'}
+];
+function backAlleyRoomName(id){return ({snack:'Night Grill',bar:'Speakeasy',arcade:'Casino Lounge',proshop:'Outfitters'})[id]||id;}
+function runVeraPlay(s){
+ const p=s.rival.pressure||0,chance=clamp(.4+p/200,.4,.8);if(roll(s)>=chance)return null;
+ const pool=VERA_PLAYS.filter(x=>x.ok(s));if(!pool.length)return null;
+ const play=pool[Math.floor(roll(s)*pool.length)],t=turfOf(s);
+ if(roll(s)<play.foil(s)){shiftPressure(s,-1);s.campaignStory.influence=clamp((s.campaignStory.influence||0)+1,0,100);t.playsFoiled++;const text=play.miss(s);turfLedger(s,'🛡️',`${play.name}, stopped. ${text}`,'win');return {id:play.id,icon:'🛡️',name:play.name,text,foiled:true};}
+ const r=play.hit(s);shiftPressure(s,r.p);t.playsLanded++;turfLedger(s,play.icon,`${play.name}. ${r.text}`,'threat');return {id:play.id,icon:play.icon,name:play.name,text:r.text,foiled:false};
+}
+// ── Operations: announced in advance, met in a Showdown or left to your defenses ──
+function opFoes(s,kind){const tier=threatIndex(s),held=DISTRICTS.filter(d=>districtStatus(s,d.id).owner==='player').length;
+ const list=['bruiser','lookout'];if(tier>=2||held>=2)list.push('fixer');if(tier>=3||held>=3)list[1]='knox';if(kind==='siege')list.push('bruiser');return list.slice(0,4);}
+function opLevel(s){return Math.min(6,threatIndex(s)+Math.floor(DISTRICTS.filter(d=>districtStatus(s,d.id).owner==='player').length/2));}
+function announceOp(s){
+ const t=turfOf(s),tier=threatTier(s),c=s.campaignStory;
+ const held=DISTRICTS.filter(d=>(districtStatus(s,d.id).sites||0)>0);
+ let kind='raid',target,name,text;
+ if(t.accord){if(!held.length)return null;kind='retake';}
+ else if((s.rival.pressure||0)>=90){kind='siege';}
+ else if(held.length&&roll(s)<.45)kind='retake';
+ if(kind==='retake'){const d=held[Math.floor(roll(s)*held.length)];target='district:'+d.id;name=`Retake ${d.name}`;text=`Vera is sending a crew to take ${d.name} back. If nobody meets them, you lose a site there.`;}
+ else{const rooms=['snack','bar','arcade','proshop'].filter(id=>s.built[id]&&!activeOutage(s,id));const pick=rooms.length&&roll(s)<.65?rooms[Math.floor(roll(s)*rooms.length)]:null;
+  const laneList=s.lanes.filter(l=>!activeOutage(s,'lane'+l.id));
+  if(pick){target='room:'+pick;name=kind==='siege'?`Siege on the ${backAlleyRoomName(pick)}`:`Hit on the ${backAlleyRoomName(pick)}`;}
+  else if(laneList.length){const l=laneList[Math.floor(roll(s)*laneList.length)];target='lane:'+l.id;name=kind==='siege'?'Siege on the lanes':`Hit on Lane ${l.id}`;}
+  else{target='alley';name='Shakedown at the door';}
+  text=kind==='siege'?'Vera is done waiting. A full crew is coming for the building. If they get in, they will wreck more than one room.':`Word on the street: Vera’s crew plans to wreck the ${name.replace(/^Hit on (the )?/,'')}. Your defenses might hold. Your crew definitely could.`;}
+ const lead=kind==='siege'?1:tier.lead,op={id:'op'+(++t.opSerial),kind,target,name,text,announced:s.day,launch:s.day+lead,foes:opFoes(s,kind),level:opLevel(s),status:'brewing'};
+ t.ops.push(op);t.ops=t.ops.filter(o=>o.status==='brewing'||s.day-o.launch<6).slice(-6);
+ turfLedger(s,'🚨',`Vera is planning: ${name}. ${lead===1?'Tomorrow night':'In '+lead+' nights'}.`,'threat');
+ c.history.unshift({day:s.day,who:'Vera Vale',text:name});c.history=c.history.slice(0,25);
+ s.eventQueue.push({id:'vera-op',kind:'noir',emoji:'🚨',title:name,text:`“${veraTaunt(s)}” ${text}`,effect:`Countdown: ${lead} night${lead===1?'':'s'}. Open 🌃 Turf to meet them with your crew, or trust your defenses (protection ${nightProtection(s)}).`,day:s.day,opId:op.id});
+ return op;
+}
+function opRepelChance(s,op){return clamp(nightProtection(s)*.006-(op?.kind==='siege'?.12:0),.04,.55);}
+function activeOp(s){const t=turfOf(s);return t?t.ops.find(o=>o.status==='brewing')||null:null;}
+function opTargetName(s,op){if(!op)return '';const [kind,id]=String(op.target).split(':');if(kind==='district')return DISTRICTS.find(d=>d.id===id)?.name||id;if(kind==='room')return backAlleyRoomName(id);if(kind==='lane')return 'Lane '+id;return 'the front door';}
+function executeOp(s,op,{passive=true}={}){
+ const t=turfOf(s),c=s.campaignStory,n=c.nightOps,[kind,id]=String(op.target).split(':');
+ const repel=passive?opRepelChance(s,op):0;
+ if(passive&&roll(s)<repel){op.status='repelled';n.defended++;t.opsStopped++;shiftPressure(s,-4);c.influence=clamp(c.influence+3,0,100);
+  const text=`Your defenses held without the crew. ${op.name} fizzled at the door.`;turfLedger(s,'🛡️',text,'win');
+  s.eventQueue.push({id:'vera-repelled',kind:'noir',emoji:'🛡️',title:'Your night defenses held',text,effect:'Vera pressure −4 · Influence +3 · counts as a repelled attack.',day:s.day});return {repelled:true};}
+ op.status='landed';t.opsLanded++;n.incidents++;
+ let text='',repairId=null;
+ const breakThing=(oid,name)=>{const baseCost=110+Math.floor(roll(s)*140),insured=n.insuranceUntil>=s.day,cost=insured?Math.max(30,Math.round(baseCost*.4)):baseCost;s.outages[oid]={name,cost,day:s.day,rival:true};return cost;};
+ if(kind==='district'){const d=DISTRICTS.find(x=>x.id===id),st=districtStatus(s,id),sites=Math.max(0,(st.sites||0)-1);s.districts[id]={...st,owner:sites>=2?'player':'vera',sites,securedDay:sites>=2?st.securedDay:null};shiftPressure(s,8);c.trust=clamp(c.trust-4,0,100);text=`Nobody met Vera’s crew in ${d.name}. They took a site back${st.owner==='player'?' and the district is contested again':''}.`;}
+ else if(kind==='room'&&s.built[id]&&!activeOutage(s,id)){const cost=breakThing(id,backAlleyRoomName(id));repairId=id;shiftPressure(s,op.kind==='siege'?12:9);c.trust=clamp(c.trust-4,0,100);text=`Vera’s crew got into the ${backAlleyRoomName(id)}. It is CLOSED until repaired ($${cost}).`;}
+ else if(kind==='lane'&&s.lanes.some(l=>String(l.id)===id)&&!activeOutage(s,'lane'+id)){const cost=breakThing('lane'+id,'Lane '+id);repairId='lane'+id;shiftPressure(s,op.kind==='siege'?12:9);c.trust=clamp(c.trust-4,0,100);text=`Lane ${id} was wrecked overnight. It is CLOSED until repaired ($${cost}).`;}
+ else{s.rep=Math.max(0,money(s.rep-3));shiftPressure(s,8);text='Vera’s crew blocked your door for an hour and scared off the evening crowd. Reputation −3.';}
+ if(op.kind==='siege'){const extra=s.lanes.filter(l=>!activeOutage(s,'lane'+l.id));if(extra.length){const l=extra[Math.floor(roll(s)*extra.length)],cost=breakThing('lane'+l.id,'Lane '+l.id);text+=` They hit Lane ${l.id} on the way out ($${cost}).`;}s.eventBoostFactor=.82;s.eventBoostUntil=s.day+2;s.rival.pressure=Math.min(s.rival.pressure,72);c.heat=clamp((c.heat||0)+10,0,100);text+=' Afterward, police cars sit on the block for days. Vera’s crews pull back a little — and the cops start asking you questions too.';}
+ turfLedger(s,'💥',`${op.name} landed. ${text}`,'loss');
+ s.eventQueue.push({id:'vera-'+op.kind,kind:'noir',emoji:'💥',title:op.name+' — it happened',text,effect:repairId?`Repair it from the room, or here. Vera pressure is now ${s.rival.pressure}.`:`Vera pressure is now ${s.rival.pressure}.`,repairId,day:s.day});
+ return {repelled:false};
+}
+// Called at day close on the Back Alley route instead of the old 6–9 day strike timer.
+// Returns true when it queued a modal message (so a random event does not pile on).
+function veraNight(s){
+ const c=s.campaignStory,t=turfOf(s);if(!t||t.cityVictory||c.victory||s.startupPending)return false;
+ const before=s.rival.pressure||0,lines=[];let modal=false;
+ for(const id of Object.keys(t.injured))if(t.injured[id]<=s.day)delete t.injured[id];
+ for(const id of Object.keys(t.tags))if(t.tags[id]<=s.day)delete t.tags[id];
+ t.tired={};
+ const drift=veraDrift(s);shiftPressure(s,drift.total);const floor=veraFloor(s);if(s.rival.pressure<floor)s.rival.pressure=floor;t.lastDrift=s.rival.pressure-before;
+ const play=runVeraPlay(s);if(play)lines.push(play);
+ const tier=threatTier(s),calm=c.nightOps.crew||0;
+ if(tier.morale&&(s.employees||[]).length){const loss=Math.max(0,tier.morale-(calm>=2?1:0));if(loss)for(const e of s.employees)e.morale=clamp((e.morale??70)-loss,0,100);}
+ for(const op of t.ops.filter(o=>o.status==='brewing'&&o.launch<=s.day)){executeOp(s,op);modal=true;}
+ if(!activeOp(s)){
+  if(!t.nextOpDay)t.nextOpDay=s.day+2;
+  if(s.day>=t.nextOpDay||(s.rival.pressure>=90&&!t.accord&&s.day-(t.ops.at(-1)?.announced||0)>=2)){modal=!!announceOp(s)||modal;const p=s.rival.pressure||0;t.nextOpDay=s.day+Math.max(3,6-Math.floor(p/25))+Math.floor(roll(s)*2)+(threatTier(s).lead);}
+ }
+ {const q=s.eventQueue,vi=q.map((e,i)=>String(e.id).startsWith('vera-')||e.id==='turf-intro'?i:-1).filter(i=>i>=0);if(vi.length>4){const drop=new Set(vi.slice(0,vi.length-4));s.eventQueue=q.filter((e,i)=>!drop.has(i));}}
+ s.today.vera={start:before,end:s.rival.pressure,drift:drift.total,tier:threatTier(s).name,plays:lines.map(x=>({icon:x.icon,name:x.name,text:x.text,foiled:x.foiled}))};
+ c.aiMemory.unshift({day:s.day,action:play?play.id:'drift',pressure:s.rival.pressure});c.aiMemory=c.aiMemory.slice(0,30);
+ const nextTier=threatTier(s),beforeIx=THREAT_TIERS.filter(x=>before>=x.min).length-1;if(THREAT_TIERS.indexOf(nextTier)>beforeIx){turfLedger(s,'📈',`Vera’s grip tightened to ${nextTier.name}. ${nextTier.line}`,'threat');if(!modal){s.eventQueue.push({id:'vera-tier',kind:'noir',emoji:'📈',title:`Vera is ${nextTier.name}`,text:`“${veraTaunt(s)}” ${nextTier.line}`,effect:`Guest traffic ×${nextTier.traffic}${nextTier.morale?` · staff morale −${nextTier.morale}/night`:''}. Win fights and hold districts to push her back.`,day:s.day});modal=true;}}
+ return modal;
+}
+// Floor interactions: deal with what you can see.
+function confrontLookout(s){const t=turfOf(s);if(!t)return {ok:false,reason:'Back Alley only'};if(t.lookoutUntil<s.day)return {ok:false,reason:'Nobody is watching the door right now'};
+ if((s.campaignStory.nightOps.entrance||0)<1)return {ok:false,reason:'Hire a Night Doorman first (Door Security)'};if(t.lookoutFaced===s.day)return {ok:false,reason:'Your doorman already went out once tonight'};
+ t.lookoutUntil=s.day-1;t.lookoutFaced=s.day;shiftPressure(s,-1);turfLedger(s,'🚪','Your doorman walked the lookout to the end of the block.','win');return {ok:true};}
+function scrubTag(s,id){const t=turfOf(s);if(!t?.tags?.[id])return {ok:false,reason:'Nothing to scrub here'};if(!spend(s,25))return {ok:false,reason:'Need $25 for paint'};delete t.tags[id];shiftPressure(s,-1);recordCharge(s,'capex',25);turfLedger(s,'🧽',`You painted over Vera’s mark on the ${backAlleyRoomName(id)}.`,'win');return {ok:true};}
+// ── Crew: every bowler’s training shows up on the street ──
+function fighterStats(b){const power=b.power||20,aim=b.aim||20,focus=b.focus||20,spare=b.spare||20,conf=b.confidence??50;
+ const top=[['power',power],['aim',aim],['focus',focus],['spare',spare]].reduce((a,x)=>x[1]>a[1]?x:a);
+ return {hp:14+Math.round(spare/5)+Math.round(conf/12),dmg:3+Math.floor(power/9)+(b.ball?1:0),hit:clamp(.62+aim/220,.6,.96),crit:clamp(aim/400,.03,.25),resist:clamp(focus/110,.1,.85),armor:Math.floor(focus/30),standFirm:(b.loyalty||0)>=80,skill:SKILLS[top[0]].id,skillStat:top[0]};}
+const SKILLS={
+ power:{id:'bowl',stat:'power',name:'Bowl Them Over',icon:'🎳',text:'Hits every foe at once.'},
+ aim:{id:'pickoff',stat:'aim',name:'Pick Off',icon:'🎯',text:'Never misses, hits hard and stuns the target.'},
+ focus:{id:'staredown',stat:'focus',name:'Stare Down',icon:'👁️',text:'Cancels a foe’s move, weakens them for the fight and steadies your crew.'},
+ spare:{id:'pickup',stat:'spare',name:'Pick Up the Spare',icon:'🩹',text:'Patches up the most hurt teammate, or gets a downed one back up.'}
+};
+const SKILL_BY_ID=Object.fromEntries(Object.values(SKILLS).map(k=>[k.id,k]));
+const CREW_LOYALTY=55;
+function crewStatus(s,b){const t=turfOf(s);if(!t)return 'off';if(t.injured[b.id]>s.day)return 'injured';if(t.tired[b.id])return 'tired';return b.crewReady?'ready':'bench';}
+function crewMembers(s){return (s.bowlers||[]).filter(b=>b.crewReady).map(b=>({id:b.id,name:b.name,...fighterStats(b),status:crewStatus(s,b)}));}
 function recruitCrew(s,id,ready){const b=s.bowlers.find(x=>x.id===id);if(!b)return {ok:false,reason:'Bowler not found'};
  if(s.campaignStory?.path!=='backalley')return {ok:false,reason:'Crew activity is only available in The Back Alley'};
- if(b.id!=='maya'&&b.id!=='leo')return {ok:false,reason:'This bowler has not agreed to join the night crew'};
- b.crewReady=!!ready;note(s,`${b.name} ${ready?'volunteered to protect the alley':'returned to bowling-only duties'}.`,'story');return {ok:true};}
+ if(ready&&(b.loyalty||0)<CREW_LOYALTY)return {ok:false,reason:`${b.name} isn’t ready to take risks for you yet (loyalty ${b.loyalty||0}/${CREW_LOYALTY}). Win together on the lanes first.`};
+ b.crewReady=!!ready;note(s,`${b.name} ${ready?'joined the night crew':'went back to bowling-only duties'}.`,'story');return {ok:true};}
+function patchUp(s,id){const t=turfOf(s),b=getBowler(s,id);if(!t||!b)return {ok:false,reason:'Not available'};if(!(t.injured[id]>s.day))return {ok:false,reason:`${b.name} is not hurt`};
+ if(districtStatus(s,'oldtown').owner!=='player')return {ok:false,reason:'Hold Old Town first — Doc Ramos only works for people who protect the block'};
+ if(!spend(s,60))return {ok:false,reason:'Need $60'};delete t.injured[id];recordCharge(s,'capex',60);turfLedger(s,'🩹',`Doc Ramos patched up ${b.name} in the back of the pharmacy.`,'win');return {ok:true};}
+// ── Foes ──
+const FOES={
+ lookout:{name:'Lookout',hp:14,atk:3,dodge:.08,moves:['swing','swing','whistle'],art:'foe.lookout'},
+ bruiser:{name:'Bruiser',hp:25,atk:5,dodge:0,moves:['swing','haymaker','swing'],art:'foe.bruiser'},
+ fixer:{name:'The Fixer',hp:16,atk:4,dodge:.12,moves:['intimidate','swing','swing'],art:'foe.fixer'},
+ knox:{name:'Knox',hp:34,atk:6,dodge:.08,moves:['swing','haymaker','rally','swing'],art:'foe.knox'},
+ vera:{name:'Vera Vale',hp:46,atk:7,dodge:.1,moves:['ultimatum','swing','haymaker','rally'],art:'story.vera'}
+};
+const DISTRICT_FOES={oldtown:[['lookout','lookout'],['bruiser','lookout','lookout']],warehouse:[['bruiser','fixer'],['bruiser','bruiser','lookout']],neon:[['fixer','bruiser','lookout'],['knox','lookout']],westend:[['knox','fixer'],['bruiser','fixer','bruiser']],civic:[['fixer','fixer','bruiser'],['knox','bruiser','fixer']],docks:[['knox','bruiser','lookout'],['vera','knox','bruiser']]};
+const SITE_NAMES={oldtown:['the loading dock','Mrs. Ortiz’s block'],warehouse:['the freight gate','Depot 9'],neon:['the Velvet Room','the Neon Strip office'],westend:['the shift-change corner','the union hall'],civic:['the permit office steps','City Hall annex'],docks:['Pier 4','Vera’s warehouse']};
+function foeHP(kind,level){return Math.round(FOES[kind].hp*(1+.2*level+.035*level*level));}
+function foeAtk(kind,level){return FOES[kind].atk+Math.floor(.6*level+.1*level*level);}
+function makeFoe(kind,level,i){const f=FOES[kind];const hp=foeHP(kind,level);return {id:'f'+i,kind,name:f.name,hp,max:hp,atk:foeAtk(kind,level),dodge:f.dodge,moveIx:i,intent:null,stun:false,shaken:false,ko:false,whistled:false};}
+function makeFighter(b,bonusHP=0){const st=fighterStats(b),hp=st.hp+bonusHP;return {id:b.id,name:b.name,hp,max:hp,dmg:st.dmg,hit:st.hit,crit:st.crit,resist:st.resist,armor:st.armor,standFirm:st.standFirm,usedStand:false,skill:st.skill,cd:0,guard:false,cover:null,shaken:false,ko:false,acted:false,ally:false};}
+function battleRand(s){return roll(s);}
+function pickIntent(s,b,f){const alive=b.crew.filter(x=>!x.ko);if(!alive.length)return null;const moves=FOES[f.kind].moves;let type=moves[(f.moveIx+b.round)%moves.length];
+ if(type==='whistle'&&(b.whistled||b.foes.length>=4))type='swing';
+ if(type==='rally'&&b.foes.filter(x=>!x.ko).length<2&&f.kind!=='vera')type='swing';
+ const weakest=[...alive].sort((a,c)=>a.hp/a.max-c.hp/c.max)[0],rnd=alive[Math.floor(battleRand(s)*alive.length)];
+ const target=type==='haymaker'?(battleRand(s)<.6?weakest:rnd):type==='intimidate'?[...alive].filter(x=>!x.ally).sort((a,c)=>a.resist-c.resist)[0]||rnd:rnd;
+ const power=type==='haymaker'?f.atk*2:f.atk;return {type,target:['rally','whistle','ultimatum'].includes(type)?null:target.id,power};}
+function setIntents(s,b){for(const f of b.foes)f.intent=f.ko?null:pickIntent(s,b,f);}
+function availableFighters(s){return (s.bowlers||[]).filter(b=>crewStatus(s,b)==='ready');}
+function battlePreview(s,{district=null,opId=null}={}){
+ const t=turfOf(s);if(!t)return null;let foes,level,title,where;
+ if(opId){const op=t.ops.find(o=>o.id===opId&&o.status==='brewing');if(!op)return null;foes=op.foes;level=op.level;title=op.name;where=opTargetName(s,op);}
+ else{const d=DISTRICTS.find(x=>x.id===district);if(!d)return null;const i=DISTRICTS.indexOf(d),site=Math.min(2,(districtStatus(s,d.id).sites||0)+1);foes=DISTRICT_FOES[d.id][site-1];level=i;title=`${d.name} · site ${site} of 2`;where=SITE_NAMES[d.id][site-1];}
+ const scaled=foes.map(k=>({kind:k,name:FOES[k].name,hp:foeHP(k,level),atk:foeAtk(k,level)}));
+ return {title,where,level,foes:scaled,foeHP:scaled.reduce((n,f)=>n+f.hp,0),foeAtk:scaled.reduce((n,f)=>n+f.atk,0)};}
+function crewPower(s,ids){const picks=(s.bowlers||[]).filter(b=>ids.includes(b.id)).map(fighterStats);return {hp:picks.reduce((n,x)=>n+x.hp,0),dps:Math.round(picks.reduce((n,x)=>n+x.dmg*x.hit*(1+x.crit*.6),0)*10)/10};}
+function startBattle(s,{district=null,opId=null,crew=[]}={}){
+ const t=turfOf(s),c=s.campaignStory,n=c.nightOps;if(!t)return {ok:false,reason:'Showdowns belong to The Back Alley'};
+ if(t.cityVictory)return {ok:false,reason:'The city is already yours'};
+ if(s.battle?.status==='active')return {ok:false,reason:'Finish the current showdown first'};
+ const mode=opId?'defend':'attack';
+ if(mode==='attack'){const d=DISTRICTS.find(x=>x.id===district);if(!d)return {ok:false,reason:'Unknown district'};
+  if(!districtUnlocked(s,d.id))return {ok:false,reason:DISTRICTS.indexOf(d)>expansionStage(s)?`Open Wing ${DISTRICTS.indexOf(d)} of your alley to reach ${d.name}`:'Take the previous district first'};
+  if(districtStatus(s,d.id).owner==='player')return {ok:false,reason:'You already hold this district'};}
+ else if(!t.ops.some(o=>o.id===opId&&o.status==='brewing'))return {ok:false,reason:'That operation is no longer active'};
+ const ready=availableFighters(s),pickIds=(crew.length?crew:ready.map(b=>b.id)).filter(id=>ready.some(b=>b.id===id)).slice(0,3);
+ if(!pickIds.length)return {ok:false,reason:ready.length?'Pick at least one fighter':'Nobody on your crew is fit to fight tonight'};
+ const pv=battlePreview(s,{district,opId}),bonus=mode==='defend'?(n.crew||0)*3:0;
+ const b={status:'active',mode,district:mode==='attack'?district:null,opId,title:pv.title,where:pv.where,level:pv.level,round:1,maxRounds:12,whistled:false,
+  crew:pickIds.map(id=>makeFighter(getBowler(s,id),bonus)),foes:pv.foes.map((f,i)=>makeFoe(f.kind,pv.level,i)),log:[],events:[],result:null};
+ if(mode==='defend'&&(n.entrance||0)>0){const lv=n.entrance,hp=16+lv*6;b.crew.push({id:'doorman',name:'Doorman',hp,max:hp,dmg:3+lv,hit:.75,crit:.04,resist:.5,armor:1,standFirm:false,usedStand:false,skill:null,cd:0,guard:false,cover:null,shaken:false,ko:false,acted:false,ally:true});}
+ const open=[];
+ if(mode==='defend'&&(n.cameras||0)>0){const dmg=n.cameras*2;for(const f of b.foes){f.hp=Math.max(1,f.hp-dmg);open.push({type:'hit',from:'cameras',to:f.id,amount:dmg,text:`Your cameras spotted ${f.name} early (−${dmg})`});}}
+ if(mode==='attack'&&(c.influence||0)>=25){const dmg=Math.floor(c.influence/25);for(const f of b.foes){f.hp=Math.max(1,f.hp-dmg);open.push({type:'hit',from:'intel',to:f.id,amount:dmg,text:`Your contacts tipped you off: ${f.name} is caught off guard (−${dmg})`});}}
+ if(bonus)open.push({type:'info',text:`Your drills pay off: each fighter starts with +${bonus} grit.`});
+ setIntents(s,b);b.events=open;b.log=open.map(e=>e.text).concat([mode==='attack'?`You walk into ${pv.where}. ${b.foes.map(f=>f.name).join(', ')} turn around.`:`They’re here. ${b.foes.map(f=>f.name).join(', ')} at the door.`]);
+ s.battle=b;return {ok:true};}
+function currentActor(b){return b.crew.find(x=>!x.ally&&!x.ko&&!x.acted)||null;}
+function crewTarget(b,id){return b.crew.find(x=>x.id===id);}
+function liveFoes(b){return b.foes.filter(f=>!f.ko);}
+function hurtFoe(s,b,f,amount,ev,from,kind='hit'){f.hp=Math.max(0,f.hp-amount);ev.push({type:kind,from,to:f.id,amount,text:''});if(f.hp<=0&&!f.ko){f.ko=true;f.intent=null;ev.push({type:'ko',to:f.id,text:`${f.name} is down!`});}}
+function strikeFoe(s,b,me,f,ev,mult=1,sure=false,bonusHit=0){
+ const hitChance=clamp(me.hit-(f.dodge||0)-(me.shaken?.35:0)+bonusHit,.2,.98);
+ if(!sure&&battleRand(s)>=hitChance){ev.push({type:'miss',from:me.id,to:f.id,text:`${me.name} swings at ${f.name} and misses${me.shaken?' (shaken)':''}.`});return false;}
+ const crit=!sure&&battleRand(s)<me.crit,amount=Math.max(1,Math.round((me.dmg-1+Math.floor(battleRand(s)*5))*mult*(crit?1.6:1)));
+ hurtFoe(s,b,f,amount,ev,me.id,crit?'crit':'hit');ev[ev.length-(f.ko?2:1)].text=`${me.name} ${crit?'lands a perfect strike on':'hits'} ${f.name} for ${amount}${crit?'!':''}.`;return true;}
+function battleAct(s,{action,target}={}){
+ const b=s.battle;if(!b||b.status!=='active')return {ok:false,reason:'No showdown in progress'};
+ const me=currentActor(b);if(!me)return {ok:false,reason:'Waiting for the round to finish'};
+ const ev=[];const foe=b.foes.find(f=>f.id===target&&!f.ko)||liveFoes(b)[0];
+ if(action==='strike'){strikeFoe(s,b,me,foe,ev);}
+ else if(action==='guard'){me.guard=true;const others=b.crew.filter(x=>x!==me&&!x.ko);const cover=others.length?[...others].sort((a,c)=>a.hp/a.max-c.hp/c.max)[0]:null;me.cover=cover?.id||null;const heal=Math.min(2,me.max-me.hp);me.hp+=heal;ev.push({type:'guard',from:me.id,to:cover?.id||me.id,amount:heal,text:cover?`${me.name} braces and covers ${cover.name}.`:`${me.name} braces for the next hit.`});}
+ else if(action==='skill'){if(me.cd>0)return {ok:false,reason:`${SKILL_BY_ID[me.skill].name} is ready in ${me.cd} round${me.cd===1?'':'s'}`};const sk=me.skill;
+  if(sk==='bowl'){ev.push({type:'skill',from:me.id,skill:sk,text:`${me.name}: Bowl Them Over!`});for(const f of liveFoes(b))strikeFoe(s,b,me,f,ev,.75,false,.1);}
+  else if(sk==='pickoff'){ev.push({type:'skill',from:me.id,skill:sk,text:`${me.name} lines up the shot…`});strikeFoe(s,b,me,foe,ev,1.4,true);if(!foe.ko){foe.stun=true;ev.push({type:'stun',to:foe.id,text:`${foe.name} is stunned and loses their move.`});}}
+  else if(sk==='staredown'){foe.stun=true;if(!foe.shaken){foe.shaken=true;foe.atk=Math.max(1,foe.atk-2);}for(const x of b.crew)x.shaken=false;ev.push({type:'skill',from:me.id,skill:sk,text:`${me.name} stares ${foe.name} down.`});ev.push({type:'stun',to:foe.id,text:`${foe.name} hesitates — move cancelled, hits softer for the rest of the fight. Your crew steadies.`});}
+  else if(sk==='pickup'){const down=b.crew.find(x=>x.ko&&!x.ally),hurt=[...b.crew.filter(x=>!x.ko)].sort((a,c)=>a.hp/a.max-c.hp/c.max)[0],who=down||hurt,amount=down?Math.round(down.max*.35):Math.min(who.max-who.hp,6+Math.floor((getBowler(s,me.id)?.spare||20)/8));if(down){down.ko=false;down.hp=amount;down.acted=true;}else who.hp+=amount;ev.push({type:'heal',from:me.id,to:who.id,amount,text:down?`${me.name} gets ${who.name} back on their feet (+${amount}).`:`${me.name} patches up ${who.name} (+${amount}).`});}
+  me.cd=3;}
+ else return {ok:false,reason:'Choose strike, skill or guard'};
+ me.shaken=false;me.acted=true;
+ if(!liveFoes(b).length){b.events=ev;b.log=[...b.log,...ev.map(e=>e.text).filter(Boolean)].slice(-12);finishBattle(s,true);return {ok:true,events:ev,status:b.status};}
+ if(!currentActor(b))enemyPhase(s,b,ev);
+ b.events=ev;b.log=[...b.log,...ev.map(e=>e.text).filter(Boolean)].slice(-12);return {ok:true,events:ev,status:b.status};}
+function enemyPhase(s,b,ev){
+ for(const a of b.crew.filter(x=>x.ally&&!x.ko)){const f=[...liveFoes(b)].sort((x,y)=>x.hp-y.hp)[0];if(!f)break;strikeFoe(s,b,a,f,ev);}
+ if(!liveFoes(b).length){finishBattle(s,true);return;}
+ ev.push({type:'phase',text:'Vera’s crew moves.'});
+ for(const f of liveFoes(b)){const it=f.intent;if(!it)continue;if(f.stun){f.stun=false;ev.push({type:'stunned',from:f.id,text:`${f.name} is still seeing stars.`});continue;}
+  if(it.type==='rally'){for(const x of liveFoes(b)){x.atk+=1;x.hp=Math.min(x.max,x.hp+4);}ev.push({type:'rally',from:f.id,text:`${f.name} barks orders. Vera’s crew hits harder (+1) and catches their breath.`});continue;}
+  if(it.type==='whistle'){b.whistled=true;const nf=makeFoe('lookout',b.level,b.foes.length);nf.intent=null;b.foes.push(nf);ev.push({type:'summon',from:f.id,to:nf.id,text:`${f.name} whistles. Another lookout comes around the corner.`});continue;}
+  if(it.type==='intimidate'||it.type==='ultimatum'){const targets=it.type==='ultimatum'?b.crew.filter(x=>!x.ko&&!x.ally):[crewTarget(b,it.target)].filter(x=>x&&!x.ko);
+   for(const x of targets){if(battleRand(s)<x.resist)ev.push({type:'resist',from:f.id,to:x.id,text:`${x.name} doesn’t flinch.`});else{x.shaken=true;ev.push({type:'shaken',from:f.id,to:x.id,text:`${f.name} gets in ${x.name}’s head. Next swing −35% accuracy.`});}}
+   if(it.type==='ultimatum'){const x=targets[0];if(x)hitCrew(s,b,f,x,f.atk,ev);}continue;}
+  let x=crewTarget(b,it.target);if(!x||x.ko){const alive=b.crew.filter(y=>!y.ko);if(!alive.length)break;x=alive[0];}
+  const guard=b.crew.find(y=>y.guard&&!y.ko&&y.cover===x.id&&y!==x);if(guard){ev.push({type:'cover',from:guard.id,to:x.id,text:`${guard.name} steps in front of ${x.name}.`});x=guard;}
+  if(battleRand(s)>=.82){ev.push({type:'miss',from:f.id,to:x.id,text:`${f.name} ${it.type==='haymaker'?'throws a haymaker and':'swings and'} misses ${x.name}.`});continue;}
+  hitCrew(s,b,f,x,it.type==='haymaker'?f.atk*2:f.atk,ev,it.type==='haymaker');
+  if(!b.crew.some(y=>!y.ko&&!y.ally))break;}
+ if(!b.crew.some(y=>!y.ko&&!y.ally)){finishBattle(s,false);return;}
+ b.round++;if(b.round>b.maxRounds){ev.push({type:'info',text:'Sirens in the distance. Both crews scatter before anyone wins.'});finishBattle(s,false,true);return;}
+ for(const x of b.crew){x.acted=false;x.guard=false;x.cover=null;if(x.cd>0)x.cd--;}
+ setIntents(s,b);}
+function hitCrew(s,b,f,x,base,ev,big=false){let amount=Math.max(1,base-1+Math.floor(battleRand(s)*5)-x.armor);if(x.guard)amount=Math.max(1,Math.ceil(amount*.4));
+ x.hp=Math.max(0,x.hp-amount);ev.push({type:big?'crit':'hit',from:f.id,to:x.id,amount,text:`${f.name} ${big?'lands a haymaker on':'hits'} ${x.name} for ${amount}${x.guard?' (guarded)':''}.`});
+ if(x.hp<=0){if(x.standFirm&&!x.usedStand){x.usedStand=true;x.hp=1;ev.push({type:'stand',to:x.id,text:`${x.name} refuses to go down!`});}else{x.ko=true;ev.push({type:'ko',to:x.id,text:`${x.name} is down.`});}}}
+function captureSite(s,district){const st=districtStatus(s,district.id),sites=Math.min(2,(st.sites||0)+1),secured=sites===2;s.districts[district.id]={owner:secured?'player':'vera',victories:(st.victories||0)+1,sites,securedDay:secured?s.day:null};return secured;}
+function finishBattle(s,won,standoff=false){
+ const b=s.battle,t=turfOf(s),c=s.campaignStory;if(!b||b.status!=='active')return;b.status=won?'won':'lost';
+ const fighters=b.crew.filter(x=>!x.ally),rewards=[];
+ for(const x of fighters){const bw=getBowler(s,x.id);if(!bw)continue;t.tired[x.id]=1;
+  if(won){bw.confidence=clamp((bw.confidence||50)+2,0,100);bw.loyalty=clamp((bw.loyalty||50)+1,0,100);if(x.ko)t.injured[x.id]=s.day+2;}
+  else{bw.confidence=clamp((bw.confidence||50)-(standoff?1:3),0,100);if(x.ko)t.injured[x.id]=s.day+3;}}
+ const hurt=fighters.filter(x=>t.injured[x.id]>s.day).map(x=>x.name);
+ if(b.mode==='attack'){const d=DISTRICTS.find(x=>x.id===b.district);
+  if(won){const secured=captureSite(s,d);t.fightsWon++;c.defenseWins++;c.trust=clamp(c.trust+5,0,100);s.rep=money(s.rep+(d.id==='westend'?6:3));const drop=d.id==='civic'&&secured?15:secured?12:8;shiftPressure(s,-drop);
+   if(secured&&d.id==='warehouse')s.parts+=5;if(secured&&d.id==='neon')s.cash=money(s.cash+240);if(secured&&d.id==='docks')c.trust=clamp(c.trust+10,0,100);
+   rewards.push(`Vera pressure −${drop}`,'Trust +5',`Reputation +${d.id==='westend'?6:3}`);if(secured)rewards.push(d.reward);
+   b.result={title:secured?`${d.name} is yours`:`You took ${b.where}`,text:secured?`Vera’s people cleared out of ${d.name}. The block breathes again.${DISTRICTS.indexOf(d)<5?' The next district is in reach.':''}`:`One more site and ${d.name} is yours.`,rewards};
+   turfLedger(s,'⚔️',secured?`You took ${d.name}. ${d.reward}.`:`You took ${b.where} in ${d.name}. One site to go.`,'win');if(!activeOp(s)&&!t.accord)t.nextOpDay=Math.min(t.nextOpDay||s.day+2,s.day+2);
+   note(s,secured?`🌃 ${d.name} secured. ${d.reward}.`:`⚔️ ${d.name}: first site taken.`,'story');checkCityVictory(s);}
+  else{t.fightsLost++;shiftPressure(s,standoff?2:5);c.heat=clamp(c.heat+4,0,100);rewards.push(`Vera pressure +${standoff?2:5}`,'Suspicion +4');
+   b.result={title:standoff?'Standoff':'Your crew fell back',text:standoff?'Nobody won tonight. Vera will call it a win anyway.':`Vera’s crew held ${b.where}. Train up, rest and come back.`,rewards};turfLedger(s,'🩸',`Your crew lost at ${b.where}.`,'loss');}}
+ else{const op=t.ops.find(o=>o.id===b.opId);
+  if(won){if(op)op.status='stopped';t.fightsWon++;t.opsStopped++;c.nightOps.defended++;c.defenseWins++;c.influence=clamp(c.influence+4,0,100);c.trust=clamp(c.trust+3,0,100);shiftPressure(s,-10);rewards.push('Vera pressure −10','Influence +4','Trust +3','Counts as a repelled attack');
+   b.result={title:'They never got in',text:`${op?op.name:'The operation'} is over before it started. Word gets around fast.`,rewards};turfLedger(s,'🛡️',`Your crew stopped ${op?op.name:'Vera’s operation'} at the door.`,'win');checkCampaignVictory(s);}
+  else{t.fightsLost++;rewards.push('The operation goes ahead');b.result={title:standoff?'They slipped past':'They broke through',text:'Your crew couldn’t hold them.',rewards};if(op&&op.status==='brewing')executeOp(s,op,{passive:false});turfLedger(s,'🩸',`Your crew couldn’t stop ${op?op.name:'the operation'}.`,'loss');}}
+ if(hurt.length)b.result.rewards.push(`${hurt.join(' & ')} hurt — back on Day ${s.day+(won?2:3)}`);
+ b.result.rewards.push('Fighters rest until tomorrow');
+ c.history.unshift({day:s.day,who:'Crew',text:b.result.title});c.history=c.history.slice(0,25);}
+function fleeBattle(s){const b=s.battle;if(!b||b.status!=='active')return {ok:false,reason:'No showdown in progress'};const t=turfOf(s);b.status='fled';for(const x of b.crew.filter(x=>!x.ally))t.tired[x.id]=1;
+ if(b.mode==='attack')shiftPressure(s,3);b.result={title:'You pulled your crew out',text:b.mode==='attack'?'Vera hears you backed down. Pressure +3.':'The operation is still coming. Your defenses will have to hold.',rewards:b.mode==='attack'?['Vera pressure +3']:['Operation still pending']};turfLedger(s,'↩️',`Your crew backed out of ${b.where}.`,'loss');return {ok:true};}
+function closeBattle(s){if(s.battle&&s.battle.status!=='active'){s.battle=null;return {ok:true};}return {ok:false,reason:'Showdown still in progress'};}
+function battleAuto(s){const b=s.battle;if(!b||b.status!=='active')return {ok:false,reason:'No showdown in progress'};const all=[];
+ for(let n=0;n<60&&b.status==='active';n++){const me=currentActor(b);if(!me)break;const foes=liveFoes(b);const threatened=foes.some(f=>f.intent?.type==='haymaker');const weak=[...foes].sort((x,y)=>x.hp-y.hp)[0];
+  let action='strike';if(me.cd===0&&(me.skill!=='pickup'||b.crew.some(x=>x.ko&&!x.ally)||b.crew.some(x=>!x.ko&&x.hp<x.max*.5)))action='skill';else if(threatened&&me.hp<me.max*.35)action='guard';
+  const big=foes.find(f=>f.intent?.type==='haymaker');const r=battleAct(s,{action,target:(me.skill==='pickoff'||me.skill==='staredown')&&action==='skill'&&big?big.id:weak.id});if(r.events)all.push(...r.events);}
+ b.events=all.slice(-14);return {ok:true,status:b.status};}
+function checkCityVictory(s){const c=s.campaignStory,t=turfOf(s);if(c.victory||!t)return false;if(!DISTRICTS.every(d=>districtStatus(s,d.id).owner==='player'))return false;
+ c.victory=true;t.cityVictory=true;advanceBackAlley(s);s.rep=money(s.rep+15);s.rival.pressure=0;const msg='🌃 The City Is Yours: all six districts stand with The Back Alley. Vera sells the Docks warehouse and leaves town before the week is out.';
+ c.history.unshift({day:s.day,who:'Story',text:msg});s.eventQueue.push({id:'noir-finale',emoji:'🌃',title:'The City Is Yours',kind:'noir',text:msg,effect:'Campaign complete. Your bowling center keeps running — and nobody leans on it anymore.'});log(s,msg);return true;}
+function ensureTurf(s){const fix=x=>{if(!x)return;if(x.campaignStory?.path==='backalley'){const t=turfOf(x);if(x.campaignStory.victory&&!t.cityVictory){x.campaignStory.victory=false;t.accord=true;t.ledger.unshift({day:x.day,icon:'🌹',text:'Your Midnight Accord still stands: Vera keeps away from the building. The six districts are still hers.',tone:'win'});}if(x.tactical&&x.tactical.status==='active')x.tactical=null;}x.battle??=null;};fix(s);for(const snap of Object.values(s?.portfolio?.snapshots||{}))if(snap&&snap!==s)fix(snap);return s;}
 function getBowler(s,id){return s.bowlers.find(x=>x.id===id);}
 function trainCost(s,id,stat){const b=getBowler(s,id);if(!b||!['aim','spare','power','focus'].includes(stat))return null;return 45+Math.round(b[stat]*1.45);}
 function train(s,id,stat){const b=getBowler(s,id),cost=trainCost(s,id,stat);if(!b||cost===null)return {ok:false,reason:'Invalid training'};if(b[stat]>=95)return {ok:false,reason:'Already maxed'};if(!spend(s,cost))return {ok:false,reason:'Not enough money'};
- const gain=5+(isBuilt(s,'coaching')?2:0)+s.ownerSkills.coach;b[stat]=clamp(b[stat]+gain,0,95);grantXP(s,6);log(s,`${b.name} trained ${stat} (+${gain}).`);return {ok:true};}
+ const gain=5+(isBuilt(s,'coaching')?2:0)+s.ownerSkills.coach;b[stat]=clamp(b[stat]+gain,0,95);if(s.campaignStory?.path==='backalley')b.loyalty=clamp((b.loyalty||50)+2,0,100);grantXP(s,6);log(s,`${b.name} trained ${stat} (+${gain}).`);return {ok:true};}
 function fitBall(s,id){const b=getBowler(s,id);if(!b)return {ok:false,reason:'Bowler not found'};if(!isBuilt(s,'proshop'))return {ok:false,reason:'Build the Pro Shop first'};if(b.ball)return {ok:false,reason:'Already fitted'};if(!spend(s,170))return {ok:false,reason:'Not enough money'};b.ball=true;grantXP(s,8);log(s,`${b.name} got a custom ball.`);return {ok:true};}
 function recruit(s){if(lanes(s)<2)return {ok:false,reason:'Need at least two lanes'};if(!s.teamStory.leoJoined)return {ok:false,reason:'Complete Maya’s first frame and welcome Leo before recruiting more bowlers'};if(s.bowlers.length>=4)return {ok:false,reason:'Roster full'};if(!spend(s,320))return {ok:false,reason:'Not enough money'};
  const name=['Jules','Sam','Rory','Parker'][Math.max(0,s.bowlers.length-2)],id='recruit'+s.bowlers.length;const b={id,name,aim:29+Math.floor(roll(s)*8),spare:25+Math.floor(roll(s)*8),power:27+Math.floor(roll(s)*8),focus:24+Math.floor(roll(s)*8),ball:false,confidence:45,loyalty:50,crewReady:false};s.bowlers.push(b);grantXP(s,10);log(s,`${name} joined the team.`);return {ok:true};}
@@ -1496,13 +1772,13 @@ function developmentScenario(mode='decision'){
  s.story.unlocked=['inheritance','firstlane','offer','established'];s.story.offerDay=17;s.story.pending=[];s.teamStory={mayaIntroduced:true,leoJoined:true,firstFrame:{status:'complete',shots:[8,2],total:10,lastResult:'Gus’s team photo is back on the wall.'}};s.bowlers.push({id:'leo',name:'Leo',aim:22,spare:19,power:24,focus:20,ball:false,confidence:55,loyalty:70,crewReady:false});syncDepartmentRewards(s,true);
  s.rival.pressure=22;s.rival.community=1;s.ownerXP=310;s.ownerPoints=3;s.loan.balance=780;s.loan.payment=150;s.startupPending=false;
  s.today=newDayStats(s.day);s.lastDay=newDayStats(s.day-1);s.dayReports=[];
- if(mode!=='decision'){chooseCampaign(s,mode);if(mode==='backalley'){s.campaignStory.nightOps.entrance=1;s.campaignStory.security=26;advanceBackAlley(s);}}
+ if(mode!=='decision'){chooseCampaign(s,mode);if(mode==='backalley'){s.campaignStory.nightOps.entrance=1;s.campaignStory.security=26;advanceBackAlley(s);const t=turfOf(s);t.lookoutUntil=s.day+1;t.tags.snack=s.day+2;}}
  return checkState(s)?s:null;
 }
 function checkState(s){return !!(s&&s.version===20&&s.cityLeagues&&s.departmentAchievements&&s.teamStory&&s.districts&&Array.isArray(s.staffIssues)&&s.campaignStory&&s.campaignStory.nightOps&&typeof s.campaignStory.nightOps.pitBoss==='boolean'&&Number.isInteger(s.campaignStory.nightOps.tableRounds)&&s.campaignStory.nightOps.tableRounds>=0&&NIGHT_DEFENSES.every(d=>Number.isInteger(s.campaignStory.nightOps[d.id])&&s.campaignStory.nightOps[d.id]>=0&&s.campaignStory.nightOps[d.id]<=3)&&['undecided','legacy','backalley'].includes(s.campaignStory.path)&&s.portfolio&&['home','riverside'].includes(s.portfolio.activeId)&&Array.isArray(s.portfolio.opened)&&s.portfolio.snapshots&&Object.values(s.portfolio.snapshots).every(v=>v.version===20&&!v.portfolio&&v.campaignStory)&&Array.isArray(s.bookings)&&s.roomDetails&&s.vipGroups&&s.rival&&Number.isInteger(s.hardshipUses)&&s.story&&Array.isArray(s.story.unlocked)&&Array.isArray(s.story.pending)&&typeof s.story.charter==='boolean'&&s.patrons&&PATRON_PROFILES.every(p=>s.patrons[p.id]&&Number.isInteger(s.patrons[p.id].visits)&&s.patrons[p.id].loyalty>=0&&s.patrons[p.id].loyalty<=100)&&Number.isInteger(s.laneRotation)&&s.laneRotation>=0&&Number.isInteger(s.storyCursor)&&typeof s.startupPending==='boolean'&&Number.isFinite(s.happiness)&&s.happiness>=0&&s.happiness<=100&&Array.isArray(s.happinessHistory)&&s.loan&&Number.isFinite(s.loan.balance)&&s.loan.balance>=0&&Array.isArray(s.employees)&&Array.isArray(s.deliveries)&&Array.isArray(s.facilityNotices)&&s.facilityNotices.every(x=>['snack','bar','arcade','proshop'].includes(x.id)&&[1,2].includes(x.tier))&&Number.isInteger(s.lowStockThreshold)&&s.lowStockThreshold>=1&&s.lowStockThreshold<=12&&s.hour>=OPEN&&s.hour<=CLOSE&&s.day>=1&&Number.isFinite(s.cash)&&Number.isFinite(s.rep)&&Number.isInteger(s.parts)&&s.parts>=0&&Number.isInteger(s.benches)&&s.benches>=0&&s.benches<=3&&Number.isInteger(s.barStock)&&s.barStock>=0&&Number.isInteger(s.barPrice)&&s.barPrice>=6&&s.barPrice<=14&&Number.isInteger(s.totalServed)&&s.totalServed>=0&&Number.isInteger(s.minVenueLevel)&&s.minVenueLevel>=1&&s.minVenueLevel<=5&&s.barStockById&&DRINKS.every(i=>Number.isInteger(s.barStockById[i.id])&&s.barStockById[i.id]>=0&&Number.isInteger(s.barPrices[i.id]))&&s.arcadeMachines&&s.fixtures&&PAINTS.some(p=>p.id===s.wallPaint)&&s.league&&Array.isArray(s.construction)&&s.construction.every(j=>j.remaining>0&&j.remaining<=j.total&&['lane','upgrade','roomExpand','land'].includes(j.kind))&&Number.isInteger(s.expansionStage)&&s.expansionStage>=0&&s.expansionStage<=5&&s.outages&&s.partnerships&&Array.isArray(s.eventQueue)&&Array.isArray(s.eventHistory)&&Array.isArray(s.encounters)&&Array.isArray(s.lanes)&&s.lanes.length>=0&&s.lanes.length+pendingLanes(s)<=laneCapacity(s)&&s.lanes.every(l=>Number.isInteger(l.id)&&l.condition>=0&&l.condition<=100&&l.kits&&LANE_KITS.every(k=>typeof l.kits[k.id]==='undefined'||l.kits[k.id]===true)&&SCORE_THEMES.some(t=>t.id===l.theme)&&(l.animationUnlocked===undefined||typeof l.animationUnlocked==='boolean'))&&SNACKS.every(i=>Number.isInteger(s.snackStock[i.id])&&s.snackStock[i.id]>=0)&&s.queue.length<=waitCapacity(s)&&ROOM_IDS.every(id=>(!s.roomPlacements[id]||canPlaceRoom(s,id,s.roomPlacements[id].x,s.roomPlacements[id].y)))&&s.bowlers.every(b=>['aim','spare','power','focus'].every(k=>b[k]>=0&&b[k]<=95)));}
 // Preserve v0.3 (and older v0.1/0.2) game progress without editing the old save.
 function migrate(legacy){
- if(legacy?.version===20)return checkState(legacy)?ensurePricing(fixRoomSpots(renameHome(compactReports(legacy)))):null;
+ if(legacy?.version===20)return checkState(legacy)?ensureTurf(ensurePricing(fixRoomSpots(renameHome(compactReports(legacy))))):null;
  if(legacy?.version===19){const s=structuredCloneSafe(legacy);const upgrade=x=>{x.version=20;x.cityLeagues??={};x.story.offerDay??=(x.story.unlocked.includes('offer')?Math.max(1,x.day-7):0);for(const d of DISTRICTS){const old=x.districts[d.id]||{owner:'vera',victories:0};old.sites??=(old.owner==='player'?2:0);x.districts[d.id]=old;}};upgrade(s);for(const x of Object.values(s.portfolio?.snapshots||{}))upgrade(x);s.log=['v1.05: Shared city districts, league seasons and multi-site territory control introduced; previous wins preserved.',...(s.log||[])].slice(0,60);return checkState(s)?s:null;}
 
  if(legacy?.version===18){const s=structuredCloneSafe(legacy);const upgrade=x=>{x.version=19;x.departmentEquipment??={};x.seasonHistory??=[];x.circuitWins??={};x.staffDepartures??=[];for(const worker of x.employees||[]){worker.warnings??=0;worker.requestedWage??=null;worker.lastWarningDay??=0;}for(const d of DISTRICTS)x.districts[d.id]??={owner:'vera',victories:0};};
@@ -1558,5 +1834,5 @@ function migrate(legacy){
  // v0.3 lane2/lane3 were already built; keep all existing lanes immediately usable.
  s.log=['Save upgraded to v0.4. Your existing rooms, lanes and bowlers are ready.',...(legacy.log||[])].slice(0,60);
  return migrate(s);}
-return {CITY_DISTRICTS,legacyDistrictReady,legacyLeague,legacyDistrictFinal,districtStatus,DEPARTMENT_EQUIPMENT,equipmentFor,buyDepartmentEquipment,fireEmployee,LEAGUE_CIRCUIT,runLeagueCircuit,districtUnlocked,DEPARTMENT_REWARDS,departmentBenefit,syncDepartmentRewards,expectedWage,staffTrainingCost,STAFF_XP,STAFF_CAREERS,specializeEmployee,resolveStaffConcern,firstFrame,maybeRecruitLeo,DISTRICTS,crewMembers,startTactical,tacticalTurn,tacticalAuto,recruitCrew,hirePitBoss,casinoPatronRound,casinoBet,nightPayroll,nightShift,rivalWarning,prepareForRival,buyNightInsurance,NIGHT_DEFENSES,BACK_ALLEY_CHAPTERS,nightProtection,buyNightDefense,emergencyResponse,advanceBackAlley,backAlleyArcadeName,darkMachineName,CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,PATRON_SCENES,priceDemand,arcadePrice,attractionFee,shopPrice,setArcadePrice,setAttractionFee,setShopPrice,PRICE_RANGES,SHOP_PRICE_BASE,encounterScene,encounterOptions,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,FIXED_SPOTS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
+return {CITY_DISTRICTS,legacyDistrictReady,legacyLeague,legacyDistrictFinal,districtStatus,DEPARTMENT_EQUIPMENT,equipmentFor,buyDepartmentEquipment,fireEmployee,LEAGUE_CIRCUIT,runLeagueCircuit,districtUnlocked,DEPARTMENT_REWARDS,departmentBenefit,syncDepartmentRewards,expectedWage,staffTrainingCost,STAFF_XP,STAFF_CAREERS,specializeEmployee,resolveStaffConcern,firstFrame,maybeRecruitLeo,DISTRICTS,crewMembers,recruitCrew,THREAT_TIERS,threatTier,threatIndex,turfOf,veraDrift,veraFloor,veraTaunt,VERA_PLAYS,activeOp,opRepelChance,opTargetName,accordReady,confrontLookout,scrubTag,fighterStats,SKILLS,SKILL_BY_ID,CREW_LOYALTY,crewStatus,patchUp,FOES,DISTRICT_FOES,SITE_NAMES,battlePreview,crewPower,availableFighters,startBattle,battleAct,battleAuto,fleeBattle,closeBattle,currentActor,backAlleyRoomName,ensureTurf,checkCityVictory,veraNight,hirePitBoss,casinoPatronRound,casinoBet,nightPayroll,nightShift,rivalWarning,prepareForRival,buyNightInsurance,NIGHT_DEFENSES,BACK_ALLEY_CHAPTERS,nightProtection,buyNightDefense,emergencyResponse,advanceBackAlley,backAlleyArcadeName,darkMachineName,CAMPAIGN_PATHS,NOIR_ACTIONS,campaignReady,campaignOf,chooseCampaign,campaignAction,campaignMission,rivalAIMove,checkCampaignVictory,openSecondTown,canOpenSecondTown,switchTown,developmentScenario,OPEN,CLOSE,DAYS,calendar,SEASONAL_ARCS,contractCollision,PARTNERSHIP_CATALOG,BOOKING_TYPES,ROOM_DETAILS,VIP_GROUPS,bookContract,negotiatePartnership,buyRoomDetail,hireEmergencyMechanic,buyEmergencyCoverage,paymentPlanRepair,respondToRival,STORY_CHAPTERS,PATRON_PROFILES,PATRON_DIALOGUES,PATRON_SCENES,priceDemand,arcadePrice,attractionFee,shopPrice,setArcadePrice,setAttractionFee,setShopPrice,PRICE_RANGES,SHOP_PRICE_BASE,encounterScene,encounterOptions,respondEncounter,secureSchoolPartnership,repairCost,repairOutage,respondPartyRequest,EVENT_CATALOG,NEW_ATTRACTIONS,expansionStage,roomRows,nextExpansionCost,activeOutage,incidentCooldownRemaining,trafficMultiplier,DEPARTMENTS,departmentRatings,patronStatus,talkToPatron,advanceStory,LANE_KITS,SCORE_THEMES,STAR_THRESHOLDS,alleyScore,alleyStars,upgradeLane,bulkLaneCost,upgradeAllLanes,setLaneTheme,SPECIALTIES,STARTER_STYLES,chooseStartup,chooseSpecialty,specialtyOf,buyLand,laneCapacity,rushCost,rushConstruction,EMPLOYEE_ROLES,neededStaff,countStaff,staffed,hireEmployee,setWage,trainEmployee,setStockThreshold,incoming,processDeliveries,DRINKS,MACHINES,FIXTURES,PAINTS,LEVELS,nextLevelGoals,drinkUnlocked,restockDrink,setDrinkPrice,machineUnlocked,buyMachine,buyFixture,paintWall,startLeague,MAX_LANES,ROOM_COLS,ROOM_ROWS,ROOM_IDS,FIXED_SPOTS,footprint,canPlaceRoom,findRoomPlacement,moveRoom,expandRoom,expansionCost,startNextDay,UPGRADES,CAMPAIGNS,SNACKS,TOURNAMENTS,PLAYER_SKILLS,newGame,migrate,formatHour,lanes,pendingLanes,nextLaneCost,benchCost,waitCapacity,activeCampaign,venueLevel,venueName,avg,teamAvg,getUpgrade,isBuilding,canBuild,build,buyLane,buyBench,advertise,restockBar,setBarPrice,snackUnlocked,restockSnack,buyParts,serviceLane,setPrice,setSnackPrice,tickHour,runDay,spendOwnerPoint,trainCost,train,fitBall,recruit,eligibility,tournament,bowlShot,checkState};
 });
