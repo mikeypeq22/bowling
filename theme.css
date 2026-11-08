@@ -370,3 +370,8 @@ body.noirMode .floorSpot .spotTag b{color:#7B3F6E}
 .laneSlot.locked .laneGhost{height:64px!important}
 .laneSlot.locked .laneTab{min-height:24px}
 .laneSlot .laneScene .lane-image{width:min(calc(100% - 14px),104px)!important;left:50%!important;transform:translateX(-50%)}
+/* v1.07.2: lobby (entrance, front desk, waiting area) sits above the shops; advertising lives in the Front Desk */
+.lobby{grid-template-columns:repeat(3,minmax(0,1fr));border-top:0;border-bottom:3px dashed #00000026;background:#00000010}
+.deskJump{display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;z-index:2;background:inherit;padding:2px 0}
+.deskJump .mini{flex:1}
+.drawerSection{margin:22px 0 8px;padding-top:12px;border-top:2px solid var(--rail);font-size:20px}

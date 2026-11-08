@@ -1,3 +1,8 @@
+# From Gutter to Glory v1.07.2 — Lobby moves up, ads move into the Front Desk
+
+- **Lobby above the shops:** Entrance, Front Desk and Waiting Area now sit in one row directly above the Pro Shop, Snack Counter and the other shops (below the lanes and fixtures).
+- **Advertise tile removed.** Advertising (flyers, radio, TV) and Community & Business Partnerships are now inside the **Front Desk** panel, with buttons at the top to jump between "Prices & stats" and "Advertising". While a campaign runs, the Front Desk tile shows it (e.g. "📣 Neighborhood Flyers"). The Build tab's Advertising shortcut opens the Front Desk at the advertising section.
+
 # From Gutter to Glory v1.07.1 — Cloud reset fix
 
 - **Fixed: "Replace cloud save with a fresh alley" always failed** with *"Could not replace the online game (invalid-argument)"*. A brand-new alley carried one blank field (the weekday of the "day 0" summary), and Firestore refuses blank (`undefined`) values. Regular saves were cleaned before upload; the reset path was not. Both are fixed: the blank field is gone and the reset data is cleaned before upload. Verified with Firebase's own client validator: the old reset data is rejected with exactly this error, the new data is accepted.

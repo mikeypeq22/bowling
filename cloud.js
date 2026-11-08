@@ -24,7 +24,7 @@ function diagnostic(err,stage){
  const code=typeof err?.code==='string'&&/^[a-z0-9/-]{1,90}$/i.test(err.code)?err.code:'unknown';
  const msg=String(err?.message||'');
  const hint=/missing initial state/i.test(msg)?'missing-initial-state':/sessionStorage/i.test(msg)?'session-storage':'none';
- const record=`GTG v1.07.1 | stage=${stage} | code=${code} | hint=${hint} | SDK=${AUTH_SDK} | ${new Date().toISOString()}`;
+ const record=`GTG v1.07.2 | stage=${stage} | code=${code} | hint=${hint} | SDK=${AUTH_SDK} | ${new Date().toISOString()}`;
  el('cloudDiagnostic').textContent=record;
  hidden('cloudDiagnostics',false);
  // Do not include email, UID, passwords, tokens, or Firebase credentials in diagnostics.
@@ -197,7 +197,7 @@ async function saveNow(reason='manual'){
 function downloadExistingCloud(){
  const cloudRecord=window.GTGCloudChoice?.cloud;
  if(!cloudRecord){app.notify('No readable cloud record has been loaded. Try Retry connection.',true);return;}
- const raw=JSON.stringify(app.validate(cloudRecord.game)?{...cloudRecord.game,exportedAt:new Date().toISOString(),source:'cloud-before-reset-v1.07.1'}:{exportedAt:new Date().toISOString(),source:'RAW-CLOUD-RECORD-not-importable',record:cloudRecord},null,2);
+ const raw=JSON.stringify(app.validate(cloudRecord.game)?{...cloudRecord.game,exportedAt:new Date().toISOString(),source:'cloud-before-reset-v1.07.2'}:{exportedAt:new Date().toISOString(),source:'RAW-CLOUD-RECORD-not-importable',record:cloudRecord},null,2);
  const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));
  const link=document.createElement('a');link.href=url;link.download='from-gutter-to-glory-CLOUD-BACKUP-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
