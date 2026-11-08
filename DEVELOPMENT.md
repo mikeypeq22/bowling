@@ -1,3 +1,11 @@
+# v1.09 Development Notes
+
+**engine.js** — pricing: `s.arcadePrices`, `s.attractionFees`, `s.shopPrice` (added by `newGame` and `ensurePricing` in `migrate`); setters `setArcadePrice`, `setAttractionFee`, `setShopPrice` with `PRICE_RANGES`; `priceDemand(price,base)` = clamp(1 − 0.6·(price−base)/base, 0.45, 1.2). Snack/bar/arcade fold the average menu demand into their existing purchase roll; pro shop and attractions roll a second time only when demand < 1, so default prices consume identical randomness.
+
+**app.js** — `drawerTabs`, `tabBar`, `curTab`; `openDrawer('id:tab')` deep links; panels `snackDrawer`, `barDrawer`, `arcadeDrawer`, `shopDrawer`, `attractionDrawer`, `lanesDrawer`, `buildingHTML`, `nightDefensesHTML`; helpers `upgradeRow`, `deptCard`, `roomUpgradesTab`, `priceRow`. `renderManage`/`showBuildSection` removed; tab `manage` replaced by `regulars` (renders via `renderStoryCommunity`).
+
+**index.html** — Build section removed; `#regulars` section; Goals loses the Regulars sub-tab; lane hall gains the "Lanes & upgrades" button.
+
 # v1.08 Development Notes
 
 **engine.js** — `PATRON_SCENES` (41 scenes; fields: tier, need, flag, set, route; option `d` = hidden loyalty change, `reply`). `encounterScene(s,e)` picks and pins a scene on the queued encounter using an FNV hash of patron/day/history (no game RNG). `encounterOptions` returns options in hashed order without deltas. `respondEncounter(s,id,optionId)` applies the change (+2 if the regular's favourite room is built and the answer landed), records `seen`, `flags`, `talks`, `lastScene`, `lastReply`, and returns `{delta,reply,mood}`. `PATRON_DIALOGUES` is kept but unused.

@@ -1,3 +1,36 @@
+# From Gutter to Glory v1.09 — Shop Panels & Relationships
+
+Save schema stays 20; v1.08 saves load as-is. With prices left at their defaults, the economy is identical to v1.08 (90-day matched simulations of both routes).
+
+## Every shop has its own tabs
+Tap the Snack Counter / Night Grill, Bar / Speakeasy, Arcade / Casino Lounge, Pro Shop or any attraction and you get three tabs:
+- **Menu Items:** what it sells, stock, deliveries, and order buttons (machines for the arcade; supplies, ball fitting and team gear for the pro shop; the activity itself for attractions). Staffing status sits at the top.
+- **Pricing:** a price stepper for every item, the standard price, the cost per unit, and a plain reaction label (Bargain · Good value · Fair · Pricey · Steep). **New:** the arcade (per play), pro-shop supplies and every attraction now have prices too.
+- **Upgrades:** everything for that room in one place: the **Level 2** room, its **personality upgrade** (e.g. Better Snack Ovens), its **department rating and equipment ladder** (e.g. Counter signage, Combo warmer, Faster fry station…), and related alley upgrades (Coaching Corner in the Pro Shop, Cosmic Bowling in the Arcade).
+
+**Prices now matter a little:** higher prices earn more per sale but fewer guests buy; lower prices sell more often (which also unlocks new items sooner). At the standard price nothing changes.
+
+## The Build tab is gone; its contents moved to where they belong
+| Was in Build | Now |
+|---|---|
+| Construction list, property/wings, future attractions | **Front Desk → Building** tab (Front Desk tabs: Prices & stats · Advertising · Building) |
+| Your Lanes, bulk lane kits, parts | **Lanes & upgrades** button above the lanes → **Lanes** tab |
+| Lane Technician, Cosmic Bowling, lane equipment | **Lanes → Upgrades** tab |
+| Room Upgrades (level 2) | Each shop's **Upgrades** tab |
+| Night Defenses (Back Alley) | **Door Security** panel |
+| Customize | **Customize** button on the floor (now with an Upgrades tab for décor equipment) |
+| Waiting-area comfort equipment | **Waiting Area → Upgrades** tab |
+| Stockroom Shelves | **Staff → Stockroom** |
+
+## New: Regulars tab
+The menu's Build button is now **🤝 Regulars**, a Relationships page for the six locals: portrait, friendship, their last reply to you, and Chat / Treat / League invite, plus the returning VIP groups. Goals keeps Story, Ratings and Progress. Ratings is now an overview; each card has an **Open upgrades** button that jumps to that department's Upgrades tab.
+
+## Also
+- The tutorial's "Build your own alley" step now points at the floor plan.
+- Links that used to send you to Build (lane service from the closing report, Lane Technician in Staff, night defenses in the story panel) now open the right panel and tab.
+
+---
+
 # From Gutter to Glory v1.08 — Closing Report, Staff Room & Regulars
 
 Economy unchanged (60-day matched simulations of both routes are identical to v1.07). Save schema stays 20; v1.07 saves load as-is, including a conversation that was waiting.

@@ -1,3 +1,12 @@
+# v1.09 Local QA report
+
+- 90-day matched simulations (Legacy, Back Alley) at default prices: identical cash and reputation to v1.08; 200-day runs valid.
+- v1.08 save migrates (price fields added, valid). Price setters respect their ranges.
+- Firebase client validator accepts fresh and played saves.
+- Browser 390 and 1280 px, Legacy and Back Alley previews: all 16 panels and all 21 inner tabs open with content and no page errors; new game smoke test (lane from the floor sign, four days, all seven tabs, reload) passes; only one tab visible at a time; tutorial walks all five steps; Advertising bought from Front Desk → Advertising; Staff → Lane Technician deep-links to Lanes → Upgrades.
+
+---
+
 # v1.08 Local QA report
 
 - 60-day matched simulations (Legacy, Back Alley): identical cash and reputation to v1.07; 200-day runs valid.

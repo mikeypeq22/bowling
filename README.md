@@ -1,6 +1,6 @@
-# From Gutter to Glory — v1.08
+# From Gutter to Glory — v1.09
 
-**Closing report, staff room and regulars rebuilt.** Full change list, newest first, in `RELEASE_NOTES.md`.
+**Tabbed shop panels (Menu Items / Pricing / Upgrades), Build tab replaced by Regulars.** Full change list, newest first, in `RELEASE_NOTES.md`.
 
 ## Files
 - `index.html`, `style.css`, `theme.css`, `app.js`, `engine.js`: GitHub Pages game and interface. `theme.css` is the v1.06 visual layer loaded after `style.css`.
@@ -14,7 +14,7 @@
 ## Deployment
 1. Export your current saved game from Settings first.
 2. Upload the **contents** of this ZIP to the existing `bowling` repository root, including `theme.css`, `assets/art/` and `assets/fonts/`.
-3. Verify v1.08 appears on the opening screen. Hard-refresh or retry a private window if the deployed build is cached.
+3. Verify v1.09 appears on the opening screen. Hard-refresh or retry a private window if the deployed build is cached.
 4. Check live sign-in, saves and iPhone behavior separately. Local tests cannot validate Firebase permissions or real devices.
 
 ## Test quickly
