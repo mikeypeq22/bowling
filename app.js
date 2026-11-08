@@ -767,7 +767,7 @@ window.GTGApp={
  validate(snapshot){try{const v=G.migrate(snapshot?.state||snapshot);return !!v&&G.checkState(v);}catch{return false;}},
  snapshot(){return {state:structuredClone(s),lastTick:Date.now()};},
  registerCloudSave(fn){cloudSaveSignal=fn;},
- freshSnapshot(){return {state:G.newGame(),lastTick:Date.now()};},
+ freshSnapshot(){return JSON.parse(JSON.stringify({state:G.newGame(),lastTick:Date.now()}));},
  isDevelopmentPreview(){return devPreviewMode;},
  notify(message,error=false){toast(message,error);},
  getBrief(snapshot){const v=G.migrate(snapshot.state||snapshot);return `Week ${G.calendar(v.day).week} · ${G.calendar(v.day).weekday} · Level ${G.venueLevel(v)} · ${cash(v.cash)}`;},

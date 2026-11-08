@@ -27,7 +27,7 @@ const FIXTURES=[
  {id:'neon',name:'Neon Wall Sign',emoji:'🌟',cost:155,desc:'Adds a little evening atmosphere.'}
 ];
 const PAINTS=[{id:'original',name:'Original Walls',cost:0},{id:'ocean',name:'Ocean Teal',cost:110},{id:'berry',name:'Berry Pop',cost:110},{id:'sunset',name:'Sunset Gold',cost:110},{id:'midnight',name:'Midnight Blue',cost:145}];
-function calendar(day){return {week:Math.floor((day-1)/7)+1,weekday:DAYS[(day-1)%7],dayIndex:(day-1)%7};}
+function calendar(day){const i=(((day-1)%7)+7)%7;return {week:Math.floor((day-1)/7)+1,weekday:DAYS[i],dayIndex:i};}
 const MAX_LANES=24;
 const CAPACITY_STAGES=[6,10,14,18,22,24];
 const NEW_ATTRACTIONS=[

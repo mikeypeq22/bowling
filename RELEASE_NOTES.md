@@ -1,3 +1,11 @@
+# From Gutter to Glory v1.07.1 — Cloud reset fix
+
+- **Fixed: "Replace cloud save with a fresh alley" always failed** with *"Could not replace the online game (invalid-argument)"*. A brand-new alley carried one blank field (the weekday of the "day 0" summary), and Firestore refuses blank (`undefined`) values. Regular saves were cleaned before upload; the reset path was not. Both are fixed: the blank field is gone and the reset data is cleaned before upload. Verified with Firebase's own client validator: the old reset data is rejected with exactly this error, the new data is accepted.
+- No data was ever lost: a rejected write changes nothing in the cloud.
+- Build number bumped to v1.07.1 so browsers fetch the fixed scripts.
+
+---
+
 # From Gutter to Glory v1.07 — The Floor Plan
 
 The alley screen is rebuilt as a fixed floor plan, modeled on the layout of idle-tycoon bowling games: lanes across the top, shops and activities on the floor below, the lobby at the door. Gameplay and balance are unchanged (60-day matched simulations of both routes give identical results to v1.06). Save schema stays **20**.
