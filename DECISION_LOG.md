@@ -1,3 +1,10 @@
+# v1.07 Design decisions
+
+- Layout follows the reference screenshot of an idle bowling tycoon (lanes on top, counters on the floor, faded unbought areas with price signs) without adopting idle mechanics.
+- Rooms have fixed spots; free placement and moving removed (player request). Fixed spots also remove the "needs an empty square to expand" rule.
+- "Upgrade of the alley" that unlocks spots = the existing Property Wing purchase, so no economy changes were needed. Only the next wing's spots are shown locked; later wings are summarized in one line to keep the phone screen short.
+- Buying from the floor asks for confirmation (rooms and wings are big purchases); lanes keep one-tap ordering as before.
+
 # v1.06 Design decisions
 
 - No gameplay or balance changes in this release; optimizations and art only, verified by matched simulations against v1.05.

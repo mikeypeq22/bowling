@@ -1,3 +1,13 @@
+# v1.07 Development Notes
+
+**engine.js** — `FIXED_SPOTS` (exported) gives each of the 13 room ids a permanent grid spot; `findRoomPlacement` returns it; `fixRoomSpots(s)` (in `migrate()`, also for the inactive town) moves existing placements onto it; `moveRoom` now refuses; `expandRoom` no longer needs a free neighbouring square. Simulations are identical to v1.06.
+
+**app.js** — `renderRoomGrid` now renders the floor plan (`FLOOR_ROWS`, `roomInfo`, `spotState`, `floorSpot`, `wingGate`); `showScene` renders the lane hall (tabs, owned/grey/next/locked slots) and calls `renderGoalStrip`. New click handlers: `data-build-spot`, `data-buy-wing`. Room-moving code paths (`toggleLayout`, `exitLayout`, `data-room-move`, `data-place-room`, `chooseRoomMove`) removed. Visitors find rooms via `.floorSpot.is-open[data-room]`.
+
+**index.html** — scene markup replaced by `.alleyFloor` (goal strip, lane hall, decor strip, floor plan, lobby). Build tab "Floor Plan" renamed "Room Upgrades".
+
+**theme.css** — "v1.07 fixed alley floor plan" section at the end.
+
 # v1.06 Development Notes
 
 Baseline v1.05; save schema unchanged (20).

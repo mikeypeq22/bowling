@@ -1,3 +1,26 @@
+# From Gutter to Glory v1.07 — The Floor Plan
+
+The alley screen is rebuilt as a fixed floor plan, modeled on the layout of idle-tycoon bowling games: lanes across the top, shops and activities on the floor below, the lobby at the door. Gameplay and balance are unchanged (60-day matched simulations of both routes give identical results to v1.06). Save schema stays **20**.
+
+## How the alley works now
+- **Every shop and activity has its own permanent spot.** Rooms can no longer be placed or moved; the Rearrange tool and "Move room" buttons are gone.
+- **Spots you haven't bought are faded** with a wooden price sign (e.g. "Snack Counter $235"). Tap the sign to build it. Short on cash? The sign shows the price in red and tells you what you have.
+- **Each wing unlocks the next spots.** Past your current wing, the next wing's spots appear locked ("🔒 Wing 1"). An **Open Wing** sign sits above them with the price, the extra lane spots and the attractions it unlocks; it asks you to fill every lane first, as before. Wing 1 → Billiards & Party Room, Wing 2 → Karaoke & Bocce, Wing 3 → Mini Golf, Wing 4 → Laser Tag & Live Stage, Wing 5 → Banquet Hall & Restaurant.
+- **Lanes across the top** with a tab for each ("Lane 3 · Lv 2", where the level counts installed lane equipment). Unbought lanes are grey; the next one carries an **Open Lane** sign with its price. The next wing's lane spots show locked.
+- **Room levels:** expanding a Snack Counter, Bar, Pro Shop or Arcade upgrades it to **Lv 2** in the same spot. It no longer needs an empty square beside it.
+- **Goals bar** at the top of the floor shows progress to the next alley level; tap it to open Goals.
+- **Fixtures row** (restrooms, lockers, racks, TV, art, neon) sits between the lanes and the shops, next to Customize.
+- **Lobby row** at the bottom: Entrance (with door security on the Back Alley route), Front Desk, Waiting Area, Advertise.
+- On wide screens the floor and The Day's Drama sit side by side.
+
+## Saves
+Existing saves load as-is. Rooms you had placed anywhere are moved to their fixed spots automatically.
+
+## Build tab
+"Floor Plan" is now **Room Upgrades** (level-2 upgrades only). Buying rooms from the Expansions list still works.
+
+---
+
 # From Gutter to Glory v1.06 — Performance & Visual Refresh
 
 Builds on **v1.05** without changing gameplay: a matched 60-day simulation of both routes produces identical cash, reputation and calendar in v1.05 and v1.06. Save schema stays **20**; v1.05 saves load as-is.

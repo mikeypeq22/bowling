@@ -1,3 +1,16 @@
+# v1.07 Local QA report
+
+## Verified
+- `node --check` on all scripts. 60-day matched simulations of both routes: identical cash and reputation to v1.06; 200-day runs stay valid.
+- All 13 rooms fit their fixed spots at once with every base room at level 2 (`checkState` passes). Each attraction's spot becomes buildable exactly when its wing is owned.
+- A v1.06 save with rooms moved to non-standard squares migrates to the fixed spots and validates.
+- Browser (Chromium, standalone demo) at 320, 390 and 1280 px: new game shows six grey lanes with "Open Lane 1 $160", faded shop spots with prices and locked Wing 1 spots. Legacy preview: Open Wing 1 → construction → Wing 1 finishes → four new lane spots and Billiards/Party Room become buildable; building Billiards from its sign shows the construction state; Back Alley preview renders in the dark palette. Smoke test (every tab, every drawer, reload) passes with no page errors.
+
+## Unverified
+- Live Firebase and real devices (unchanged from v1.06).
+
+---
+
 # v1.06 Local QA report
 
 ## Verified

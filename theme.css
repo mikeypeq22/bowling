@@ -209,8 +209,164 @@ body.noirMode .storyDialog h2{color:#F2A0B4!important}
  .nav{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:3px!important;overflow:visible!important}
  .nav button{min-width:0!important;width:auto!important;font-size:9px!important;letter-spacing:0;padding:4px 0!important}
 }
-/* fixtures and decor share one strip above Shops & Activities */
-.sceneFloorAmenities{display:none!important}
-.scene .sceneWallDecor{top:34px!important;right:12%;max-width:none!important;flex-wrap:nowrap;gap:6px;overflow:visible}
-@media(max-width:700px){.scene .sceneWallDecor{top:30px!important;right:23%;gap:3px}}
-@media(max-width:400px){.scene .sceneWallDecor{gap:2px}.scene .sceneWallDecor .worldAmenity{min-width:21px;min-height:21px;padding:1px}}
+
+/* =====================================================================
+ * v1.07 — fixed alley floor plan (lanes on top, shops below, lobby at the door)
+ * ===================================================================== */
+#alley .alleyLayout{display:block}
+.alleyFloor{position:relative;display:flex;flex-direction:column;border:3px solid var(--ink);border-radius:10px;overflow:hidden;
+ --wood:#D39A5D;--wood-d:#C2864B;
+ background-color:var(--wood);
+ background-image:repeating-linear-gradient(90deg,transparent 0 118px,#0000001c 118px 120px),repeating-linear-gradient(0deg,var(--wood) 0 22px,var(--wood-d) 22px 24px)}
+body.largeText .alleyFloor{font-size:110%}
+.alleyFloor .visitorLayer{position:absolute;inset:0;z-index:6;pointer-events:none}
+
+/* goals strip */
+.alleyFloor .goalStrip{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:3px solid var(--ink);border-radius:0;background:var(--ink);color:var(--pin);padding:8px 12px;font-size:12.5px;text-align:left;min-height:0;box-shadow:none}
+.goalStripText{flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goalStripText b{color:var(--marquee)}
+.goalStripBar{flex:1 1 90px;height:12px;border-radius:6px;background:#f6eedc22;overflow:hidden;border:2px solid #f6eedc33;min-width:60px}
+.goalStripBar>span{display:block;height:100%;background:var(--marquee);transition:width .4s ease}
+
+/* lane hall */
+.laneHall{background:#1F4E57;background-image:radial-gradient(#ffffff10 1px,transparent 1.5px);background-size:14px 14px;padding:8px 8px 10px;border-bottom:4px solid var(--ink);position:relative}
+.laneHallWall{display:flex;justify-content:flex-end;margin-bottom:6px}
+.occupancy{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#d7e7e4;background:#00000033;border-radius:20px;padding:3px 10px}
+.occupancy b{color:#fff;margin-right:6px}
+.occupancy .dot{width:8px;height:8px;border-radius:50%;display:inline-block}.dot.go{background:#9AD8BC}.dot.wait{background:var(--marquee)}
+.laneBank{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px 6px;position:static!important;inset:auto!important;width:auto!important;height:auto!important}
+.laneSlot{display:flex;flex-direction:column;gap:4px;min-width:0;position:relative}
+.laneTab{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:32px;border:2px solid var(--ink);border-radius:6px;background:#AEB8B8;color:#45524F;font-weight:700;font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;padding:2px}
+.laneTab b{font-weight:700;font-size:10px;opacity:.9}
+.laneSlot.owned .laneTab{background:#3C7FB8;color:#fff}
+.laneSlot.locked .laneTab{background:#6E7979;color:#d7dddb;font-size:10px}
+.laneSlot .laneScene,.laneSlot .laneGhost{position:relative!important;inset:auto!important;width:100%!important;height:clamp(118px,24vw,220px)!important;margin:0!important;flex:none!important;min-height:0!important}
+.laneSlot .laneGhost{display:block;border:2px solid var(--ink)!important;border-radius:3px!important;background:#C3CBCB!important;opacity:1!important;box-shadow:inset 0 0 0 5px #AFB8B8,inset 0 -30px 0 -24px #AFB8B8!important}
+.laneSlot .laneGhost:after{content:'';position:absolute;left:30%;right:30%;bottom:8px;height:12%;border:2px solid #9AA5A5;border-radius:6px;background:#B6BFBF}
+.laneSlot.locked .laneGhost{background:repeating-linear-gradient(135deg,#8E9898 0 8px,#859090 8px 16px)!important;box-shadow:none!important}
+.laneSlot.locked .laneGhost:after{display:none}
+.laneSlot.building .laneGhost{background:repeating-linear-gradient(135deg,#EDB23E 0 10px,#2a2f2f 10px 20px)!important}
+.laneSign{position:absolute;z-index:4;left:50%;top:44%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;
+ min-width:116px;padding:7px 10px;border:3px solid var(--ink)!important;border-radius:7px!important;background:#B9763D!important;color:#FFF3DA!important;box-shadow:0 3px 0 var(--ink)!important;white-space:nowrap;line-height:1.1}
+.laneSign:before{content:'';position:absolute;left:50%;top:100%;width:8px;height:44px;margin-left:-4px;background:#8A5528;border:2px solid var(--ink);border-top:0;z-index:-1}
+.laneSign b{font-size:12px;font-weight:700}
+.laneSign strong{font-family:var(--sign);font-weight:400;font-size:17px;color:#FFE08A;letter-spacing:.01em}
+.laneSign[data-short] strong{color:#F7C4B9}
+.laneSign.building{background:var(--ink)!important;min-width:0;padding:5px 7px}
+.laneSign.building:before{display:none}
+.laneSign.building small{font-size:10px;color:#ffe08a}
+.laneSlot.edgeL .laneSign{left:0;transform:translate(0,-50%)}.laneSlot.edgeL .laneSign:before{left:28px}
+.laneSlot.edgeR .laneSign{left:auto;right:0;transform:translate(0,-50%)}.laneSlot.edgeR .laneSign:before{left:auto;right:24px}
+.laneSlot .laneScene .laneStatus{left:3px!important;right:3px!important;bottom:4px!important;font-size:10px!important;padding:3px 1px!important}
+.laneHall .constructionRibbon{position:static!important;margin-top:8px;font-size:11px!important;background:#00000040!important;border-radius:6px;padding:5px 8px;color:#ffe9b0}
+
+/* decor strip: bought fixtures sit above the shops */
+.decorStrip{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#00000018;border-bottom:2px dashed #00000026}
+.decorStrip .sceneWallDecor{position:static!important;display:flex;flex-wrap:wrap;gap:6px;flex:1;min-height:34px;max-width:none!important;align-items:center}
+.decorStrip .sceneWallDecor:empty:before{content:'Restrooms, lockers and decor you buy show up here';font-size:11px;color:#5a3a1f;font-weight:600}
+.decorStrip .worldAmenity{min-width:34px;min-height:34px;padding:3px;border:2px solid var(--ink);background:var(--pin);border-radius:7px;box-shadow:0 2px 0 var(--ink)}
+.decorStrip .worldAmenity .icon-art{width:26px!important;height:26px!important}
+.decorStrip .sceneStyle{position:static!important;flex:none;padding:6px 10px!important;font-size:12px!important}
+
+/* floor plan */
+.floorPlan{position:static!important;display:flex;flex-direction:column;gap:12px;padding:12px 10px;inset:auto!important;width:auto!important;height:auto!important;border:0!important;background:none!important}
+.floorPlan:before{content:none!important}
+.floorRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.floorSpot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:118px;padding:28px 8px 8px;border:3px solid var(--ink)!important;border-radius:10px!important;box-shadow:0 4px 0 #0000003a!important;overflow:visible;color:var(--ink);--room:#E9D9B8;background:var(--room)!important;font:inherit;text-align:center}
+.floorSpot.wide{grid-column:1/-1}
+.floorSpot .spotArt .icon-art{width:58px!important;height:58px!important;font-size:42px}
+.floorSpot .spotTag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid var(--ink);border-radius:7px;padding:2px 9px;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 0 var(--ink);z-index:2;max-width:96%;overflow:hidden;text-overflow:ellipsis}
+.floorSpot .spotTag b{color:#2E6FA8}.floorSpot .spotTag i{font-style:normal;color:#B9763D}
+.floorSpot .spotCounter{display:flex;gap:4px;justify-content:center;min-height:0;background:#ffffffb0;border:2px solid var(--ink);border-radius:6px;padding:2px 6px}
+.floorSpot .spotCounter:empty{display:none}
+.floorSpot .spotCounter .icon-art{width:22px!important;height:22px!important;font-size:16px}
+.floorSpot .spotFlag{position:absolute;top:18px;right:6px;background:var(--stripe);color:#fff;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;z-index:2}
+.floorSpot .spotCustom{position:absolute;bottom:6px;right:8px;font-size:14px}
+button.floorSpot.is-open:hover{filter:brightness(1.06)}
+/* faded: not bought yet */
+.floorSpot.is-available,.floorSpot.is-locked,.floorSpot.is-building{box-shadow:none!important;padding-top:10px}
+.floorSpot.is-available:before,.floorSpot.is-locked:before{content:'';position:absolute;inset:0;border-radius:7px;background:#E4E6E1;opacity:.82}
+.floorSpot.is-available{border-style:dashed!important;border-color:#5f6a6a!important}
+.floorSpot.is-locked{border-style:dashed!important;border-color:#7c8585!important}
+.floorSpot.is-locked:before{background:#A7AFAE;opacity:.9}
+.floorSpot.is-available .spotArt,.floorSpot.is-locked .spotArt{position:relative;filter:grayscale(1);opacity:.35}
+.floorSpot.is-locked .spotArt{opacity:.25}
+.floorSpot .spotSign{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:-30px;padding:6px 12px;border:3px solid var(--ink);border-radius:7px;background:#B9763D;color:#FFF3DA;box-shadow:0 3px 0 var(--ink);line-height:1.1;max-width:100%}
+.floorSpot .spotSign b{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.floorSpot .spotSign strong{font-family:var(--sign);font-weight:400;font-size:18px;color:#FFE08A}
+.floorSpot[data-short] .spotSign strong{color:#F7C4B9}
+.floorSpot.is-building{background:repeating-linear-gradient(135deg,#EDB23E 0 12px,#3a3f3f 12px 24px)!important}
+.floorSpot.is-building .spotArt{opacity:.5}
+.floorSpot .spotSign.building{background:var(--ink)}
+.floorSpot .spotSign.building small{color:#ffe08a;font-size:11px}
+.floorSpot .spotLock{position:relative;z-index:2;margin-top:-26px;background:#4E5858;color:#fff;border:2px solid var(--ink);border-radius:6px;padding:3px 9px;font-size:12px;font-weight:700}
+.floorSpot .spotName{position:relative;z-index:2;font-size:12px;font-weight:700;color:#3d4747}
+/* each room has its own floor */
+.spot-snack{--room:repeating-conic-gradient(#F6E7CF 0 25%,#EDA89B 0 50%) 0 0/20px 20px}
+.spot-bar{--room:repeating-linear-gradient(90deg,#7A4A2A 0 26px,#6A3F23 26px 28px)}
+.spot-proshop{--room:repeating-linear-gradient(0deg,#2E8C8F 0 18px,#2A8083 18px 20px)}
+.spot-arcade{--room:radial-gradient(#ffffff22 2px,transparent 2.5px) 0 0/16px 16px,#4B2C55}
+.spot-billiards{--room:radial-gradient(circle at 30% 30%,#3A8E5E,#2B6E47)}
+.spot-partyroom{--room:radial-gradient(#ffffffaa 2px,transparent 2.5px) 0 0/14px 14px,#F2A0B4}
+.spot-karaoke{--room:repeating-linear-gradient(45deg,#5B3A7A 0 14px,#523470 14px 28px)}
+.spot-bocce{--room:#E3C88E}
+.spot-minigolf{--room:repeating-linear-gradient(90deg,#6BBF59 0 30px,#62B151 30px 60px)}
+.spot-restaurant{--room:repeating-conic-gradient(#FFFFFF 0 25%,#9ED3CF 0 50%) 0 0/20px 20px}
+.spot-lasertag{--room:linear-gradient(#ffffff12 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,#ffffff12 1px,transparent 1px) 0 0/16px 16px,#233250}
+.spot-stage{--room:repeating-linear-gradient(90deg,#8E2F2F 0 12px,#7E2828 12px 24px)}
+.spot-banquet{--room:#F0D9A0}
+.floorSpot.is-open.spot-bar .spotTag,.floorSpot.is-open.spot-arcade .spotTag{border-color:var(--ink)}
+/* the next wing */
+.lockedRow{position:relative}
+.wingGate{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:10px 14px;border:3px solid var(--ink)!important;border-radius:9px!important;background:#B9763D!important;color:#FFF3DA!important;box-shadow:0 4px 0 var(--ink)!important;text-align:left}
+.wingGate span{display:flex;flex-direction:column;gap:1px}
+.wingGate b{font-family:var(--sign);font-weight:400;font-size:18px;color:#fff}
+.wingGate small{font-size:12px;color:#FFE9C4}
+.wingGate strong{font-family:var(--sign);font-weight:400;font-size:20px;color:#FFE08A;white-space:nowrap}
+.wingGate[data-short] strong{color:#F7C4B9}
+.wingGate.building{background:var(--ink)!important;display:block}
+.wingGate.building b{display:block}
+.moreWings{margin:0;text-align:center;font-size:12px;font-weight:600;color:#5a3a1f}
+
+/* lobby */
+.lobby{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px;background:#00000018;border-top:3px solid var(--ink)}
+.lobbySpot{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:84px;padding:6px 4px;border:2px solid var(--ink)!important;border-bottom-width:4px!important;border-radius:8px!important;background:var(--pin)!important;color:var(--ink)!important;box-shadow:none!important;text-align:center}
+.lobbySpot .icon-art{width:34px!important;height:34px!important;font-size:26px}
+.lobbySpot b{font-size:12px;line-height:1.1}.lobbySpot small{font-size:10px;color:#4F5F60}
+.lobbySpot.entrance{background:#2E6E78!important;color:#fff!important;font-weight:700;font-size:11px}
+.lobbySpot .entranceDoor{position:static!important;width:44px!important;height:48px!important;border:3px solid var(--ink)!important;border-radius:6px 6px 0 0!important;background:#3E8C96!important;font-size:22px!important;box-shadow:none!important;display:grid;place-items:center}
+.lobbySpot .securityPost{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;left:0!important;bottom:0!important}
+.alleyFloor:has(#sceneSecurity:not(.hidden)) .lobbySpot.entrance>span{visibility:hidden}
+
+/* Back Alley route: dark carpet instead of maple */
+body.noirMode .alleyFloor{--wood:#3A2B46;--wood-d:#33263E}
+body.noirMode .laneHall{background-color:#241A2E}
+body.noirMode .decorStrip .sceneWallDecor:empty:before,body.noirMode .moreWings{color:#E6CFE0}
+body.noirMode .laneSlot.owned .laneTab{background:#7B3F6E}
+body.noirMode .floorSpot .spotTag b{color:#7B3F6E}
+
+/* wide screens: the floor and the day's drama side by side */
+@media(min-width:1000px){
+ #alley{display:grid;grid-template-columns:minmax(0,860px) minmax(300px,1fr);column-gap:18px;align-items:start}
+ #alley>.alleyNotice{grid-column:1/-1}
+ #alley>.eventsPanel{margin-top:0!important;position:sticky;top:12px}
+ #alley>.eventsPanel .eventList{grid-template-columns:1fr!important;max-height:70vh!important}
+ .floorSpot{min-height:140px}
+}
+@media(max-width:430px){
+ .laneBank{gap:6px 4px}
+ .laneTab{font-size:9.5px;min-height:30px}.laneTab b{font-size:9px}
+ .laneSign{min-width:104px;padding:5px 8px}.laneSign b{font-size:11px}.laneSign strong{font-size:15px}
+ .floorRow{gap:10px}.floorPlan{padding:12px 8px;gap:14px}
+ .floorSpot{min-height:104px}
+ .floorSpot .spotArt .icon-art{width:48px!important;height:48px!important}
+ .floorSpot .spotTag{font-size:11px;padding:2px 7px}
+ .floorSpot .spotSign{padding:5px 8px}.floorSpot .spotSign b{font-size:11px}.floorSpot .spotSign strong{font-size:16px}
+ .lobby{gap:6px;padding:8px}.lobbySpot{min-height:76px}.lobbySpot b{font-size:10.5px}.lobbySpot small{font-size:9px}
+ .wingGate b{font-size:16px}.wingGate strong{font-size:17px}
+ .goalStrip{font-size:11.5px}
+}
+.laneSlot .laneGhost{overflow:visible!important}
+.laneSlot.locked .laneGhost{height:64px!important}
+.laneSlot.locked .laneTab{min-height:24px}
+.laneSlot .laneScene .lane-image{width:min(calc(100% - 14px),104px)!important;left:50%!important;transform:translateX(-50%)}
